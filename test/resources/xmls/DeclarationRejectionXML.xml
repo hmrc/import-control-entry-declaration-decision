@@ -1,0 +1,25 @@
+<cc3:CC316A xmlns:cc3="http://ics.dgtaxud.ec/CC316A">
+    <MesSenMES3>eori/branch</MesSenMES3>
+    <MesRecMES6>eori/branch</MesRecMES6>
+    <DatOfPreMES9>200113</DatOfPreMES9>
+    <TimOfPreMES10>1522</TimOfPreMES10>
+    <MesIdeMES19>messId</MesIdeMES19>
+    <MesTypMES20>CC316A</MesTypMES20>
+    <CorIdeMES25>corrid</CorIdeMES25>
+    <HEAHEA>
+        <RefNumHEA4>localRef</RefNumHEA4>
+        <DecRejDatTimHEA116>202001131522</DecRejDatTimHEA116>
+    </HEAHEA>
+    <FUNERRER1>
+        <ErrTypER11>errorType1</ErrTypER11>
+        <ErrPoiER12>errorPointer1</ErrPoiER12>
+        <ErrReaER13>reason1</ErrReaER13>
+        <OriAttValER14>originalAttrib1</OriAttValER14>
+    </FUNERRER1>
+    <FUNERRER1>
+        <ErrTypER11>errorType2</ErrTypER11>
+        <ErrPoiER12>errorPointer2</ErrPoiER12>
+        <ErrReaER13>reason2</ErrReaER13>
+        <OriAttValER14>originalAttrib2</OriAttValER14>
+    </FUNERRER1>
+</cc3:CC316A>

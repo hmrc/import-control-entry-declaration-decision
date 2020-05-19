@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Entry summary Declaration Response",
+  "description": "Entry summary Declaration Response",
+  "type": "object",
+  "properties": {
+    "submissionId": {"$ref": "#/definitions/submissionId"},
+    "metadata": {"$ref": "#/definitions/metadata"},
+    "response": {"$ref": "#/definitions/response"}
+  },
+  "required": [
+    "submissionId",
+    "metadata",
+    "response"
+  ],
+  "additionalProperties": false,
+  "definitions":{
+    "response": {
+      "type": "object",
+      "oneOf": [
+        {
+          "$ref": "#/definitions/successResponse"
+        },
+        {
+          "$ref": "#/definitions/errorResponse"
+        }
+      ]
+    },
+    "successResponse": {
+      "type": "object",
+      "properties": {
+        "movementReferenceNumber": {"type": "string", "minLength": 18, "maxLength": 18}
+      },
+      "required": ["movementReferenceNumber"],
+      "additionalProperties": false
+    },
+    "errorResponse": {
+      "type": "object",
+      "properties": {
+        "rejectionDateTime": {"$ref": "#/definitions/dateTime"},
+        "functionalError": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 999,
+          "items": {"$ref": "#/definitions/functionalError"}
+        }
+      },
+      "required": ["functionalError","rejectionDateTime"],
+      "additionalProperties": false
+    },
+    "functionalError":{
+      "type": "object",
+      "properties": {
+        "errorType": {"type": "string", "maxLength": 2},
+        "errorPointer": {"type": "string", "maxLength": 210},
+        "errorReason": {"type": "string", "maxLength": 6},
+        "originalAttributeValue": {"type": "string", "maxLength": 140}
+      },
+      "required": ["errorType","errorPointer"],
+      "additionalProperties": false
+    },
+    "languageCode": {
+      "description": "language code",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2
+    },
+    "submissionId": {
+      "description": "UUID for this submission, shared internally eg:c75f40a6-a3df-4429-a697-471eeec46435",
+      "type": "string",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "correlationId": {
+      "description": "correlationId for this submission, shared externally with the trader for their request response reconciliation purposes",
+      "type": "string",
+      "minLength": 14,
+      "maxLength": 14
+    },
+    "eori": {
+      "description": "Economic Operator Registration and Identification number",
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 17
+    },
+    "metadata": {
+      "description": "metadata relating to the submission, such as date: of preparation, datetime of receipt, etc...",
+      "type": "object",
+      "properties":{
+        "senderEORI":{"$ref": "#/definitions/eori"},
+        "senderBranch": { "type": "string", "maxLength": 20},
+        "messageType": {"type": "string", "enum": ["IE328","IE316","IE304","IE305"]},
+        "messageIdentification": { "type": "string", "maxLength": 14},
+        "preparationDateTime": {"$ref": "#/definitions/dateTime"},
+        "receivedDateTime": {"$ref": "#/definitions/dateTime"},
+        "correlationId": {"$ref": "#/definitions/correlationId"},
+        "localReferenceNumber": {"type": "string", "maxLength": 32}
+      },
+      "required": [
+        "senderEORI",
+        "senderBranch",
+        "preparationDateTime",
+        "messageType",
+        "messageIdentification",
+        "receivedDateTime",
+        "correlationId"
+      ],
+      "additionalProperties": false
+    },
+    "dateTime": {
+      "description": "The timestamp in ISO8601 UTC format: YYYY-MM-DDThh:mm:ss.sssZ",
+      "type": "string",
+      "minLength": 24,
+      "maxLength": 24,
+      "format": "date-time",
+      "pattern": "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z"
+    }
+  }
+}

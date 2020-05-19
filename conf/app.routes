@@ -1,0 +1,3 @@
+# microservice specific routes
+
+POST       /import-control/entry-summary-declaration-response   uk.gov.hmrc.entrydeclarationdecision.controllers.DecisionReceiverController.handlePost

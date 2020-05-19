@@ -1,0 +1,39 @@
+{
+  "payload": {
+    "submissionId": "ABCDEFGHIJKLMNOPQRSTUVWXY",
+    "metadata": {
+      "senderEORI": "myeori",
+      "senderBranch": "mybranch",
+      "preparationDateTime": "2003-02-11T01:23:00.000Z",
+      "messageType": "IE313",
+      "receivedDateTime": "1234-12-10T00:34:17.000Z",
+      "correlationId": "Correlation123",
+      "messageIdentification": "messageID"
+    },
+    "parties": {
+      "declarant": {
+        "eori": "YZ^"
+      }
+    },
+    "goods": {
+      "numberOfItems": 1,
+      "goodsItems": [
+        {
+          "itemNumber": "1"
+        }
+      ]
+    },
+    "itinerary": {
+      "modeOfTransportAtBorder": "2",
+      "officeOfFirstEntry": {
+        "reference": "AB3C4D5E",
+        "expectedDateTimeOfArrival": "2003-02-11T12:34:00.000Z"
+      }
+    },
+    "amendment": {
+      "movementReferenceNumber": "refnum",
+      "place": "amendmentplace",
+      "dateTime": "2003-02-11T12:34:00.000Z"
+    }
+  }
+}

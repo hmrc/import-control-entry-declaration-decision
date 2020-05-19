@@ -1,0 +1,29 @@
+{
+  "submissionId": "submissionId",
+  "metadata": {
+    "senderEORI": "eori",
+    "senderBranch": "branch",
+    "messageType": "IE305",
+    "messageIdentification": "messId",
+    "preparationDateTime": "2020-01-13T15:22:44Z",
+    "receivedDateTime": "2020-01-13T15:22:44Z",
+    "correlationId": "corrid"
+  },
+  "response": {
+    "functionalError": [
+      {
+        "errorType": "errorType1",
+        "errorPointer": "errorPointer1",
+        "errorReason": "reason1",
+        "originalAttributeValue": "originalAttrib1"
+      },
+      {
+        "errorType": "errorType2",
+        "errorPointer": "errorPointer2",
+        "errorReason": "reason2",
+        "originalAttributeValue": "originalAttrib2"
+      }
+    ],
+    "rejectionDateTime": "2020-01-13T15:22:44Z"
+  }
+}

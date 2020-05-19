@@ -1,0 +1,38 @@
+{
+  "payload": {
+    "parties": {
+      "declarant": {
+        "name": "declarant name",
+        "address": {
+          "streetAndNumber": "declarant street",
+          "city": "declarant city",
+          "postalCode": "decpcode",
+          "countryCode": "EN"
+        },
+        "language": "en",
+        "eori": "GBdeceori"
+      },
+      "representative": {
+        "name": "rep name",
+        "address": {
+          "streetAndNumber": "rep street",
+          "city": "rep city",
+          "postalCode": "reppcod",
+          "countryCode": "ES"
+        },
+        "language": "es",
+        "eori": "GBrepeori"
+      }
+    },
+    "itinerary": {
+      "officeOfFirstEntry": {
+        "reference": "AB3C4D5E",
+        "expectedDateTimeOfArrival": "2003-02-11T12:34:00Z"
+      }
+    },
+    "amendment": {
+      "movementReferenceNumber": "12GB12345678901230",
+      "dateTime": "2003-02-11T12:34:00.000Z"
+    }
+  }
+}

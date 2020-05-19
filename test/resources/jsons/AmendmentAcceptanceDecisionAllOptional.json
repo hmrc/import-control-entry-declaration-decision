@@ -1,0 +1,16 @@
+{
+  "submissionId": "ipsum cillum ex aute",
+  "metadata": {
+    "senderEORI": "eori",
+    "senderBranch": "branch",
+    "preparationDateTime": "2005-03-15T12:34:00Z",
+    "messageType": "IE304",
+    "receivedDateTime": "2005-03-15T12:40:00Z",
+    "messageIdentification": "ex Excepte",
+    "correlationId": "e",
+    "localReferenceNumber": "eiusmod et fugiat"
+  },
+  "response": {
+    "movementReferenceNumber": "12GB12345678901230"
+  }
+}

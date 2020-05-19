@@ -1,0 +1,25 @@
+<cc3:CC328A xmlns:cc3="http://ics.dgtaxud.ec/CC328A">
+    <MesSenMES3>eori/branch</MesSenMES3>
+    <MesRecMES6>eori/branch</MesRecMES6>
+    <DatOfPreMES9>050315</DatOfPreMES9>
+    <TimOfPreMES10>1234</TimOfPreMES10>
+    <MesIdeMES19>minim sunt</MesIdeMES19>
+    <MesTypMES20>CC328A</MesTypMES20>
+    <CorIdeMES25>e</CorIdeMES25>
+    <HEAHEA>
+        <RefNumHEA4>sunt fugiat cup</RefNumHEA4>
+        <DocNumHEA5>12GB12345678901230</DocNumHEA5>
+        <TraModAtBorHEA76>2</TraModAtBorHEA76>
+        <DecRegDatTimHEA115>200503151240</DecRegDatTimHEA115>
+    </HEAHEA>
+    <GOOITEGDS>
+        <IteNumGDS7>1</IteNumGDS7>
+    </GOOITEGDS>
+    <PERLODSUMDEC>
+        <TINPLD1>YZ^</TINPLD1>
+    </PERLODSUMDEC>
+    <CUSOFFFENT730>
+        <RefNumCUSOFFFENT731>AB3C4D5E</RefNumCUSOFFFENT731>
+        <ExpDatOfArrFIRENT733>200302111234</ExpDatOfArrFIRENT733>
+    </CUSOFFFENT730>
+</cc3:CC328A>
