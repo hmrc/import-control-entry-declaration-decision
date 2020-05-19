@@ -43,6 +43,7 @@ class ProcessDecisionService @Inject()(
   amendmentAcceptanceXMLBuilder: AmendmentAcceptanceXMLBuilder,
   amendmentRejectionXMLBuilder: AmendmentRejectionXMLBuilder,
   schemaValidator: SchemaValidator,
+  xmlWrapper: XMLWrapper,
   override val metrics: Metrics)(implicit ex: ExecutionContext)
     extends Timer
     with EventLogger {
@@ -112,9 +113,10 @@ class ProcessDecisionService @Inject()(
 
       val result = for {
         enrichment <- EitherT(getEnrichment(decision))
-        xml = buildXML(decision, enrichment)
-        _   = validateSchema(validationSchema, xml)
-        sendResult <- EitherT(sendOutcome(decision, enrichment, xml))
+        xml        = buildXML(decision, enrichment)
+        _          = validateSchema(validationSchema, xml)
+        wrappedXml = xmlWrapper.wrapXml(decision.metadata.correlationId, xml)
+        sendResult <- EitherT(sendOutcome(decision, enrichment, wrappedXml))
       } yield sendResult
 
       result.value

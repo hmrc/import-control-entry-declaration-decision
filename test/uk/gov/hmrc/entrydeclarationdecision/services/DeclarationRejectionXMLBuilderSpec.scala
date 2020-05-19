@@ -40,6 +40,16 @@ class DeclarationRejectionXMLBuilderSpec extends UnitSpec with ScalaCheckDrivenP
 
         Utility.trim(xmlBuilder.buildXML(decision, DeclarationRejectionEnrichment)) shouldBe Utility.trim(expected)
       }
+      "with the correct namespace and prefix" in {
+
+        val decisionJson = ResourceUtils.withInputStreamFor("jsons/DeclarationRejectionDecision.json")(Json.parse)
+        val decision     = decisionJson.as[Decision[Rejection]]
+
+        val xml = xmlBuilder.buildXML(decision, DeclarationRejectionEnrichment)
+
+        xml.namespace shouldBe "http://ics.dgtaxud.ec/CC316A"
+        xml.prefix            shouldBe "cc3"
+      }
       "an rejection decision is supplied with all optional fields" in {
 
         val expected = ResourceUtils.withInputStreamFor("xmls/DeclarationRejectionAllOptionalXML.xml")(XML.load)
@@ -57,7 +67,8 @@ class DeclarationRejectionXMLBuilderSpec extends UnitSpec with ScalaCheckDrivenP
       implicit val messageType: MessageType = MessageType.IE316
 
       forAll { decision: Decision[Rejection] =>
-        val xml = xmlBuilder.buildXML(decision, DeclarationRejectionEnrichment)
+        val xml = xmlBuilder
+          .buildXML(decision, DeclarationRejectionEnrichment)
 
         schemaValidator.validateSchema(SchemaType.CC316A, xml).allErrors.filterNot { ex =>
           // Ignore type related errors

@@ -19,7 +19,6 @@ package uk.gov.hmrc.entrydeclarationdecision.utils
 import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 
-import com.google.inject.ImplementedBy
 import javax.xml.XMLConstants
 import javax.xml.parsers.SAXParserFactory
 import javax.xml.validation.{Schema, SchemaFactory}

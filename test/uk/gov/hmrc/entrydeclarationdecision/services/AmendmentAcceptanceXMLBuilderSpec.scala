@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.services
 
-import org.scalacheck.Arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.Json
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.DecisionResponse.Acceptance
@@ -48,6 +47,19 @@ class AmendmentAcceptanceXMLBuilderSpec
         Utility.trim(xmlBuilder.buildXML(decision, enrichment)) shouldBe Utility.trim(expected)
       }
 
+      "with the correct namespace and prefix" in {
+
+        val enrichmentJson = ResourceUtils.withInputStreamFor("jsons/AmendmentAcceptanceEnrichment.json")(Json.parse)
+        val enrichment     = enrichmentJson.as[AcceptanceEnrichment]
+        val decisionJson   = ResourceUtils.withInputStreamFor("jsons/AmendmentAcceptanceDecision.json")(Json.parse)
+        val decision       = decisionJson.as[Decision[Acceptance]]
+
+        val xml = xmlBuilder.buildXML(decision, enrichment)
+
+        xml.namespace shouldBe "http://ics.dgtaxud.ec/CC304A"
+        xml.prefix            shouldBe "cc3"
+      }
+
       "an acceptance decision is supplied with all optional fields" in {
 
         val enrichmentJson =
@@ -68,7 +80,8 @@ class AmendmentAcceptanceXMLBuilderSpec
       implicit val messageType: MessageType = MessageType.IE304
 
       forAll { (decision: Decision[Acceptance], enrichment: AcceptanceEnrichment) =>
-        val xml = xmlBuilder.buildXML(decision, enrichment)
+        val xml = xmlBuilder
+          .buildXML(decision, enrichment)
 
         schemaValidator.validateSchema(SchemaType.CC304A, xml).allErrors.filterNot { ex =>
           // Ignore type related errors

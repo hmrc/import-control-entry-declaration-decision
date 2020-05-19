@@ -47,6 +47,19 @@ class AmendmentRejectionXMLBuilderSpec
         Utility.trim(xmlBuilder.buildXML(decision, enrichment)) shouldBe Utility.trim(expected)
       }
 
+      "with the correct namespace and prefix" in {
+
+        val enrichmentJson = ResourceUtils.withInputStreamFor("jsons/AmendmentRejectionEnrichment.json")(Json.parse)
+        val enrichment     = enrichmentJson.as[AmendmentRejectionEnrichment]
+        val decisionJson   = ResourceUtils.withInputStreamFor("jsons/AmendmentRejectionDecision.json")(Json.parse)
+        val decision       = decisionJson.as[Decision[Rejection]]
+
+        val xml = xmlBuilder.buildXML(decision, enrichment)
+
+        xml.namespace shouldBe "http://ics.dgtaxud.ec/CC305A"
+        xml.prefix    shouldBe "cc3"
+      }
+
       "a rejection decision is supplied with all optional fields" in {
 
         val enrichmentJson =
@@ -67,7 +80,8 @@ class AmendmentRejectionXMLBuilderSpec
       implicit val messageType: MessageType = MessageType.IE305
 
       forAll { (decision: Decision[Rejection], enrichment: AmendmentRejectionEnrichment) =>
-        val xml = xmlBuilder.buildXML(decision, enrichment)
+        val xml = xmlBuilder
+          .buildXML(decision, enrichment)
 
         schemaValidator.validateSchema(SchemaType.CC305A, xml).allErrors.filterNot { ex =>
           // Ignore type related errors

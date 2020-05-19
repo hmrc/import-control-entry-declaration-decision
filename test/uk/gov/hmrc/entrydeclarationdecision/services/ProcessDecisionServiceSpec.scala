@@ -48,6 +48,7 @@ class ProcessDecisionServiceSpec
     with MockAmendmentRejectionXMLBuilder
     with MockRejectionXMLBuilder
     with MockSchemaValidator
+    with MockXMLWrapper
     with ScalaFutures {
 
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(500, Millis))
@@ -63,6 +64,7 @@ class ProcessDecisionServiceSpec
     mockAmendmentAcceptanceXMLBuilder,
     mockAmendmentRejectionXMLBuilder,
     mockSchemaValidator,
+    mockXMLWrapper,
     mockedMetrics
   )
 
@@ -76,22 +78,26 @@ class ProcessDecisionServiceSpec
     ResourceUtils.withInputStreamFor("jsons/AmendmentRejectionEnrichment.json")(
       Json.parse(_).as[AmendmentRejectionEnrichment])
 
+  private val rawXml              = <rawXml/>
+  private val wrappedXml          = <wrapped/>
   private val submissionId        = "sumbissionID"
+  private val correlationId       = "15digitCorrelationID"
   private val preparationDateTime = ZonedDateTime.parse("2020-12-31T23:59:00Z")
   private val receivedDateTime    = ZonedDateTime.parse("2020-12-31T23:59:00Z")
   private val rejectionDateTime   = ZonedDateTime.parse("2020-12-31T23:59:00Z")
+
   private def validOutcome(messageType: MessageType) =
-    Outcome("eori", "15digitCorrelationID", "sumbissionID", receivedDateTime, messageType, None, "<sample>hi</sample>")
+    Outcome("eori", correlationId, submissionId, receivedDateTime, messageType, None, wrappedXml.toString)
 
   private def validOutcomeWithMRN(messageType: MessageType) =
     Outcome(
       "eori",
-      "15digitCorrelationID",
-      "sumbissionID",
+      correlationId,
+      submissionId,
       receivedDateTime,
       messageType,
       Some("02CHPW67QLOYOB4IA8"),
-      "<sample>hi</sample>")
+      wrappedXml.toString)
 
   private val validDeclarationRejectionDecision = Decision(
     submissionId,
@@ -102,7 +108,7 @@ class ProcessDecisionServiceSpec
       "msgId",
       preparationDateTime,
       receivedDateTime,
-      "15digitCorrelationID",
+      correlationId,
       None),
     DecisionResponse.Rejection(List(DecisionError("cheese", "nisi cupidatat", None, None)), rejectionDateTime)
   )
@@ -116,10 +122,11 @@ class ProcessDecisionServiceSpec
       "msgId",
       preparationDateTime,
       receivedDateTime,
-      "15digitCorrelationID",
+      correlationId,
       None),
     DecisionResponse.Acceptance("02CHPW67QLOYOB4IA8")
   )
+
   private val validAmendmentAcceptanceDecision = Decision(
     submissionId,
     DecisionMetadata(
@@ -129,7 +136,7 @@ class ProcessDecisionServiceSpec
       "msgId",
       preparationDateTime,
       receivedDateTime,
-      "15digitCorrelationID",
+      correlationId,
       None),
     DecisionResponse.Acceptance("02CHPW67QLOYOB4IA8")
   )
@@ -143,7 +150,7 @@ class ProcessDecisionServiceSpec
       "msgId",
       preparationDateTime,
       receivedDateTime,
-      "15digitCorrelationID",
+      correlationId,
       None),
     DecisionResponse.Rejection(List(DecisionError("cheese", "nisi cupidatat", None, None)), rejectionDateTime)
   )
@@ -151,108 +158,119 @@ class ProcessDecisionServiceSpec
   "ProcessDecisionService" should {
     "return a Right" when {
       "a declaration rejection decision is supplied and the outcome successfully saved" in {
+        val decision = validDeclarationRejectionDecision
+
         MockAppConfig.validateJsonToXMLTransformation returns false
-        MockRejectionXMLBuilder
-          .buildXML(validDeclarationRejectionDecision, DeclarationRejectionEnrichment)
-          .returns(<sample>hi</sample>)
-        MockOutcomeConnector.send(validOutcome(MessageType.IE316)).returns(Future.successful(Right(())))
-        service.processDecision(validDeclarationRejectionDecision).futureValue shouldBe Right(())
+        MockRejectionXMLBuilder.buildXML(decision, DeclarationRejectionEnrichment) returns rawXml
+        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
+        MockOutcomeConnector.send(validOutcome(MessageType.IE316)) returns Future.successful(Right(()))
+
+        service.processDecision(decision).futureValue shouldBe Right(())
       }
 
       "a declaration rejection decision successfully processed despite schema validation failing" in {
+        val decision = validDeclarationRejectionDecision
+
         MockAppConfig.validateJsonToXMLTransformation returns true
+        MockRejectionXMLBuilder.buildXML(decision, DeclarationRejectionEnrichment) returns rawXml
+        MockSchemaValidator.validateSchema(SchemaType.CC316A, rawXml) returns failedValidationResult
+        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
+        MockOutcomeConnector.send(validOutcome(MessageType.IE316)) returns Future.successful(Right(()))
 
-        val xml = <sample>hi</sample>
-        MockRejectionXMLBuilder.buildXML(validDeclarationRejectionDecision, DeclarationRejectionEnrichment).returns(xml)
-
-        MockSchemaValidator.validateSchema(SchemaType.CC316A, xml) returns failedValidationResult
-
-        MockOutcomeConnector.send(validOutcome(MessageType.IE316)).returns(Future.successful(Right(())))
-        service.processDecision(validDeclarationRejectionDecision).futureValue shouldBe Right(())
+        service.processDecision(decision).futureValue shouldBe Right(())
       }
 
       "an declaration acceptance decision is supplied and the outcome successfully saved" in {
-        MockAppConfig.validateJsonToXMLTransformation returns false
-        MockStoreConnector.getAcceptanceEnrichment(submissionId, amendment = false) returns Future.successful(
-          Right(declarationAcceptanceEnrichment))
+        val decision = validDeclarationAcceptanceDecision
 
-        MockDeclarationAcceptanceXMLBuilder
-          .buildXML(validDeclarationAcceptanceDecision, declarationAcceptanceEnrichment)
-          .returns(<sample>hi</sample>)
-        MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE328)).returns(Future.successful(Right(())))
-        service.processDecision(validDeclarationAcceptanceDecision).futureValue shouldBe Right(())
+        MockAppConfig.validateJsonToXMLTransformation returns false
+        MockStoreConnector
+          .getAcceptanceEnrichment(submissionId, amendment = false)
+          .returns(Future.successful(Right(declarationAcceptanceEnrichment)))
+
+        MockDeclarationAcceptanceXMLBuilder.buildXML(decision, declarationAcceptanceEnrichment) returns rawXml
+        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
+        MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE328)) returns Future.successful(Right(()))
+
+        service.processDecision(decision).futureValue shouldBe Right(())
       }
 
       "a declaration acceptance decision successfully processed despite schema validation failing" in {
+        val decision = validDeclarationAcceptanceDecision
+
         MockAppConfig.validateJsonToXMLTransformation returns true
-        MockStoreConnector.getAcceptanceEnrichment(submissionId, amendment = false) returns Future.successful(
-          Right(declarationAcceptanceEnrichment))
+        MockStoreConnector
+          .getAcceptanceEnrichment(submissionId, amendment = false)
+          .returns(Future.successful(Right(declarationAcceptanceEnrichment)))
 
-        val xml = <sample>hi</sample>
-        MockDeclarationAcceptanceXMLBuilder
-          .buildXML(validDeclarationAcceptanceDecision, declarationAcceptanceEnrichment)
-          .returns(xml)
+        MockDeclarationAcceptanceXMLBuilder.buildXML(decision, declarationAcceptanceEnrichment) returns rawXml
+        MockSchemaValidator.validateSchema(SchemaType.CC328A, rawXml) returns failedValidationResult
+        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
+        MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE328)) returns Future.successful(Right(()))
 
-        MockSchemaValidator.validateSchema(SchemaType.CC328A, xml) returns failedValidationResult
-
-        MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE328)).returns(Future.successful(Right(())))
-        service.processDecision(validDeclarationAcceptanceDecision).futureValue shouldBe Right(())
+        service.processDecision(decision).futureValue shouldBe Right(())
       }
 
       "an amendment acceptance decision is supplied and the outcome successfully saved" in {
-        MockAppConfig.validateJsonToXMLTransformation returns false
-        MockStoreConnector.getAcceptanceEnrichment(submissionId, amendment = true) returns Future.successful(
-          Right(amendmentAcceptanceEnrichment))
+        val decision = validAmendmentAcceptanceDecision
 
-        MockAmendmentAcceptanceXMLBuilder
-          .buildXML(validAmendmentAcceptanceDecision, amendmentAcceptanceEnrichment)
-          .returns(<sample>hi</sample>)
-        MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE304)).returns(Future.successful(Right(())))
-        service.processDecision(validAmendmentAcceptanceDecision).futureValue shouldBe Right(())
+        MockAppConfig.validateJsonToXMLTransformation returns false
+        MockStoreConnector
+          .getAcceptanceEnrichment(submissionId, amendment = true)
+          .returns(Future.successful(Right(amendmentAcceptanceEnrichment)))
+
+        MockAmendmentAcceptanceXMLBuilder.buildXML(decision, amendmentAcceptanceEnrichment) returns rawXml
+        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
+        MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE304)) returns Future.successful(Right(()))
+
+        service.processDecision(decision).futureValue shouldBe Right(())
       }
 
       "an amendment acceptance decision successfully processed despite schema validation failing" in {
+        val decision = validAmendmentAcceptanceDecision
+
         MockAppConfig.validateJsonToXMLTransformation returns true
-        MockStoreConnector.getAcceptanceEnrichment(submissionId, amendment = true) returns Future.successful(
-          Right(amendmentAcceptanceEnrichment))
+        MockStoreConnector
+          .getAcceptanceEnrichment(submissionId, amendment = true)
+          .returns(Future.successful(Right(amendmentAcceptanceEnrichment)))
 
-        val xml = <sample>hi</sample>
-        MockAmendmentAcceptanceXMLBuilder
-          .buildXML(validAmendmentAcceptanceDecision, amendmentAcceptanceEnrichment)
-          .returns(xml)
+        MockAmendmentAcceptanceXMLBuilder.buildXML(decision, amendmentAcceptanceEnrichment) returns rawXml
+        MockSchemaValidator.validateSchema(SchemaType.CC304A, rawXml) returns failedValidationResult
+        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
+        MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE304)) returns Future.successful(Right(()))
 
-        MockSchemaValidator.validateSchema(SchemaType.CC304A, xml) returns failedValidationResult
-
-        MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE304)).returns(Future.successful(Right(())))
-        service.processDecision(validAmendmentAcceptanceDecision).futureValue shouldBe Right(())
+        service.processDecision(decision).futureValue shouldBe Right(())
       }
 
       "an amendment rejection decision is supplied and the outcome successfully saved" in {
-        MockAppConfig.validateJsonToXMLTransformation returns false
-        MockStoreConnector.getAmendmentRejectionEnrichment(submissionId) returns Future.successful(
-          Right(amendmentRejectionEnrichment))
+        val decision = validAmendmentRejectionDecision
 
-        MockAmendmentRejectionXMLBuilder
-          .buildXML(validAmendmentRejectionDecision, amendmentRejectionEnrichment)
-          .returns(<sample>hi</sample>)
-        MockOutcomeConnector.send(validOutcome(MessageType.IE305)).returns(Future.successful(Right(())))
-        service.processDecision(validAmendmentRejectionDecision).futureValue shouldBe Right(())
+        MockAppConfig.validateJsonToXMLTransformation returns false
+        MockStoreConnector
+          .getAmendmentRejectionEnrichment(submissionId)
+          .returns(Future.successful(Right(amendmentRejectionEnrichment)))
+
+        MockAmendmentRejectionXMLBuilder.buildXML(decision, amendmentRejectionEnrichment) returns rawXml
+        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
+        MockOutcomeConnector.send(validOutcome(MessageType.IE305)) returns Future.successful(Right(()))
+
+        service.processDecision(decision).futureValue shouldBe Right(())
       }
 
       "an amendment rejection decision successfully processed despite schema validation failing" in {
+        val decision = validAmendmentRejectionDecision
+
         MockAppConfig.validateJsonToXMLTransformation returns true
-        MockStoreConnector.getAmendmentRejectionEnrichment(submissionId) returns Future.successful(
-          Right(amendmentRejectionEnrichment))
+        MockStoreConnector
+          .getAmendmentRejectionEnrichment(submissionId)
+          .returns(Future.successful(Right(amendmentRejectionEnrichment)))
 
-        val xml = <sample>hi</sample>
-        MockAmendmentRejectionXMLBuilder
-          .buildXML(validAmendmentRejectionDecision, amendmentRejectionEnrichment)
-          .returns(xml)
+        MockAmendmentRejectionXMLBuilder.buildXML(decision, amendmentRejectionEnrichment) returns rawXml
+        MockSchemaValidator.validateSchema(SchemaType.CC305A, rawXml) returns failedValidationResult
+        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
+        MockOutcomeConnector.send(validOutcome(MessageType.IE305)) returns Future.successful(Right(()))
 
-        MockSchemaValidator.validateSchema(SchemaType.CC305A, xml) returns failedValidationResult
-
-        MockOutcomeConnector.send(validOutcome(MessageType.IE305)).returns(Future.successful(Right(())))
-        service.processDecision(validAmendmentRejectionDecision).futureValue shouldBe Right(())
+        service.processDecision(decision).futureValue shouldBe Right(())
       }
     }
 
@@ -261,31 +279,35 @@ class ProcessDecisionServiceSpec
       val someErrorCode = ErrorCode.DuplicateSubmission
 
       "the rejection outcome cannot be saved" in {
+        val decision = validDeclarationRejectionDecision
+
         MockAppConfig.validateJsonToXMLTransformation returns false
-        MockRejectionXMLBuilder
-          .buildXML(validDeclarationRejectionDecision, DeclarationRejectionEnrichment)
-          .returns(<sample>hi</sample>)
-        MockOutcomeConnector.send(validOutcome(MessageType.IE316)).returns(Future.successful(Left(someErrorCode)))
-        service.processDecision(validDeclarationRejectionDecision).futureValue shouldBe Left(someErrorCode)
+        MockRejectionXMLBuilder.buildXML(decision, DeclarationRejectionEnrichment) returns rawXml
+        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
+        MockOutcomeConnector.send(validOutcome(MessageType.IE316)) returns Future.successful(Left(someErrorCode))
+
+        service.processDecision(decision).futureValue shouldBe Left(someErrorCode)
       }
 
       "the acceptance outcome cannot be saved" in {
-        MockAppConfig.validateJsonToXMLTransformation returns false
-        MockStoreConnector.getAcceptanceEnrichment(submissionId, amendment = false) returns Future.successful(
-          Right(declarationAcceptanceEnrichment))
+        val decision = validDeclarationAcceptanceDecision
 
-        MockDeclarationAcceptanceXMLBuilder
-          .buildXML(validDeclarationAcceptanceDecision, declarationAcceptanceEnrichment)
-          .returns(<sample>hi</sample>)
-        MockOutcomeConnector
-          .send(validOutcomeWithMRN(MessageType.IE328))
-          .returns(Future.successful(Left(someErrorCode)))
-        service.processDecision(validDeclarationAcceptanceDecision).futureValue shouldBe Left(someErrorCode)
+        MockAppConfig.validateJsonToXMLTransformation returns false
+        MockStoreConnector
+          .getAcceptanceEnrichment(submissionId, amendment = false)
+          .returns(Future.successful(Right(declarationAcceptanceEnrichment)))
+
+        MockDeclarationAcceptanceXMLBuilder.buildXML(decision, declarationAcceptanceEnrichment) returns rawXml
+        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
+        MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE328)) returns Future.successful(Left(someErrorCode))
+
+        service.processDecision(decision).futureValue shouldBe Left(someErrorCode)
       }
 
       "the acceptance enrichment fails" in {
-        MockStoreConnector.getAcceptanceEnrichment(submissionId, amendment = false) returns Future.successful(
-          Left(someErrorCode))
+        MockStoreConnector
+          .getAcceptanceEnrichment(submissionId, amendment = false)
+          .returns(Future.successful(Left(someErrorCode)))
 
         service.processDecision(validDeclarationAcceptanceDecision).futureValue shouldBe Left(someErrorCode)
       }
@@ -324,6 +346,15 @@ trait MockStoreConnector extends MockFactory {
       (mockStoreConnector.getAmendmentRejectionEnrichment _).expects(submissionId)
   }
 
+}
+
+trait MockXMLWrapper extends MockFactory {
+  val mockXMLWrapper: XMLWrapper = mock[XMLWrapper]
+
+  object MockXMLWrapper {
+    def wrapXml(correlationId: String, xml: Elem): CallHandler[Elem] =
+      (mockXMLWrapper.wrapXml(_: String, _: Elem)).expects(correlationId, xml)
+  }
 }
 
 trait MockRejectionXMLBuilder extends MockFactory {
