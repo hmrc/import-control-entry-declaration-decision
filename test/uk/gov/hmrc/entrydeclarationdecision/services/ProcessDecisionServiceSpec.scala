@@ -32,6 +32,7 @@ import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.Accepta
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.{AmendmentRejectionEnrichment, DeclarationRejectionEnrichment}
 import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
 import uk.gov.hmrc.entrydeclarationdecision.utils._
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -52,6 +53,8 @@ class ProcessDecisionServiceSpec
     with ScalaFutures {
 
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(500, Millis))
+
+  implicit val hc: HeaderCarrier = HeaderCarrier()
 
   val mockedMetrics: Metrics = new MockMetrics
 
@@ -327,7 +330,7 @@ trait MockOutcomeConnector extends MockFactory {
 
   object MockOutcomeConnector {
     def send(outcome: Outcome): CallHandler[Future[Either[ErrorCode, Unit]]] =
-      (mockOutcomeConnector.send(_: Outcome)).expects(outcome)
+      (mockOutcomeConnector.send(_: Outcome)(_: HeaderCarrier)).expects(outcome, *)
   }
 
 }
@@ -339,11 +342,13 @@ trait MockStoreConnector extends MockFactory {
     def getAcceptanceEnrichment(
       submissionId: String,
       amendment: Boolean): CallHandler[Future[Either[ErrorCode, AcceptanceEnrichment]]] =
-      (mockStoreConnector.getAcceptanceEnrichment _).expects(submissionId, amendment)
+      (mockStoreConnector
+        .getAcceptanceEnrichment(_: String, _: Boolean)(_: HeaderCarrier))
+        .expects(submissionId, amendment, *)
 
     def getAmendmentRejectionEnrichment(
       submissionId: String): CallHandler[Future[Either[ErrorCode, AmendmentRejectionEnrichment]]] =
-      (mockStoreConnector.getAmendmentRejectionEnrichment _).expects(submissionId)
+      (mockStoreConnector.getAmendmentRejectionEnrichment(_: String)(_: HeaderCarrier)).expects(submissionId, *)
   }
 
 }

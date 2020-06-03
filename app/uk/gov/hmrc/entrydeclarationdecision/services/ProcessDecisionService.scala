@@ -29,6 +29,7 @@ import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.Enrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.DeclarationRejectionEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
 import uk.gov.hmrc.entrydeclarationdecision.utils.{EventLogger, SchemaType, SchemaValidator, Timer}
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.xml.{Node, Utility}
@@ -48,7 +49,8 @@ class ProcessDecisionService @Inject()(
     extends Timer
     with EventLogger {
 
-  def processDecision[R <: DecisionResponse](decision: Decision[R]): Future[Either[ErrorCode, Unit]] =
+  def processDecision[R <: DecisionResponse](decision: Decision[R])(
+    implicit hc: HeaderCarrier): Future[Either[ErrorCode, Unit]] =
     timeFuture("Service processDecision", "processDecision.total") {
 
       val amendment = isAmendment(decision.metadata.messageType)
@@ -90,7 +92,7 @@ class ProcessDecisionService @Inject()(
   private def doProcessDecision[R <: DecisionResponse, E <: Enrichment](
     decision: Decision[R],
     xmlBuilder: XMLBuilder[R, E],
-    enricher: String => Future[Either[ErrorCode, E]]) = {
+    enricher: String => Future[Either[ErrorCode, E]])(implicit hc: HeaderCarrier) = {
 
     val (metricString, validationSchema) = decision.metadata.messageType match {
       case IE304 => ("AmendmentAcceptance", SchemaType.CC304A)
@@ -123,10 +125,8 @@ class ProcessDecisionService @Inject()(
     }
   }
 
-  private def sendOutcome[R <: DecisionResponse](
-    decision: Decision[R],
-    enrichment: Enrichment,
-    xml: Node): Future[Either[ErrorCode, Unit]] =
+  private def sendOutcome[R <: DecisionResponse](decision: Decision[R], enrichment: Enrichment, xml: Node)(
+    implicit hc: HeaderCarrier): Future[Either[ErrorCode, Unit]] =
     timeFuture("Save Outcome", "processDecision.sendOutcome") {
       val xmlString = Utility.trim(xml).toString
 

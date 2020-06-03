@@ -30,6 +30,7 @@ import uk.gov.hmrc.entrydeclarationdecision.models.decision.{Decision, DecisionR
 import uk.gov.hmrc.entrydeclarationdecision.models.{ErrorCode, ErrorResponse}
 import uk.gov.hmrc.entrydeclarationdecision.reporting.{DecisionReceived, MockReportSender, ResultSummary}
 import uk.gov.hmrc.entrydeclarationdecision.services.ProcessDecisionService
+import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -41,6 +42,8 @@ class DecisionReceiverControllerSpec
     with MockProcessDecisionService
     with MockAppConfig
     with MockReportSender {
+
+  implicit val hc: HeaderCarrier = HeaderCarrier()
 
   private val fakeRequest =
     FakeRequest("POST", "/import-control-entry-declaration-decision/import-control/entry-summary-declaration-response")
@@ -337,7 +340,7 @@ trait MockProcessDecisionService extends MockFactory {
 
   object MockProcessDecisionService {
     def processDecision[R <: DecisionResponse](decision: Decision[R]): CallHandler[Future[Either[ErrorCode, Unit]]] =
-      (mockProcessDecisionService.processDecision(_: Decision[R])).expects(decision)
+      (mockProcessDecisionService.processDecision(_: Decision[R])(_: HeaderCarrier)).expects(decision, *)
   }
 
 }
