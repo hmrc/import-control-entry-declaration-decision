@@ -22,30 +22,33 @@ import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.http.Status._
 import play.api.libs.json.Json
-import play.api.libs.ws.WSClient
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class OutcomeConnector @Inject()(ws: WSClient, appConfig: AppConfig)(implicit ec: ExecutionContext) {
+class OutcomeConnector @Inject()(client: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) {
 
   lazy val url = s"${appConfig.outcomeHost}/import-control/outcome"
 
-  def send(outcome: Outcome): Future[Either[ErrorCode, Unit]] = {
+  implicit object ResultReads extends HttpReads[Either[ErrorCode, Unit]] {
+    override def read(method: String, url: String, response: HttpResponse): Either[ErrorCode, Unit] =
+      response.status match {
+        case CREATED  => Right(())
+        case CONFLICT => Left(ErrorCode.DuplicateSubmission)
+        case _        => Left(ErrorCode.ConnectorError)
+      }
+  }
+
+  def send(outcome: Outcome)(implicit hc: HeaderCarrier): Future[Either[ErrorCode, Unit]] = {
     Logger.info(s"sending POST request to $url")
 
-    ws.url(url)
-      .post(Json.toJson(outcome))
-      .map { response =>
-        response.status match {
-          case CREATED  => Right(())
-          case CONFLICT => Left(ErrorCode.DuplicateSubmission)
-          case _        => Left(ErrorCode.ConnectorError)
-        }
-      }
+    client
+      .POST(url, Json.toJson(outcome))
       .recover {
         case e: IOException =>
           Logger.error(s"Unable to send request to $url", e)

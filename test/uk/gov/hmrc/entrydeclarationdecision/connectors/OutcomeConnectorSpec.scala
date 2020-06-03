@@ -28,7 +28,6 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
-import play.api.libs.ws.WSClient
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits, Injecting}
 import play.api.{Application, Environment, Mode}
 import play.mvc.Http.HeaderNames._
@@ -37,6 +36,8 @@ import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.MessageType
 import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -50,12 +51,14 @@ class OutcomeConnectorSpec
     with Injecting
     with MockAppConfig {
 
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+
   override lazy val app: Application = new GuiceApplicationBuilder()
     .in(Environment.simple(mode = Mode.Dev))
     .configure("metrics.enabled" -> "false")
     .build()
 
-  val ws: WSClient = inject[WSClient]
+  val httpClient: HttpClient = inject[HttpClient]
 
   private val wireMockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort())
 
@@ -71,7 +74,7 @@ class OutcomeConnectorSpec
 
   class Test {
     MockAppConfig.outcomeHost.returns(s"http://localhost:$port")
-    val connector = new OutcomeConnector(ws, mockAppConfig)
+    val connector = new OutcomeConnector(httpClient, mockAppConfig)
 
     val url = "/import-control/outcome"
 

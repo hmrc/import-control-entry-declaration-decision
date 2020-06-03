@@ -26,7 +26,6 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
-import play.api.libs.ws.WSClient
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits, Injecting}
 import play.api.{Application, Environment, Mode}
 import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
@@ -34,6 +33,8 @@ import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.AmendmentRejectionEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.utils.ResourceUtils
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -47,12 +48,14 @@ class StoreConnectorSpec
     with Injecting
     with MockAppConfig {
 
+  implicit val hc: HeaderCarrier = HeaderCarrier()
+
   override lazy val app: Application = new GuiceApplicationBuilder()
     .in(Environment.simple(mode = Mode.Dev))
     .configure("metrics.enabled" -> "false")
     .build()
 
-  val ws: WSClient = inject[WSClient]
+  val httpClient: HttpClient = inject[HttpClient]
 
   private val wireMockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort())
 
@@ -81,7 +84,7 @@ class StoreConnectorSpec
 
   class Test {
     MockAppConfig.storeHost.returns(s"http://localhost:$port")
-    val connector = new StoreConnector(ws, mockAppConfig)
+    val connector = new StoreConnector(httpClient, mockAppConfig)
 
     def stubRequest(url: String, responseStatus: Int): StubMapping =
       wireMockServer.stubFor(
