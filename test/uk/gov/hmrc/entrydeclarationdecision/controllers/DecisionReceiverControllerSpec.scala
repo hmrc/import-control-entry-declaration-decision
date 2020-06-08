@@ -339,6 +339,16 @@ class DecisionReceiverControllerSpec
       status(result)        shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.toJson(ErrorResponse.errorParse)
     }
+    "return 401" when {
+      "no authentication fails" in {
+        MockAppConfig.eisInboundBearerToken returns "XXXX"
+
+        val request = fakeRequest.withBody(validAcceptance)
+        val result  = controller.handlePost(request)
+
+        status(result) shouldBe UNAUTHORIZED
+      }
+    }
   }
 }
 
