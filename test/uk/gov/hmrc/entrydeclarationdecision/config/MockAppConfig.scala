@@ -25,6 +25,8 @@ trait MockAppConfig extends MockFactory {
   object MockAppConfig {
     def appName: CallHandler[String] = mockAppConfig.appName _ expects ()
 
+    def eisInboundBearerToken: CallHandler[String] = mockAppConfig.eisInboundBearerToken _ expects ()
+
     def eventsHost: CallHandler[String] = mockAppConfig.eventsHost _ expects ()
 
     def outcomeHost: CallHandler[String] =

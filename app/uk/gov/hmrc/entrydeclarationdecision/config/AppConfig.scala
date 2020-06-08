@@ -30,6 +30,8 @@ trait AppConfig {
 
   def graphiteHost: String
 
+  def eisInboundBearerToken: String
+
   def eventsHost: String
 
   def outcomeHost: String
@@ -51,6 +53,9 @@ class AppConfigImpl @Inject()(config: Configuration, servicesConfig: ServicesCon
   val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
 
   val graphiteHost: String = config.get[String]("microservice.metrics.graphite.host")
+
+  lazy val eisInboundBearerToken: String =
+    config.get[String]("microservice.services.import-control-entry-declaration-eis.inboundBearerToken")
 
   lazy val eventsHost: String = servicesConfig.baseUrl("import-control-entry-declaration-events")
 
