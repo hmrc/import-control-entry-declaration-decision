@@ -20,7 +20,7 @@ import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.http.Status
+import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{status, _}
 import play.api.test.{FakeRequest, Helpers}
@@ -45,8 +45,8 @@ class DecisionReceiverControllerSpec
 
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  private val fakeRequest =
-    FakeRequest("POST", "/import-control-entry-declaration-decision/import-control/entry-summary-declaration-response")
+  private val bearerToken = "bearerToken"
+  private val fakeRequest = FakeRequest().withHeaders(HeaderNames.AUTHORIZATION -> s"Bearer $bearerToken")
 
   private val controller =
     new DecisionReceiverController(
@@ -114,6 +114,7 @@ class DecisionReceiverControllerSpec
   "Post a valid acceptance message" should {
     "return a 201 Created " in {
       val request = fakeRequest.withBody(validAcceptance)
+      MockAppConfig.eisInboundBearerToken.returns(bearerToken)
       MockAppConfig.validateIncomingJson.returns(false)
       MockProcessDecisionService
         .processDecision(validAcceptance.as[Decision[Acceptance]])
@@ -130,6 +131,7 @@ class DecisionReceiverControllerSpec
   "Post a valid rejection message" should {
     "return a 201 Created " in {
       val request = fakeRequest.withBody(validRejection)
+      MockAppConfig.eisInboundBearerToken.returns(bearerToken)
       MockAppConfig.validateIncomingJson.returns(false)
       MockProcessDecisionService
         .processDecision(validRejection.as[Decision[Rejection]])
@@ -148,6 +150,7 @@ class DecisionReceiverControllerSpec
       def run(errorCode: ErrorCode, expectedStatus: Int, expectedBody: JsValue): Unit =
         s"a $errorCode error is returned from the service" in {
           val request = fakeRequest.withBody(validRejection)
+          MockAppConfig.eisInboundBearerToken.returns(bearerToken)
           MockAppConfig.validateIncomingJson.returns(false)
           MockProcessDecisionService
             .processDecision(validRejection.as[Decision[Rejection]])
@@ -202,6 +205,7 @@ class DecisionReceiverControllerSpec
                                    |}""".stripMargin)
 
       val request = fakeRequest.withBody(decision)
+      MockAppConfig.eisInboundBearerToken.returns(bearerToken)
       MockAppConfig.validateIncomingJson.returns(true)
       MockProcessDecisionService.processDecision(decision.as[Decision[Rejection]]).returns(Future.successful(Right(())))
       MockReportSender.sendReport(
@@ -239,6 +243,7 @@ class DecisionReceiverControllerSpec
                                                        |  }
                                                        |}
                                                        |""".stripMargin))
+      MockAppConfig.eisInboundBearerToken.returns(bearerToken)
       MockAppConfig.validateIncomingJson.returns(false)
       val result = controller.handlePost(request)
 
@@ -270,6 +275,7 @@ class DecisionReceiverControllerSpec
                                                        |  }
                                                        |}
                                                        |""".stripMargin))
+      MockAppConfig.eisInboundBearerToken.returns(bearerToken)
       MockAppConfig.validateIncomingJson.returns(false)
       val result = controller.handlePost(request)
 
@@ -301,7 +307,7 @@ class DecisionReceiverControllerSpec
                                                        |  }
                                                        |}
                                                        |""".stripMargin))
-
+      MockAppConfig.eisInboundBearerToken.returns(bearerToken)
       MockAppConfig.validateIncomingJson.returns(true)
       val result = controller.handlePost(request)
 
@@ -326,11 +332,22 @@ class DecisionReceiverControllerSpec
                                    |}
                                    |""".stripMargin)
 
+      MockAppConfig.eisInboundBearerToken.returns(bearerToken)
       val request = fakeRequest.withBody(decision)
       val result  = controller.handlePost(request)
 
       status(result)        shouldBe Status.BAD_REQUEST
       contentAsJson(result) shouldBe Json.toJson(ErrorResponse.errorParse)
+    }
+    "return 401" when {
+      "no authentication fails" in {
+        MockAppConfig.eisInboundBearerToken returns "XXXX"
+
+        val request = fakeRequest.withBody(validAcceptance)
+        val result  = controller.handlePost(request)
+
+        status(result) shouldBe UNAUTHORIZED
+      }
     }
   }
 }

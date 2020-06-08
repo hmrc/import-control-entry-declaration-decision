@@ -35,9 +35,9 @@ class DecisionReceiverController @Inject()(
   cc: ControllerComponents,
   service: ProcessDecisionService,
   reportSender: ReportSender)(implicit ec: ExecutionContext)
-    extends BackendController(cc) {
+    extends EisInboundAuthorisedController(cc, appConfig) {
 
-  val handlePost: Action[JsValue] = Action.async(parse.json) { implicit request =>
+  val handlePost: Action[JsValue] = authorisedAction.async(parse.json) { implicit request =>
     val model: JsResult[Decision[DecisionResponse]] = request.body.validate[Decision[DecisionResponse]]
 
     if (model.isSuccess) {
