@@ -17,6 +17,7 @@
 package uk.gov.hmrc.entrydeclarationdecision.controllers
 
 import javax.inject.{Inject, Singleton}
+import play.api.Logger
 import play.api.libs.json.{JsResult, JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
@@ -25,7 +26,6 @@ import uk.gov.hmrc.entrydeclarationdecision.models.{ErrorCode, ErrorResponse}
 import uk.gov.hmrc.entrydeclarationdecision.reporting.{DecisionReceived, ReportSender, ResultSummary}
 import uk.gov.hmrc.entrydeclarationdecision.services.ProcessDecisionService
 import uk.gov.hmrc.entrydeclarationdecision.validators.JsonSchemaValidator
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -42,7 +42,9 @@ class DecisionReceiverController @Inject()(
 
     if (model.isSuccess) {
       getValidationErrors(model.get, request.body) match {
-        case Some(errorMsg) => Future.successful(BadRequest(errorMsg))
+        case Some(errorMsg) =>
+          Logger.info(s"Decision unsuccessfully handled, BAD_REQUEST, $errorMsg")
+          Future.successful(BadRequest(errorMsg))
         case None =>
           val decision = model.get
 
@@ -66,14 +68,21 @@ class DecisionReceiverController @Inject()(
           service.processDecision(decision).map {
             case Right(()) =>
               reportSender.sendReport(report(None))
+              Logger.info("Decision successfully received and handled.")
               Created
 
             case Left(errorCode) =>
               reportSender.sendReport(report(Some(errorCode)))
               errorCode match {
-                case ErrorCode.NoSubmission        => Conflict(Json.toJson(ErrorResponse.noSubmission))
-                case ErrorCode.DuplicateSubmission => Conflict(Json.toJson(ErrorResponse.duplicate))
-                case ErrorCode.ConnectorError      => ServiceUnavailable(Json.toJson(ErrorResponse.unavailable))
+                case ErrorCode.NoSubmission =>
+                  Logger.info(s"Decision unsuccessfully handled, ${ErrorResponse.noSubmission.message}")
+                  Conflict(Json.toJson(ErrorResponse.noSubmission))
+                case ErrorCode.DuplicateSubmission =>
+                  Logger.info(s"Decision unsuccessfully handled, ${ErrorResponse.duplicate.message}")
+                  Conflict(Json.toJson(ErrorResponse.duplicate))
+                case ErrorCode.ConnectorError =>
+                  Logger.info(s"Decision unsuccessfully handled, ${ErrorResponse.unavailable.message}")
+                  ServiceUnavailable(Json.toJson(ErrorResponse.unavailable))
               }
           }
       }
