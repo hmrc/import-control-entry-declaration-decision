@@ -10,6 +10,7 @@
     "correlationId": "e"
   },
   "response": {
-    "movementReferenceNumber": "12GB12345678901230"
+    "movementReferenceNumber": "12GB12345678901230",
+    "acceptedDateTime": "2005-03-15T12:41:00Z"
   }
 }

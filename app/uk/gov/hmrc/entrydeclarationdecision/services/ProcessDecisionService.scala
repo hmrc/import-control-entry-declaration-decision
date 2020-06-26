@@ -131,7 +131,7 @@ class ProcessDecisionService @Inject()(
       val xmlString = Utility.trim(xml).toString
 
       val mrn = decision.response match {
-        case DecisionResponse.Acceptance(mrn) => Some(mrn)
+        case DecisionResponse.Acceptance(mrn, _) => Some(mrn)
         case _                                => None
       }
 

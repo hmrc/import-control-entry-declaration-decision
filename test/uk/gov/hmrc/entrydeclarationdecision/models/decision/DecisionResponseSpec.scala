@@ -24,34 +24,35 @@ import uk.gov.hmrc.play.test.UnitSpec
 class DecisionResponseSpec extends UnitSpec {
   "Json reads" must {
     "deserialize DecisionResponse.Accepted from Json" in {
-      val json = Json.parse("""
-                              |{
-                              |  "movementReferenceNumber": "someMrn"
-                              |}
-                              |""".stripMargin).as[DecisionResponse] shouldBe
-        DecisionResponse.Acceptance("someMrn")
+      Json.parse("""
+                   |{
+                   |  "movementReferenceNumber": "someMrn",
+                   |  "acceptedDateTime": "2005-03-15T12:41:00Z"
+                   |}
+                   |""".stripMargin).as[DecisionResponse] shouldBe
+        DecisionResponse.Acceptance("someMrn", ZonedDateTime.parse("2005-03-15T12:41:00Z"))
     }
 
     "deserialize DecisionResponse.Rejected from Json" in {
-      val json = Json.parse("""
-                              |{
-                              |    "functionalError": [
-                              |      {
-                              |        "errorType": "errorType1",
-                              |        "errorPointer": "errorPointer1",
-                              |        "errorReason": "reason1",
-                              |        "originalAttributeValue": "originalAttrib1"
-                              |      },
-                              |      {
-                              |        "errorType": "errorType2",
-                              |        "errorPointer": "errorPointer2",
-                              |        "errorReason": "reason2",
-                              |        "originalAttributeValue": "originalAttrib2"
-                              |      }
-                              |    ],
-                              |    "rejectionDateTime": "2020-01-13T15:22:44.000Z"
-                              |  }
-                              |""".stripMargin).as[DecisionResponse] shouldBe
+      Json.parse("""
+                   |{
+                   |    "functionalError": [
+                   |      {
+                   |        "errorType": "errorType1",
+                   |        "errorPointer": "errorPointer1",
+                   |        "errorReason": "reason1",
+                   |        "originalAttributeValue": "originalAttrib1"
+                   |      },
+                   |      {
+                   |        "errorType": "errorType2",
+                   |        "errorPointer": "errorPointer2",
+                   |        "errorReason": "reason2",
+                   |        "originalAttributeValue": "originalAttrib2"
+                   |      }
+                   |    ],
+                   |    "rejectionDateTime": "2020-01-13T15:22:44.000Z"
+                   |  }
+                   |""".stripMargin).as[DecisionResponse] shouldBe
         DecisionResponse.Rejection(
           List(
             DecisionError("errorType1", "errorPointer1", Some("reason1"), Some("originalAttrib1")),

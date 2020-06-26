@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Entry summary Declaration Response",
-  "description": "Entry summary Declaration Response",
+  "title": "Entry Summary Declaration Response v0.7",
+  "description": "Entry summary Declaration Response v0.7",
   "type": "object",
   "properties": {
     "submissionId": {"$ref": "#/definitions/submissionId"},
@@ -29,9 +29,10 @@
     "successResponse": {
       "type": "object",
       "properties": {
-        "movementReferenceNumber": {"type": "string", "minLength": 18, "maxLength": 18}
+        "movementReferenceNumber": {"type": "string", "minLength": 18, "maxLength": 18},
+        "acceptedDateTime": {"$ref": "#/definitions/dateTime"}
       },
-      "required": ["movementReferenceNumber"],
+      "required": ["movementReferenceNumber","acceptedDateTime"],
       "additionalProperties": false
     },
     "errorResponse": {

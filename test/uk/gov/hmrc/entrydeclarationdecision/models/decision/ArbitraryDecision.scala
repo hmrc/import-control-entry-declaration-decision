@@ -53,7 +53,8 @@ trait ArbitraryDecision extends PropertyCheckSupport {
   implicit val arbitraryAcceptanceDecisionResponse: Arbitrary[DecisionResponse.Acceptance] =
     Arbitrary(for {
       movementReferenceNumber <- arbitrary[String]
-    } yield DecisionResponse.Acceptance(movementReferenceNumber))
+      acceptedDateTime      <- arbitrary[ZonedDateTime]
+    } yield DecisionResponse.Acceptance(movementReferenceNumber, acceptedDateTime))
 
   implicit val arbitraryRejectionDecisionResponse: Arbitrary[DecisionResponse.Rejection] =
     Arbitrary(for {
