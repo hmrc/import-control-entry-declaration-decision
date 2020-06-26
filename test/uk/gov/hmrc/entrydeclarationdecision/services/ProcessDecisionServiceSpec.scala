@@ -88,6 +88,7 @@ class ProcessDecisionServiceSpec
   private val preparationDateTime = ZonedDateTime.parse("2020-12-31T23:59:00Z")
   private val receivedDateTime    = ZonedDateTime.parse("2020-12-31T23:59:00Z")
   private val rejectionDateTime   = ZonedDateTime.parse("2020-12-31T23:59:00Z")
+  private val acceptedDateTime    = ZonedDateTime.parse("2020-12-31T23:59:00Z")
 
   private def validOutcome(messageType: MessageType) =
     Outcome("eori", correlationId, submissionId, receivedDateTime, messageType, None, wrappedXml.toString)
@@ -127,7 +128,7 @@ class ProcessDecisionServiceSpec
       receivedDateTime,
       correlationId,
       None),
-    DecisionResponse.Acceptance("02CHPW67QLOYOB4IA8")
+    DecisionResponse.Acceptance("02CHPW67QLOYOB4IA8", acceptedDateTime)
   )
 
   private val validAmendmentAcceptanceDecision = Decision(
@@ -141,7 +142,7 @@ class ProcessDecisionServiceSpec
       receivedDateTime,
       correlationId,
       None),
-    DecisionResponse.Acceptance("02CHPW67QLOYOB4IA8")
+    DecisionResponse.Acceptance("02CHPW67QLOYOB4IA8", acceptedDateTime)
   )
 
   private val validAmendmentRejectionDecision = Decision(

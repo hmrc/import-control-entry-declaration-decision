@@ -26,7 +26,8 @@ sealed trait DecisionResponse {
 
 object DecisionResponse {
   case class Acceptance(
-    movementReferenceNumber: String
+    movementReferenceNumber: String,
+    acceptedDateTime: ZonedDateTime
   ) extends DecisionResponse {
     override def isAcceptance: Boolean = true
   }

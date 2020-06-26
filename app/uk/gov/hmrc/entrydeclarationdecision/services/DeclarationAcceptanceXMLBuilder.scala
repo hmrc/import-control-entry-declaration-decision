@@ -80,7 +80,7 @@ class DeclarationAcceptanceXMLBuilder extends XMLBuilder[Acceptance, AcceptanceE
 
       {for (value <- enrichment.payload.itinerary.commercialReferenceNumber.toSeq) yield <ComRefNumHEA>{ value }</ComRefNumHEA>}
       {for (value <- enrichment.payload.itinerary.conveyanceReference.toSeq) yield <ConRefNumHEA>{ value }</ConRefNumHEA>}
-      <DecRegDatTimHEA115>{ getDateTimeInXSDFormat(decision.metadata.receivedDateTime) }</DecRegDatTimHEA115>
+      <DecRegDatTimHEA115>{ getDateTimeInXSDFormat(decision.response.acceptedDateTime) }</DecRegDatTimHEA115>
     </HEAHEA>
   //@formatter:on
 

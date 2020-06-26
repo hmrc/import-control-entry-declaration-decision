@@ -66,7 +66,7 @@ class AmendmentAcceptanceXMLBuilder extends XMLBuilder[Acceptance, AcceptanceEnr
        } yield <NatOfMeaOfTraCroHEA87>{ value }</NatOfMeaOfTraCroHEA87>}
       {for (value <- enrichment.payload.itinerary.commercialReferenceNumber.toSeq) yield <ComRefNumHEA>{ value }</ComRefNumHEA>}
       {for (value <- enrichment.payload.itinerary.conveyanceReference.toSeq) yield <ConRefNumHEA>{ value }</ConRefNumHEA>}
-      <AmeAccDatTimHEA111>{ getDateTimeInXSDFormat(decision.metadata.receivedDateTime) }</AmeAccDatTimHEA111>
+      <AmeAccDatTimHEA111>{ getDateTimeInXSDFormat(decision.response.acceptedDateTime) }</AmeAccDatTimHEA111>
       {for(value <- enrichment.payload.amendment.toSeq) yield <DatTimAmeHEA113>{ getDateTimeInXSDFormat(value.dateTime) }</DatTimAmeHEA113>}
     </HEAHEA>
   //@formatter:on

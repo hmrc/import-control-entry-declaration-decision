@@ -85,7 +85,8 @@ class DecisionReceiverControllerSpec
                                                |    "receivedDateTime": "2020-12-31T23:59:00Z"
                                                |  },
                                                |  "response": {
-                                               |    "movementReferenceNumber": "12345678"
+                                               |    "movementReferenceNumber": "12345678",
+                                               |    "acceptedDateTime": "2005-03-15T12:41:00Z"
                                                |  }
                                                |}""".stripMargin)
 
@@ -239,7 +240,8 @@ class DecisionReceiverControllerSpec
                                                        |    "receivedDateTime": "2020-12-31T23:59:00.000Z"
                                                        |  },
                                                        |  "response": {
-                                                       |   "movementReferenceNumber": "oops!"
+                                                       |   "movementReferenceNumber": "oops!",
+                                                       |   "acceptedDateTime": "2005-03-15T12:41:00Z"
                                                        |  }
                                                        |}
                                                        |""".stripMargin))
