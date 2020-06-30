@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.entrydeclarationdecision.reporting
+package uk.gov.hmrc.entrydeclarationdecision.logging
 
-import org.scalamock.scalatest.MockFactory
-import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
-import uk.gov.hmrc.http.HeaderCarrier
-
-trait MockReportSender extends MockFactory {
-  val mockReportSender: ReportSender = mock[ReportSender]
-
-  object MockReportSender {
-    def sendReport[R](report: R): Unit =
-      (mockReportSender
-        .sendReport(_: R)(_: EventSources[R], _: HeaderCarrier, _: LoggingContext)) expects (report, *, *, *)
+case class LoggingContext(
+  eori: Option[String]          = None,
+  correlationId: Option[String] = None,
+  submissionId: Option[String]  = None) {
+  private[logging] lazy val context: String = {
+    Seq(
+      eori.map(v => s"eori=$v"),
+      correlationId.map(v => s"correlationId=$v"),
+      submissionId.map(v => s"submissionId=$v")).flatten.mkString(" ")
   }
+}
 
+object LoggingContext {
+  def apply(eori: String, correlationId: String, submissionId: String): LoggingContext =
+    LoggingContext(Some(eori), Some(correlationId), Some(submissionId))
 }

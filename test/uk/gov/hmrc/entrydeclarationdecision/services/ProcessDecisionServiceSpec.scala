@@ -26,6 +26,7 @@ import org.scalatest.time.{Millis, Span}
 import play.api.libs.json.Json
 import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
 import uk.gov.hmrc.entrydeclarationdecision.connectors.{OutcomeConnector, StoreConnector}
+import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.decision._
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
@@ -54,7 +55,8 @@ class ProcessDecisionServiceSpec
 
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(500, Millis))
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val hc: HeaderCarrier  = HeaderCarrier()
+  implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId")
 
   val mockedMetrics: Metrics = new MockMetrics
 
@@ -331,7 +333,7 @@ trait MockOutcomeConnector extends MockFactory {
 
   object MockOutcomeConnector {
     def send(outcome: Outcome): CallHandler[Future[Either[ErrorCode, Unit]]] =
-      (mockOutcomeConnector.send(_: Outcome)(_: HeaderCarrier)).expects(outcome, *)
+      (mockOutcomeConnector.send(_: Outcome)(_: HeaderCarrier, _: LoggingContext)).expects(outcome, *, *)
   }
 
 }
@@ -344,12 +346,14 @@ trait MockStoreConnector extends MockFactory {
       submissionId: String,
       amendment: Boolean): CallHandler[Future[Either[ErrorCode, AcceptanceEnrichment]]] =
       (mockStoreConnector
-        .getAcceptanceEnrichment(_: String, _: Boolean)(_: HeaderCarrier))
-        .expects(submissionId, amendment, *)
+        .getAcceptanceEnrichment(_: String, _: Boolean)(_: HeaderCarrier, _: LoggingContext))
+        .expects(submissionId, amendment, *, *)
 
     def getAmendmentRejectionEnrichment(
       submissionId: String): CallHandler[Future[Either[ErrorCode, AmendmentRejectionEnrichment]]] =
-      (mockStoreConnector.getAmendmentRejectionEnrichment(_: String)(_: HeaderCarrier)).expects(submissionId, *)
+      (mockStoreConnector
+        .getAmendmentRejectionEnrichment(_: String)(_: HeaderCarrier, _: LoggingContext))
+        .expects(submissionId, *, *)
   }
 
 }

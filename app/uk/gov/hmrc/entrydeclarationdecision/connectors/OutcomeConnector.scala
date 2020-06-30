@@ -19,10 +19,10 @@ package uk.gov.hmrc.entrydeclarationdecision.connectors
 import java.io.IOException
 
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
 import play.api.http.Status._
 import play.api.libs.json.Json
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
+import uk.gov.hmrc.entrydeclarationdecision.logging.{ContextLogger, LoggingContext}
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
@@ -35,23 +35,30 @@ class OutcomeConnector @Inject()(client: HttpClient, appConfig: AppConfig)(impli
 
   lazy val url = s"${appConfig.outcomeHost}/import-control/outcome"
 
-  implicit object ResultReads extends HttpReads[Either[ErrorCode, Unit]] {
-    override def read(method: String, url: String, response: HttpResponse): Either[ErrorCode, Unit] =
-      response.status match {
-        case CREATED  => Right(())
-        case CONFLICT => Left(ErrorCode.DuplicateSubmission)
-        case _        => Left(ErrorCode.ConnectorError)
-      }
-  }
+  implicit def httpReads(implicit lc: LoggingContext): HttpReads[Either[ErrorCode, Unit]] =
+    new HttpReads[Either[ErrorCode, Unit]] {
+      override def read(method: String, url: String, response: HttpResponse): Either[ErrorCode, Unit] =
+        response.status match {
+          case CREATED =>
+            ContextLogger.info("Outcome sent")
+            Right(())
+          case CONFLICT =>
+            ContextLogger.info("Duplicate outcome")
+            Left(ErrorCode.DuplicateSubmission)
+          case status: Int =>
+            ContextLogger.warn(s"Unable to send outcome. Got status code $status")
+            Left(ErrorCode.ConnectorError)
+        }
+    }
 
-  def send(outcome: Outcome)(implicit hc: HeaderCarrier): Future[Either[ErrorCode, Unit]] = {
-    Logger.info(s"sending POST request to $url")
+  def send(outcome: Outcome)(implicit hc: HeaderCarrier, lc: LoggingContext): Future[Either[ErrorCode, Unit]] = {
+    ContextLogger.info(s"sending POST request to $url")
 
     client
       .POST(url, Json.toJson(outcome))
       .recover {
         case e: IOException =>
-          Logger.error(s"Unable to send request to $url", e)
+          ContextLogger.error(s"Unable to send request to $url", e)
           Left(ErrorCode.ConnectorError)
       }
   }

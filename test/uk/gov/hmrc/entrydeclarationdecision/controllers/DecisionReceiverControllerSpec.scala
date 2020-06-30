@@ -25,6 +25,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{status, _}
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
+import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.DecisionResponse.{Acceptance, Rejection}
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.{Decision, DecisionResponse, MessageType}
 import uk.gov.hmrc.entrydeclarationdecision.models.{ErrorCode, ErrorResponse}
@@ -359,7 +360,9 @@ trait MockProcessDecisionService extends MockFactory {
 
   object MockProcessDecisionService {
     def processDecision[R <: DecisionResponse](decision: Decision[R]): CallHandler[Future[Either[ErrorCode, Unit]]] =
-      (mockProcessDecisionService.processDecision(_: Decision[R])(_: HeaderCarrier)).expects(decision, *)
+      (mockProcessDecisionService
+        .processDecision(_: Decision[R])(_: HeaderCarrier, _: LoggingContext))
+        .expects(decision, *, *)
   }
 
 }

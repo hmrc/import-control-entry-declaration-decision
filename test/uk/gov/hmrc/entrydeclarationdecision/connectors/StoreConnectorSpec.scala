@@ -29,6 +29,7 @@ import play.api.libs.json.Json
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits, Injecting}
 import play.api.{Application, Environment, Mode}
 import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
+import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.AmendmentRejectionEnrichment
@@ -56,6 +57,8 @@ class StoreConnectorSpec
     .build()
 
   val httpClient: HttpClient = inject[HttpClient]
+
+  implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId")
 
   private val wireMockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort())
 

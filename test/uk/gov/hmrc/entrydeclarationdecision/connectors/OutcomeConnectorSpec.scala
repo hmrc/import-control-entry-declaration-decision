@@ -33,6 +33,7 @@ import play.api.{Application, Environment, Mode}
 import play.mvc.Http.HeaderNames._
 import play.mvc.Http.MimeTypes
 import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
+import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.MessageType
 import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
@@ -59,6 +60,8 @@ class OutcomeConnectorSpec
     .build()
 
   val httpClient: HttpClient = inject[HttpClient]
+
+  implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId")
 
   private val wireMockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort())
 
