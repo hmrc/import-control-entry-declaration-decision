@@ -61,7 +61,7 @@ class OutcomeConnectorSpec
 
   val httpClient: HttpClient = inject[HttpClient]
 
-  implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId")
+  implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 
   private val wireMockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort())
 

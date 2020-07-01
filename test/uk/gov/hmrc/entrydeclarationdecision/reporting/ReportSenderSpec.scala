@@ -44,7 +44,7 @@ class ReportSenderSpec extends UnitSpec with MockAuditHandler with MockEventConn
   val auditEvent: AuditEvent = AuditEvent("type", "trans", JsObject.empty)
 
   implicit val hc: HeaderCarrier  = HeaderCarrier()
-  implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId")
+  implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 
   val mockedMetrics: Metrics = new MockMetrics
 

@@ -56,7 +56,7 @@ class ProcessDecisionServiceSpec
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(500, Millis))
 
   implicit val hc: HeaderCarrier  = HeaderCarrier()
-  implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId")
+  implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 
   val mockedMetrics: Metrics = new MockMetrics
 

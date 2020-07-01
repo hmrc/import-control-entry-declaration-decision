@@ -42,9 +42,11 @@ class DecisionReceiverController @Inject()(
     request.body.validate[Decision[DecisionResponse]] match {
       case JsSuccess(decision, _) =>
         implicit val lc: LoggingContext = LoggingContext(
-          eori          = decision.metadata.senderEORI,
-          correlationId = decision.metadata.correlationId,
-          submissionId  = decision.submissionId)
+          eori                    = decision.metadata.senderEORI,
+          correlationId           = decision.metadata.correlationId,
+          submissionId            = decision.submissionId,
+          movementReferenceNumber = decision.movementReferenceNumber
+        )
 
         ContextLogger.info("Decision received")
 

@@ -22,7 +22,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 class JsonSchemaValidatorSpec extends UnitSpec {
 
-  implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId")
+  implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 
   "JsonSchemaValidator" should {
     "return true " when {
