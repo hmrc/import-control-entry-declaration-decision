@@ -20,12 +20,12 @@ import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsResult, JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
+import uk.gov.hmrc.entrydeclarationdecision.logging.{ContextLogger, LoggingContext}
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.{Decision, DecisionResponse}
 import uk.gov.hmrc.entrydeclarationdecision.models.{ErrorCode, ErrorResponse}
 import uk.gov.hmrc.entrydeclarationdecision.reporting.{DecisionReceived, ReportSender, ResultSummary}
 import uk.gov.hmrc.entrydeclarationdecision.services.ProcessDecisionService
 import uk.gov.hmrc.entrydeclarationdecision.validators.JsonSchemaValidator
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -45,6 +45,13 @@ class DecisionReceiverController @Inject()(
         case Some(errorMsg) => Future.successful(BadRequest(errorMsg))
         case None =>
           val decision = model.get
+
+          implicit val lc: LoggingContext = LoggingContext(
+            eori          = decision.metadata.senderEORI,
+            correlationId = decision.metadata.correlationId,
+            submissionId  = decision.submissionId)
+
+          ContextLogger.info("Decision received")
 
           def report(failure: Option[ErrorCode]) = {
             val resultSummary: ResultSummary = decision.response match {

@@ -31,6 +31,7 @@ import play.api.test.{DefaultAwaitTimeout, FutureAwaits, Injecting}
 import play.api.{Application, Environment, Mode}
 import play.mvc.Http.Status.{BAD_REQUEST, CREATED}
 import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
+import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.MessageType
 import uk.gov.hmrc.entrydeclarationdecision.utils.MockPagerDutyLogger
 import uk.gov.hmrc.http.HeaderCarrier
@@ -59,6 +60,7 @@ class EventConnectorSpec
   implicit val hc: HeaderCarrier    = HeaderCarrier()
   implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val request: Request     = Request(0L)
+  implicit val lc: LoggingContext   = LoggingContext("eori", "corrId", "subId")
 
   private val wireMockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort())
 
