@@ -40,7 +40,7 @@ class OutcomeConnector @Inject()(client: HttpClient, appConfig: AppConfig)(impli
       override def read(method: String, url: String, response: HttpResponse): Either[ErrorCode, Unit] =
         response.status match {
           case CREATED =>
-            ContextLogger.info("Outcome sent")
+            ContextLogger.info("Outcome sent successfully")
             Right(())
           case CONFLICT =>
             ContextLogger.info("Duplicate outcome")
