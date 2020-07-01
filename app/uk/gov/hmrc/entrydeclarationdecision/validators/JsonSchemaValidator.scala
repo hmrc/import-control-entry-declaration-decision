@@ -21,8 +21,8 @@ import java.net.URL
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import com.github.fge.jsonschema.core.report.ProcessingReport
 import com.github.fge.jsonschema.main.{JsonSchemaFactory, JsonValidator}
-import play.Logger
 import play.api.libs.json.JsValue
+import uk.gov.hmrc.entrydeclarationdecision.logging.{ContextLogger, LoggingContext}
 
 object JsonSchemaValidator {
 
@@ -30,19 +30,19 @@ object JsonSchemaValidator {
 
   def validateJSONAgainstSchema(
     inputDoc: JsValue,
-    schemaDoc: String = "jsonSchemas/EntrySummaryDeclarationResponse.json"): Boolean =
+    schemaDoc: String = "jsonSchemas/EntrySummaryDeclarationResponse.json")(implicit lc: LoggingContext): Boolean =
     try {
       val mapper: ObjectMapper     = new ObjectMapper()
       val inputJson: JsonNode      = mapper.readTree(inputDoc.toString())
       val jsonSchema: JsonNode     = mapper.readTree(url(schemaDoc))
       val validator: JsonValidator = factory.getValidator
       val report: ProcessingReport = validator.validate(jsonSchema, inputJson)
-      if (!report.isSuccess) Logger.error(s"Failed to validate $inputDoc and $report")
+      if (!report.isSuccess) ContextLogger.error(s"Failed to validate $inputDoc and $report")
 
       report.isSuccess
     } catch {
       case e: Exception =>
-        Logger.error(s"Failed to validate $inputDoc", e)
+        ContextLogger.error(s"Failed to validate $inputDoc", e)
         false
     }
 

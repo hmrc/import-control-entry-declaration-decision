@@ -21,6 +21,12 @@ import play.api.libs.json.{Json, Reads}
 case class Decision[R <: DecisionResponse](submissionId: String, metadata: DecisionMetadata, response: R) {
   def withResponse[R2 <: DecisionResponse](response: R2): Decision[R2] =
     copy(response = response)
+
+  def movementReferenceNumber: Option[String] =
+    response match {
+      case DecisionResponse.Acceptance(mrn, _) => Some(mrn)
+      case _: DecisionResponse.Rejection       => None
+    }
 }
 
 object Decision {

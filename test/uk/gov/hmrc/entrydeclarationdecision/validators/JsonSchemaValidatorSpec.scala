@@ -17,9 +17,12 @@
 package uk.gov.hmrc.entrydeclarationdecision.validators
 
 import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 import uk.gov.hmrc.play.test.UnitSpec
 
 class JsonSchemaValidatorSpec extends UnitSpec {
+
+  implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 
   "JsonSchemaValidator" should {
     "return true " when {

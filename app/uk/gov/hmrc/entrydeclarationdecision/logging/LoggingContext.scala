@@ -17,18 +17,25 @@
 package uk.gov.hmrc.entrydeclarationdecision.logging
 
 case class LoggingContext(
-  eori: Option[String]          = None,
-  correlationId: Option[String] = None,
-  submissionId: Option[String]  = None) {
+  eori: Option[String]                    = None,
+  correlationId: Option[String]           = None,
+  submissionId: Option[String]            = None,
+  movementReferenceNumber: Option[String] = None) {
   private[logging] lazy val context: String = {
     Seq(
       eori.map(v => s"eori=$v"),
       correlationId.map(v => s"correlationId=$v"),
-      submissionId.map(v => s"submissionId=$v")).flatten.mkString(" ")
+      submissionId.map(v => s"submissionId=$v"),
+      movementReferenceNumber.map(v => s"movementReferenceNumber=$v")
+    ).flatten.mkString(" ")
   }
 }
 
 object LoggingContext {
-  def apply(eori: String, correlationId: String, submissionId: String): LoggingContext =
-    LoggingContext(Some(eori), Some(correlationId), Some(submissionId))
+  def apply(
+    eori: String,
+    correlationId: String,
+    submissionId: String,
+    movementReferenceNumber: Option[String]): LoggingContext =
+    LoggingContext(Some(eori), Some(correlationId), Some(submissionId), movementReferenceNumber)
 }

@@ -17,7 +17,8 @@
 package uk.gov.hmrc.entrydeclarationdecision.controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.libs.json.{JsResult, JsValue, Json}
+import play.api.Logger
+import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
 import uk.gov.hmrc.entrydeclarationdecision.logging.{ContextLogger, LoggingContext}
@@ -38,58 +39,60 @@ class DecisionReceiverController @Inject()(
     extends EisInboundAuthorisedController(cc, appConfig) {
 
   val handlePost: Action[JsValue] = authorisedAction.async(parse.json) { implicit request =>
-    val model: JsResult[Decision[DecisionResponse]] = request.body.validate[Decision[DecisionResponse]]
+    request.body.validate[Decision[DecisionResponse]] match {
+      case JsSuccess(decision, _) =>
+        implicit val lc: LoggingContext = LoggingContext(
+          eori                    = decision.metadata.senderEORI,
+          correlationId           = decision.metadata.correlationId,
+          submissionId            = decision.submissionId,
+          movementReferenceNumber = decision.movementReferenceNumber
+        )
 
-    if (model.isSuccess) {
-      getValidationErrors(model.get, request.body) match {
-        case Some(errorMsg) => Future.successful(BadRequest(errorMsg))
-        case None =>
-          val decision = model.get
+        ContextLogger.info("Decision received")
 
-          implicit val lc: LoggingContext = LoggingContext(
-            eori          = decision.metadata.senderEORI,
-            correlationId = decision.metadata.correlationId,
-            submissionId  = decision.submissionId)
+        getValidationErrors(decision, request.body) match {
+          case Some(errorMsg) => Future.successful(BadRequest(errorMsg))
+          case None =>
+            def report(failure: Option[ErrorCode]) = {
+              val resultSummary: ResultSummary = decision.response match {
+                case _: DecisionResponse.Acceptance      => ResultSummary.Accepted
+                case DecisionResponse.Rejection(errs, _) => ResultSummary.Rejected(errs.size)
+              }
 
-          ContextLogger.info("Decision received")
-
-          def report(failure: Option[ErrorCode]) = {
-            val resultSummary: ResultSummary = decision.response match {
-              case _: DecisionResponse.Acceptance      => ResultSummary.Accepted
-              case DecisionResponse.Rejection(errs, _) => ResultSummary.Rejected(errs.size)
+              DecisionReceived(
+                eori          = decision.metadata.senderEORI,
+                correlationId = decision.metadata.correlationId,
+                submissionId  = decision.submissionId,
+                decision.metadata.messageType,
+                request.body,
+                resultSummary,
+                failure
+              )
             }
 
-            DecisionReceived(
-              eori          = decision.metadata.senderEORI,
-              correlationId = decision.metadata.correlationId,
-              submissionId  = decision.submissionId,
-              decision.metadata.messageType,
-              request.body,
-              resultSummary,
-              failure
-            )
-          }
+            service.processDecision(decision).map {
+              case Right(()) =>
+                reportSender.sendReport(report(None))
+                Created
 
-          service.processDecision(decision).map {
-            case Right(()) =>
-              reportSender.sendReport(report(None))
-              Created
+              case Left(errorCode) =>
+                reportSender.sendReport(report(Some(errorCode)))
+                errorCode match {
+                  case ErrorCode.NoSubmission        => Conflict(Json.toJson(ErrorResponse.noSubmission))
+                  case ErrorCode.DuplicateSubmission => Conflict(Json.toJson(ErrorResponse.duplicate))
+                  case ErrorCode.ConnectorError      => ServiceUnavailable(Json.toJson(ErrorResponse.unavailable))
+                }
+            }
+        }
 
-            case Left(errorCode) =>
-              reportSender.sendReport(report(Some(errorCode)))
-              errorCode match {
-                case ErrorCode.NoSubmission        => Conflict(Json.toJson(ErrorResponse.noSubmission))
-                case ErrorCode.DuplicateSubmission => Conflict(Json.toJson(ErrorResponse.duplicate))
-                case ErrorCode.ConnectorError      => ServiceUnavailable(Json.toJson(ErrorResponse.unavailable))
-              }
-          }
-      }
-    } else {
-      Future.successful(BadRequest(Json.toJson(ErrorResponse.errorParse)).as("application/json"))
+      case JsError(errs) =>
+        Logger.error(s"Unable to parse decision payload: $errs")
+        Future.successful(BadRequest(Json.toJson(ErrorResponse.errorParse)).as("application/json"))
     }
   }
 
-  private def getValidationErrors[R <: DecisionResponse](decision: Decision[R], json: JsValue): Option[JsValue] =
+  private def getValidationErrors[R <: DecisionResponse](decision: Decision[R], json: JsValue)(
+    implicit lc: LoggingContext): Option[JsValue] =
     if (appConfig.validateIncomingJson) {
       if (!JsonSchemaValidator.validateJSONAgainstSchema(json)) {
         Some(Json.toJson(ErrorResponse.errorSchema))
