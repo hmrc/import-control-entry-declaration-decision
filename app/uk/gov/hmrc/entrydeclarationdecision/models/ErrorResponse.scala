@@ -25,8 +25,6 @@ object ErrorResponse {
 
   val noSubmission: ErrorResponse = ErrorResponse("NO_SUBMISSION", "Unable to find original submission in store")
 
-  val duplicate: ErrorResponse = ErrorResponse("DUPLICATE", "Duplicate")
-
   val unavailable: ErrorResponse = ErrorResponse("TEMPORARILY_UNAVAILABLE", "Temporarily unavailable")
 
   val errorMutualExclusive: ErrorResponse =

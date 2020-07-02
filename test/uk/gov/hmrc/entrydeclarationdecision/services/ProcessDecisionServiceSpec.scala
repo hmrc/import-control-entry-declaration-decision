@@ -282,7 +282,7 @@ class ProcessDecisionServiceSpec
 
     "return the error code from the connector" when {
       // WLOG
-      val someErrorCode = ErrorCode.DuplicateSubmission
+      val someErrorCode = ErrorCode.NoSubmission
 
       "the rejection outcome cannot be saved" in {
         val decision = validDeclarationRejectionDecision

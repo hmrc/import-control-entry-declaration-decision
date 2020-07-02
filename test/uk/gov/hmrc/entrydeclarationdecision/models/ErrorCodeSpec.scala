@@ -30,13 +30,6 @@ class ErrorCodeSpec extends UnitSpec {
                      |}
                      |""".stripMargin)
 
-      Json.toJson(ErrorCode.DuplicateSubmission) shouldBe
-        Json.parse("""
-                     |{
-                     |  "type": "DUPLICATE_SUBMISSION"
-                     |}
-                     |""".stripMargin)
-
       Json.toJson(ErrorCode.ConnectorError) shouldBe
         Json.parse("""
                      |{

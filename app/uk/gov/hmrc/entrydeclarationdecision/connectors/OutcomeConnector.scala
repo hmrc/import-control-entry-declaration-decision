@@ -42,9 +42,6 @@ class OutcomeConnector @Inject()(client: HttpClient, appConfig: AppConfig)(impli
           case CREATED =>
             ContextLogger.info("Outcome sent successfully")
             Right(())
-          case CONFLICT =>
-            ContextLogger.info("Duplicate outcome")
-            Left(ErrorCode.DuplicateSubmission)
           case status: Int =>
             ContextLogger.warn(s"Unable to send outcome. Got status code $status")
             Left(ErrorCode.ConnectorError)

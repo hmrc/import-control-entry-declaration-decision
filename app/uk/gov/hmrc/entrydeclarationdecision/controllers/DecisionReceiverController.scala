@@ -79,7 +79,6 @@ class DecisionReceiverController @Inject()(
                 reportSender.sendReport(report(Some(errorCode)))
                 errorCode match {
                   case ErrorCode.NoSubmission        => Conflict(Json.toJson(ErrorResponse.noSubmission))
-                  case ErrorCode.DuplicateSubmission => Conflict(Json.toJson(ErrorResponse.duplicate))
                   case ErrorCode.ConnectorError      => ServiceUnavailable(Json.toJson(ErrorResponse.unavailable))
                 }
             }
