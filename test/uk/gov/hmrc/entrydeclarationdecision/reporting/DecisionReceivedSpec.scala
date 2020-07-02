@@ -86,7 +86,7 @@ class DecisionReceivedSpec extends UnitSpec {
 
       "processing errors occur" in {
         val event = implicitly[EventSources[DecisionReceived]]
-          .eventFor(clock, report(ResultSummary.Accepted, Some(ErrorCode.DuplicateSubmission)))
+          .eventFor(clock, report(ResultSummary.Accepted, Some(ErrorCode.NoSubmission)))
           .get
 
         Json.toJson(event) shouldBe
@@ -103,7 +103,7 @@ class DecisionReceivedSpec extends UnitSpec {
                         |         "type": "ACCEPTED"
                         |       },
                         |       "failure": {
-                        |         "type": "DUPLICATE_SUBMISSION"
+                        |         "type": "NO_SUBMISSION"
                         |       }
                         |    }
                         |}

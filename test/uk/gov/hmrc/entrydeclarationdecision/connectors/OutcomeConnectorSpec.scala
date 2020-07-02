@@ -115,15 +115,6 @@ class OutcomeConnectorSpec
       }
     }
 
-    "outcome responds 409 Conflict" must {
-      "return Left with ErrorCode.DuplicateSubmission" in new Test {
-        stubRequest(CONFLICT)
-
-        val result: Either[ErrorCode, Unit] = await(connector.send(outcome))
-        result shouldBe Left(ErrorCode.DuplicateSubmission)
-      }
-    }
-
     "outcome responds 4xx" must {
       "return Left with ErrorCode.ConnectorError" in new Test {
         stubRequest(BAD_REQUEST)

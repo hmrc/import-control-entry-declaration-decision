@@ -169,7 +169,6 @@ class DecisionReceiverControllerSpec
 
       val input = Seq(
         (ErrorCode.ConnectorError, SERVICE_UNAVAILABLE, Json.toJson(ErrorResponse.unavailable)),
-        (ErrorCode.DuplicateSubmission, CONFLICT, Json.toJson(ErrorResponse.duplicate)),
         (ErrorCode.NoSubmission, CONFLICT, Json.toJson(ErrorResponse.noSubmission))
       )
 

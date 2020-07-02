@@ -24,13 +24,10 @@ object ErrorCode {
 
   case object NoSubmission extends ErrorCode
 
-  case object DuplicateSubmission extends ErrorCode
-
   case object ConnectorError extends ErrorCode
 
   implicit val writes: Writes[ErrorCode] = Writes {
     case NoSubmission        => JsObject(Seq("type" -> JsString("NO_SUBMISSION")))
-    case DuplicateSubmission => JsObject(Seq("type" -> JsString("DUPLICATE_SUBMISSION")))
     case ConnectorError      => JsObject(Seq("type" -> JsString("CONNECTOR_ERROR")))
   }
 }
