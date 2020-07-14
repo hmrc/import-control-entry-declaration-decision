@@ -114,7 +114,7 @@ class DecisionReceivedSpec extends UnitSpec {
     "have the correct associated audit event" in {
       val event = implicitly[EventSources[DecisionReceived]].auditEventFor(report(ResultSummary.Accepted, None)).get
 
-      event.auditType       shouldBe "decisionReceived"
+      event.auditType       shouldBe "DecisionReceived"
       event.transactionName shouldBe "ENS decision received from EIS"
 
       Json.toJson(event.detail) shouldBe

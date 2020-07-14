@@ -62,7 +62,7 @@ object DecisionReceived {
     override def auditEventFor(report: DecisionReceived): Option[AuditEvent] = {
       import report._
       val auditEvent = AuditEvent(
-        auditType       = "decisionReceived",
+        auditType       = "DecisionReceived",
         transactionName = "ENS decision received from EIS",
         JsObject(Seq("eori" -> JsString(eori), "correlationId" -> JsString(correlationId), "decisionBody" -> body))
       )
