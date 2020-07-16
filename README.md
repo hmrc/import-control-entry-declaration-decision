@@ -2,7 +2,8 @@
 # Import Control Entry Declaration Decision
 
 The Import Control Entry Declaration Decision responsibilities:
-- receive JSON Decisions from C&IT
+- receive JSON decisions from C&IT
+- transform the decision to XML and send to Outcome microservice
 
 ## Development Setup
 - Run locally: `sbt run` which runs on port `9816` by default
@@ -12,9 +13,9 @@ The Import Control Entry Declaration Decision responsibilities:
 
 ## API
 
-|Path prefixed by `/import-control-entry-declaration-decision` | Supported Methods | Type | Description |
-| -------------------------------------------------------------| ----------------- | -----|----------- |
-|``` /import-control/entry-summary-declaration-response```     |        POST       | Internal | Endpoint for C&IT to return a decision for an ENS submission. |
+|Path | Supported Methods | Type | Description |
+| --------------------------------------------------------| -----| ---------| ---------|
+|```/import-control/entry-summary-declaration-response``` | POST | Internal | Endpoint for C&IT to return a decision for an ENS submission. |
 
 ## License
 
