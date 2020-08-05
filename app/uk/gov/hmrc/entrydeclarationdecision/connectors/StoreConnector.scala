@@ -24,8 +24,8 @@ import uk.gov.hmrc.entrydeclarationdecision.logging.{ContextLogger, LoggingConte
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.AmendmentRejectionEnrichment
-import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -51,26 +51,23 @@ class StoreConnector @Inject()(client: HttpClient, appConfig: AppConfig)(implici
     getEnrichment[AmendmentRejectionEnrichment](url)
   }
 
-  implicit private def httpReads[E: Reads](implicit lc: LoggingContext): HttpReads[Either[ErrorCode, E]] =
-    HttpReads[HttpResponse].map(response =>
-      response.status match {
-          case OK =>
-            ContextLogger.info("Got enrichment")
-            Right(response.json.as[E])
-          case NOT_FOUND =>
-            ContextLogger.info("Enrichment not found")
-            Left(ErrorCode.NoSubmission)
-          case status: Int =>
-            ContextLogger.warn(s"Unable to get enrichment. Got status code $status")
-            Left(ErrorCode.ConnectorError)
-        })
-
   private def getEnrichment[E: Reads](
     url: String)(implicit hc: HeaderCarrier, lc: LoggingContext): Future[Either[ErrorCode, E]] = {
     ContextLogger.info(s"sending GET request to $url")
 
     client
-      .GET[Either[ErrorCode, E]](url)
+      .GET[HttpResponse](url).map(response =>
+      response.status match {
+        case OK =>
+          ContextLogger.info("Got enrichment")
+          Right(response.json.as[E])
+        case NOT_FOUND =>
+          ContextLogger.info("Enrichment not found")
+          Left(ErrorCode.NoSubmission)
+        case status: Int =>
+          ContextLogger.warn(s"Unable to get enrichment. Got status code $status")
+          Left(ErrorCode.ConnectorError)
+      })
       .recover {
         case NonFatal(e) =>
           ContextLogger.error(s"Unable to send request to $url", e)
