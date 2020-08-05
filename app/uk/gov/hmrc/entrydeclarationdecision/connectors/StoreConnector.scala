@@ -25,6 +25,7 @@ import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.AmendmentRejectionEnrichment
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -37,8 +38,7 @@ class StoreConnector @Inject()(client: HttpClient, appConfig: AppConfig)(implici
     implicit hc: HeaderCarrier,
     lc: LoggingContext): Future[Either[ErrorCode, AcceptanceEnrichment]] = {
     val amendmentParam = if (amendment) "amendment" else "declaration"
-    val url =
-      s"${appConfig.storeHost}/import-control/$amendmentParam/acceptance-enrichment/$submissionId"
+    val url = s"${appConfig.storeHost}/import-control/$amendmentParam/acceptance-enrichment/$submissionId"
 
     getEnrichment[AcceptanceEnrichment](url)
   }
@@ -46,16 +46,14 @@ class StoreConnector @Inject()(client: HttpClient, appConfig: AppConfig)(implici
   def getAmendmentRejectionEnrichment(submissionId: String)(
     implicit hc: HeaderCarrier,
     lc: LoggingContext): Future[Either[ErrorCode, AmendmentRejectionEnrichment]] = {
-    val url =
-      s"${appConfig.storeHost}/import-control/amendment/rejection-enrichment/$submissionId"
+    val url = s"${appConfig.storeHost}/import-control/amendment/rejection-enrichment/$submissionId"
 
     getEnrichment[AmendmentRejectionEnrichment](url)
   }
 
   implicit private def httpReads[E: Reads](implicit lc: LoggingContext): HttpReads[Either[ErrorCode, E]] =
-    new HttpReads[Either[ErrorCode, E]] {
-      override def read(method: String, url: String, response: HttpResponse): Either[ErrorCode, E] =
-        response.status match {
+    HttpReads[HttpResponse].map(response =>
+      response.status match {
           case OK =>
             ContextLogger.info("Got enrichment")
             Right(response.json.as[E])
@@ -65,15 +63,14 @@ class StoreConnector @Inject()(client: HttpClient, appConfig: AppConfig)(implici
           case status: Int =>
             ContextLogger.warn(s"Unable to get enrichment. Got status code $status")
             Left(ErrorCode.ConnectorError)
-        }
-    }
+        })
 
   private def getEnrichment[E: Reads](
     url: String)(implicit hc: HeaderCarrier, lc: LoggingContext): Future[Either[ErrorCode, E]] = {
     ContextLogger.info(s"sending GET request to $url")
 
     client
-      .GET(url)
+      .GET[Either[ErrorCode, E]](url)
       .recover {
         case NonFatal(e) =>
           ContextLogger.error(s"Unable to send request to $url", e)

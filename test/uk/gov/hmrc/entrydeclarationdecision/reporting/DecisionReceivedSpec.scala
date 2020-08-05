@@ -38,7 +38,7 @@ class DecisionReceivedSpec extends UnitSpec {
     failure       = failure
   )
 
-  "SubmissionReceived" must {
+  "DecisionReceived" must {
     "have the correct associated JSON event" when {
       "accepted" in {
         val event = implicitly[EventSources[DecisionReceived]].eventFor(clock, report(ResultSummary.Accepted, None)).get

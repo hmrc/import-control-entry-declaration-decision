@@ -6,14 +6,14 @@ import sbt._
 object AppDependencies {
 
   val compile: Seq[ModuleID] = Seq(
-    "uk.gov.hmrc"    %% "bootstrap-play-26"    % "1.3.0",
+    "uk.gov.hmrc"    %% "bootstrap-play-26"    % "1.14.0",
     "com.github.fge" % "json-schema-validator" % "2.2.6",
     "org.typelevel"  %% "cats-core"            % "2.0.0",
     "com.chuusai"    %% "shapeless"            % "2.3.3"
   )
 
   val test: Seq[ModuleID] = Seq(
-    "uk.gov.hmrc"            %% "bootstrap-play-26"  % "1.3.0"         % Test classifier "tests",
+    "uk.gov.hmrc"            %% "bootstrap-play-26"  % "1.14.0"         % Test classifier "tests",
     "org.scalatest"          %% "scalatest"          % "3.0.8"         % "test, it",
     "com.typesafe.play"      %% "play-test"          % current         % "test, it",
     "org.pegdown"            % "pegdown"             % "1.6.0"         % "test, it",
