@@ -37,8 +37,7 @@ import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.MessageType
 import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
