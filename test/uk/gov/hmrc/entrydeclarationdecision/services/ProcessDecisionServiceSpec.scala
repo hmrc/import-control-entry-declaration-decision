@@ -341,6 +341,8 @@ class ProcessDecisionServiceSpec
         MockOutcomeConnector.send(validOutcome(MessageType.IE316)) returns Future.successful(Left(someErrorCode))
 
         service.processDecision(decision).futureValue shouldBe Left(someErrorCode)
+
+        Thread.sleep(100) // check that MockStoreConnector.setShortTtl(submissionId) isn't called
       }
 
       "the acceptance outcome cannot be saved" in {
