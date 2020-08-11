@@ -170,7 +170,7 @@ class ProcessDecisionServiceSpec
         MockRejectionXMLBuilder.buildXML(decision, DeclarationRejectionEnrichment) returns rawXml
         MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
         MockOutcomeConnector.send(validOutcome(MessageType.IE316)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(Unit)
+        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
 
         service.processDecision(decision).futureValue shouldBe Right(())
       }
@@ -183,7 +183,7 @@ class ProcessDecisionServiceSpec
         MockSchemaValidator.validateSchema(SchemaType.CC316A, rawXml) returns failedValidationResult
         MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
         MockOutcomeConnector.send(validOutcome(MessageType.IE316)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(Unit)
+        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
 
         service.processDecision(decision).futureValue shouldBe Right(())
       }
@@ -199,7 +199,7 @@ class ProcessDecisionServiceSpec
         MockDeclarationAcceptanceXMLBuilder.buildXML(decision, declarationAcceptanceEnrichment) returns rawXml
         MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
         MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE328)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(Unit)
+        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
 
         service.processDecision(decision).futureValue shouldBe Right(())
       }
@@ -216,7 +216,7 @@ class ProcessDecisionServiceSpec
         MockSchemaValidator.validateSchema(SchemaType.CC328A, rawXml) returns failedValidationResult
         MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
         MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE328)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(Unit)
+        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
 
         service.processDecision(decision).futureValue shouldBe Right(())
       }
@@ -232,7 +232,7 @@ class ProcessDecisionServiceSpec
         MockAmendmentAcceptanceXMLBuilder.buildXML(decision, amendmentAcceptanceEnrichment) returns rawXml
         MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
         MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE304)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(Unit)
+        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
 
         service.processDecision(decision).futureValue shouldBe Right(())
       }
@@ -249,7 +249,7 @@ class ProcessDecisionServiceSpec
         MockSchemaValidator.validateSchema(SchemaType.CC304A, rawXml) returns failedValidationResult
         MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
         MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE304)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(Unit)
+        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
 
         service.processDecision(decision).futureValue shouldBe Right(())
       }
@@ -265,7 +265,7 @@ class ProcessDecisionServiceSpec
         MockAmendmentRejectionXMLBuilder.buildXML(decision, amendmentRejectionEnrichment) returns rawXml
         MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
         MockOutcomeConnector.send(validOutcome(MessageType.IE305)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(Unit)
+        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
 
         service.processDecision(decision).futureValue shouldBe Right(())
       }
@@ -282,7 +282,7 @@ class ProcessDecisionServiceSpec
         MockSchemaValidator.validateSchema(SchemaType.CC305A, rawXml) returns failedValidationResult
         MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
         MockOutcomeConnector.send(validOutcome(MessageType.IE305)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(Unit)
+        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
 
         service.processDecision(decision).futureValue shouldBe Right(())
       }
@@ -299,7 +299,24 @@ class ProcessDecisionServiceSpec
         MockSchemaValidator.validateSchema(SchemaType.CC305A, rawXml) returns failedValidationResult
         MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
         MockOutcomeConnector.send(validOutcome(MessageType.IE305)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Promise[Unit].future
+        MockStoreConnector.setShortTtl(submissionId) returns Promise[Boolean].future
+
+        service.processDecision(decision).futureValue shouldBe Right(())
+      }
+      "set short TTL fails" in {
+        //WLOG
+        val decision = validAmendmentRejectionDecision
+
+        MockAppConfig.validateJsonToXMLTransformation returns true
+        MockStoreConnector
+          .getAmendmentRejectionEnrichment(submissionId)
+          .returns(Future.successful(Right(amendmentRejectionEnrichment)))
+
+        MockAmendmentRejectionXMLBuilder.buildXML(decision, amendmentRejectionEnrichment) returns rawXml
+        MockSchemaValidator.validateSchema(SchemaType.CC305A, rawXml) returns failedValidationResult
+        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
+        MockOutcomeConnector.send(validOutcome(MessageType.IE305)) returns Future.successful(Right(()))
+        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(false)
 
         service.processDecision(decision).futureValue shouldBe Right(())
       }
@@ -320,7 +337,7 @@ class ProcessDecisionServiceSpec
         val setShortTtlComplete: Promise[Unit] = Promise[Unit]
         MockStoreConnector.setShortTtl(submissionId) returns {
           setShortTtlComplete.success(())
-          Future.successful(():Unit)
+          Future.successful(true)
         }
 
         service.processDecision(decision).futureValue shouldBe Right(())
@@ -341,8 +358,6 @@ class ProcessDecisionServiceSpec
         MockOutcomeConnector.send(validOutcome(MessageType.IE316)) returns Future.successful(Left(someErrorCode))
 
         service.processDecision(decision).futureValue shouldBe Left(someErrorCode)
-
-        Thread.sleep(100) // check that MockStoreConnector.setShortTtl(submissionId) isn't called
       }
 
       "the acceptance outcome cannot be saved" in {
@@ -367,6 +382,20 @@ class ProcessDecisionServiceSpec
 
         service.processDecision(validDeclarationAcceptanceDecision).futureValue shouldBe Left(someErrorCode)
       }
+    }
+    "not call setShortTTl on failure" in {
+      val decision = validDeclarationRejectionDecision
+
+      MockAppConfig.validateJsonToXMLTransformation returns false
+      MockRejectionXMLBuilder.buildXML(decision, DeclarationRejectionEnrichment) returns rawXml
+      MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
+      //WLOG
+      MockOutcomeConnector.send(validOutcome(MessageType.IE316)) returns Future.successful(Left(ErrorCode.NoSubmission))
+      MockStoreConnector.setShortTtl(submissionId).never returns true
+
+      service.processDecision(decision).futureValue shouldBe Left(ErrorCode.NoSubmission)
+
+      Thread.sleep(100) // check that MockStoreConnector.setShortTtl(submissionId) isn't called in this time
     }
   }
 
@@ -405,7 +434,7 @@ trait MockStoreConnector extends MockFactory {
         .getAmendmentRejectionEnrichment(_: String)(_: HeaderCarrier, _: LoggingContext))
         .expects(submissionId, *, *)
 
-    def setShortTtl(submissionId: String): CallHandler[Future[Unit]] =
+    def setShortTtl(submissionId: String): CallHandler[Future[Boolean]] =
       (mockStoreConnector.setShortTtl(_: String)(_: HeaderCarrier, _: LoggingContext)).expects(submissionId, *, *)
   }
 }

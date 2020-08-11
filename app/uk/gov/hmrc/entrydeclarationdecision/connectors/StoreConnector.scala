@@ -75,7 +75,7 @@ class StoreConnector @Inject()(client: HttpClient, appConfig: AppConfig)(implici
       }
   }
 
-  def setShortTtl(submissionId: String)(implicit hc: HeaderCarrier, lc: LoggingContext): Future[Unit] = {
+  def setShortTtl(submissionId: String)(implicit hc: HeaderCarrier, lc: LoggingContext): Future[Boolean] = {
     val url = s"${appConfig.storeHost}/import-control/housekeeping/submissionid/$submissionId"
     ContextLogger.info(s"sending PUT request to $url")
 
@@ -83,8 +83,10 @@ class StoreConnector @Inject()(client: HttpClient, appConfig: AppConfig)(implici
       .PUT[JsObject, HttpResponse](url, JsObject.empty)
       .map(response =>
         response.status match {
-          case NO_CONTENT => (): Unit
-          case code       => ContextLogger.warn(s"Unable to set short TTL. Got status code $code")
+          case NO_CONTENT => true
+          case code =>
+            ContextLogger.warn(s"Unable to set short TTL. Got status code $code")
+            false
       })
   }
 }

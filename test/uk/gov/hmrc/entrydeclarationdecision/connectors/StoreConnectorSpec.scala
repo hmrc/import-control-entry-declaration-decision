@@ -251,17 +251,17 @@ class StoreConnectorSpec
   "StoreConnector.setShortTtl" when {
     val url: String = s"/import-control/housekeeping/submissionid/$submissionId"
     "successful" must {
-      "return Unit" in new Test {
+      "return true" in new Test {
         stubPutRequest(url, NO_CONTENT)
-        val result: Unit = await(connector.setShortTtl(submissionId))
-        result shouldBe ():Unit
+        val result: Boolean = await(connector.setShortTtl(submissionId))
+        result shouldBe true
       }
     }
     "unsuccessful" must {
-      "return Unit" in new Test {
+      "return false" in new Test {
         stubPutRequest(url, NOT_FOUND)
-        val result: Unit = await(connector.setShortTtl(submissionId))
-        result shouldBe ():Unit
+        val result: Boolean = await(connector.setShortTtl(submissionId))
+        result shouldBe false
       }
     }
   }

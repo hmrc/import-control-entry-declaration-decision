@@ -57,7 +57,7 @@ class ProcessDecisionService @Inject()(
 
       val amendment = isAmendment(decision.metadata.messageType)
 
-      def matchDecisionResponse(decisionResponse: DecisionResponse) =
+      def processDecisionResponse(decisionResponse: DecisionResponse) =
         decisionResponse match {
           case resp: DecisionResponse.Acceptance =>
             if (amendment) {
@@ -86,7 +86,7 @@ class ProcessDecisionService @Inject()(
             }
         }
 
-      matchDecisionResponse(decision.response).andThen {
+      processDecisionResponse(decision.response).andThen {
         case Success(Right(_)) => storeConnector.setShortTtl(decision.submissionId)
       }
 
