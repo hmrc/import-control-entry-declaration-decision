@@ -33,6 +33,7 @@ import uk.gov.hmrc.entrydeclarationdecision.utils.{EventLogger, SchemaType, Sche
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Success
 import scala.xml.{Node, Utility}
 
 @Singleton
@@ -56,33 +57,39 @@ class ProcessDecisionService @Inject()(
 
       val amendment = isAmendment(decision.metadata.messageType)
 
-      decision.response match {
-        case resp: DecisionResponse.Acceptance =>
-          if (amendment) {
-            doProcessDecision(
-              decision.withResponse(resp),
-              amendmentAcceptanceXMLBuilder,
-              storeConnector.getAcceptanceEnrichment(_, amendment))
-          } else {
-            doProcessDecision(
-              decision.withResponse(resp),
-              declarationAcceptanceXMLBuilder,
-              storeConnector.getAcceptanceEnrichment(_, amendment))
-          }
+      def processDecisionResponse(decisionResponse: DecisionResponse) =
+        decisionResponse match {
+          case resp: DecisionResponse.Acceptance =>
+            if (amendment) {
+              doProcessDecision(
+                decision.withResponse(resp),
+                amendmentAcceptanceXMLBuilder,
+                storeConnector.getAcceptanceEnrichment(_, amendment))
+            } else {
+              doProcessDecision(
+                decision.withResponse(resp),
+                declarationAcceptanceXMLBuilder,
+                storeConnector.getAcceptanceEnrichment(_, amendment))
+            }
 
-        case resp: DecisionResponse.Rejection =>
-          if (amendment) {
-            doProcessDecision(
-              decision.withResponse(resp),
-              amendmentRejectionXMLBuilder,
-              storeConnector.getAmendmentRejectionEnrichment)
-          } else {
-            doProcessDecision(
-              decision.withResponse(resp),
-              declarationRejectionXMLBuilder,
-              _ => Future.successful(Right(DeclarationRejectionEnrichment)))
-          }
+          case resp: DecisionResponse.Rejection =>
+            if (amendment) {
+              doProcessDecision(
+                decision.withResponse(resp),
+                amendmentRejectionXMLBuilder,
+                storeConnector.getAmendmentRejectionEnrichment)
+            } else {
+              doProcessDecision(
+                decision.withResponse(resp),
+                declarationRejectionXMLBuilder,
+                _ => Future.successful(Right(DeclarationRejectionEnrichment)))
+            }
+        }
+
+      processDecisionResponse(decision.response).andThen {
+        case Success(Right(_)) => storeConnector.setShortTtl(decision.submissionId)
       }
+
     }
 
   private def isAmendment(messageType: MessageType): Boolean = messageType match {

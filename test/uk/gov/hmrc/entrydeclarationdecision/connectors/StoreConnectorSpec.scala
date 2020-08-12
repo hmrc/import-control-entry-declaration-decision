@@ -94,6 +94,12 @@ class StoreConnectorSpec
           .willReturn(aResponse()
             .withStatus(responseStatus)))
 
+    def stubPutRequest(url: String, responseStatus: Int): StubMapping =
+      wireMockServer.stubFor(
+        put(urlPathEqualTo(url))
+          .willReturn(aResponse()
+            .withStatus(responseStatus)))
+
     def stubConnectionFault(url: String): StubMapping =
       wireMockServer.stubFor(
         get(urlPathEqualTo(url))
@@ -238,6 +244,24 @@ class StoreConnectorSpec
         val result: Either[ErrorCode, AmendmentRejectionEnrichment] =
           await(connector.getAmendmentRejectionEnrichment(submissionId))
         result shouldBe Left(ErrorCode.ConnectorError)
+      }
+    }
+  }
+
+  "StoreConnector.setShortTtl" when {
+    val url: String = s"/import-control/housekeeping/submissionid/$submissionId"
+    "successful" must {
+      "return true" in new Test {
+        stubPutRequest(url, NO_CONTENT)
+        val result: Boolean = await(connector.setShortTtl(submissionId))
+        result shouldBe true
+      }
+    }
+    "unsuccessful" must {
+      "return false" in new Test {
+        stubPutRequest(url, NOT_FOUND)
+        val result: Boolean = await(connector.setShortTtl(submissionId))
+        result shouldBe false
       }
     }
   }

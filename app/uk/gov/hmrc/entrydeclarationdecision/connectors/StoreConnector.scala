@@ -18,7 +18,7 @@ package uk.gov.hmrc.entrydeclarationdecision.connectors
 
 import javax.inject.{Inject, Singleton}
 import play.api.http.Status._
-import play.api.libs.json.Reads
+import play.api.libs.json.{JsObject, Reads}
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
 import uk.gov.hmrc.entrydeclarationdecision.logging.{ContextLogger, LoggingContext}
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
@@ -37,7 +37,7 @@ class StoreConnector @Inject()(client: HttpClient, appConfig: AppConfig)(implici
     implicit hc: HeaderCarrier,
     lc: LoggingContext): Future[Either[ErrorCode, AcceptanceEnrichment]] = {
     val amendmentParam = if (amendment) "amendment" else "declaration"
-    val url = s"${appConfig.storeHost}/import-control/$amendmentParam/acceptance-enrichment/$submissionId"
+    val url            = s"${appConfig.storeHost}/import-control/$amendmentParam/acceptance-enrichment/$submissionId"
 
     getEnrichment[AcceptanceEnrichment](url)
   }
@@ -55,22 +55,38 @@ class StoreConnector @Inject()(client: HttpClient, appConfig: AppConfig)(implici
     ContextLogger.info(s"sending GET request to $url")
 
     client
-      .GET[HttpResponse](url).map(response =>
-      response.status match {
-        case OK =>
-          ContextLogger.info("Got enrichment")
-          Right(response.json.as[E])
-        case NOT_FOUND =>
-          ContextLogger.info("Enrichment not found")
-          Left(ErrorCode.NoSubmission)
-        case status: Int =>
-          ContextLogger.warn(s"Unable to get enrichment. Got status code $status")
-          Left(ErrorCode.ConnectorError)
+      .GET[HttpResponse](url)
+      .map(response =>
+        response.status match {
+          case OK =>
+            ContextLogger.info("Got enrichment")
+            Right(response.json.as[E])
+          case NOT_FOUND =>
+            ContextLogger.info("Enrichment not found")
+            Left(ErrorCode.NoSubmission)
+          case status: Int =>
+            ContextLogger.warn(s"Unable to get enrichment. Got status code $status")
+            Left(ErrorCode.ConnectorError)
       })
       .recover {
         case NonFatal(e) =>
           ContextLogger.error(s"Unable to send request to $url", e)
           Left(ErrorCode.ConnectorError)
       }
+  }
+
+  def setShortTtl(submissionId: String)(implicit hc: HeaderCarrier, lc: LoggingContext): Future[Boolean] = {
+    val url = s"${appConfig.storeHost}/import-control/housekeeping/submissionid/$submissionId"
+    ContextLogger.info(s"sending PUT request to $url")
+
+    client
+      .PUT[JsObject, HttpResponse](url, JsObject.empty)
+      .map(response =>
+        response.status match {
+          case NO_CONTENT => true
+          case code =>
+            ContextLogger.warn(s"Unable to set short TTL. Got status code $code")
+            false
+      })
   }
 }
