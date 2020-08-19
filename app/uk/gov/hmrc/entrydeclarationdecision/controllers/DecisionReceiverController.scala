@@ -45,7 +45,8 @@ class DecisionReceiverController @Inject()(
           eori                    = decision.metadata.senderEORI,
           correlationId           = decision.metadata.correlationId,
           submissionId            = decision.submissionId,
-          movementReferenceNumber = decision.movementReferenceNumber
+          movementReferenceNumber = decision.movementReferenceNumber,
+          messageType             = decision.metadata.messageType
         )
 
         ContextLogger.info("Decision received")
@@ -78,8 +79,8 @@ class DecisionReceiverController @Inject()(
               case Left(errorCode) =>
                 reportSender.sendReport(report(Some(errorCode)))
                 errorCode match {
-                  case ErrorCode.NoSubmission        => Conflict(Json.toJson(ErrorResponse.noSubmission))
-                  case ErrorCode.ConnectorError      => ServiceUnavailable(Json.toJson(ErrorResponse.unavailable))
+                  case ErrorCode.NoSubmission   => Conflict(Json.toJson(ErrorResponse.noSubmission))
+                  case ErrorCode.ConnectorError => ServiceUnavailable(Json.toJson(ErrorResponse.unavailable))
                 }
             }
         }
