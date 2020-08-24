@@ -16,54 +16,22 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.services
 
-import java.time.ZonedDateTime
+import java.time.Instant
 
 import uk.gov.hmrc.entrydeclarationdecision.services.XMLBuilder._
 import uk.gov.hmrc.play.test.UnitSpec
 
 class XMLBuilderSpec extends UnitSpec {
-  "XMLBuilder" when {
-    "formatting with getDateFromDateTime" must {
-      "format in UTC" when {
-        "given time with GMT offset" in {
-          getDateFromDateTime(ZonedDateTime.parse("2019-01-01T10:00:00.000+00:00")) shouldBe "190101"
-        }
-
-        "given time with BST offset" in {
-          getDateFromDateTime(ZonedDateTime.parse("2019-06-01T00:00:00.000+01:00")) shouldBe "190531"
-        }
+  "XMLBuilder" must {
+    "use the correct format" when {
+      "formatting with getDateFromDateTime" in {
+        getDateFromDateTime(Instant.parse("2019-01-01T10:00:00.000Z")) shouldBe "190101"
       }
-    }
-
-    "formatting with getTimeFromDateTime" must {
-      "use the correct format" in {
-        getTimeFromDateTime(ZonedDateTime.parse("2019-03-29T23:12:00.000Z")) shouldBe "2312"
+      "formatting with getTimeFromDateTime" in {
+        getTimeFromDateTime(Instant.parse("2019-03-29T23:12:00.000Z")) shouldBe "2312"
       }
-
-      "format in UTC" when {
-        "given time with GMT offset" in {
-          getTimeFromDateTime(ZonedDateTime.parse("2019-01-01T10:00:00.000+00:00")) shouldBe "1000"
-        }
-
-        "given time with BST offset" in {
-          getTimeFromDateTime(ZonedDateTime.parse("2019-06-01T11:00:00.000+01:00")) shouldBe "1000"
-        }
-      }
-    }
-
-    "formatting with getDateTimeInXSDFormat" must {
-      "use the correct format" in {
-        getDateTimeInXSDFormat(ZonedDateTime.parse("2019-03-29T23:12:00.000Z")) shouldBe "201903292312"
-      }
-
-      "format in UTC" when {
-        "given time with GMT offset GMT" in {
-          getDateTimeInXSDFormat(ZonedDateTime.parse("2019-01-01T10:00:00.000+00:00")) shouldBe "201901011000"
-        }
-
-        "given time with BST offset" in {
-          getDateTimeInXSDFormat(ZonedDateTime.parse("2019-06-01T00:00:00.000+01:00")) shouldBe "201905312300"
-        }
+      "formatting with getDateTimeInXSDFormat" in {
+        getDateTimeInXSDFormat(Instant.parse("2019-03-29T23:12:00.000Z")) shouldBe "201903292312"
       }
     }
   }

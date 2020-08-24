@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.services
 
-import java.time.ZonedDateTime
+import java.time.{Clock, Instant, ZoneOffset}
 
 import com.kenshoo.play.metrics.Metrics
 import org.scalamock.handlers.CallHandler
@@ -58,9 +58,11 @@ class ProcessDecisionServiceSpec
   implicit val hc: HeaderCarrier  = HeaderCarrier()
   implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 
+  val time: Instant = Instant.now
+  val clock: Clock  = Clock.fixed(time, ZoneOffset.UTC)
   val mockedMetrics: Metrics = new MockMetrics
 
-  private val service = new ProcessDecisionService(
+  val service = new ProcessDecisionService(
     mockAppConfig,
     mockOutcomeConnector,
     mockStoreConnector,
@@ -70,6 +72,7 @@ class ProcessDecisionServiceSpec
     mockAmendmentRejectionXMLBuilder,
     mockSchemaValidator,
     mockXMLWrapper,
+    clock,
     mockedMetrics
   )
 
@@ -87,10 +90,10 @@ class ProcessDecisionServiceSpec
   private val wrappedXml          = <wrapped/>
   private val submissionId        = "sumbissionID"
   private val correlationId       = "15digitCorrelationID"
-  private val preparationDateTime = ZonedDateTime.parse("2020-12-31T23:59:00Z")
-  private val receivedDateTime    = ZonedDateTime.parse("2020-12-31T23:59:00Z")
-  private val rejectionDateTime   = ZonedDateTime.parse("2020-12-31T23:59:00Z")
-  private val acceptedDateTime    = ZonedDateTime.parse("2020-12-31T23:59:00Z")
+  private val preparationDateTime = Instant.parse("2020-12-31T23:59:00Z")
+  private val receivedDateTime    = Instant.parse("2020-12-31T23:59:00Z")
+  private val rejectionDateTime   = Instant.parse("2020-12-31T23:59:00Z")
+  private val acceptedDateTime    = Instant.parse("2020-12-31T23:59:00Z")
 
   private def validOutcome(messageType: MessageType) =
     Outcome("eori", correlationId, submissionId, receivedDateTime, messageType, None, wrappedXml.toString)

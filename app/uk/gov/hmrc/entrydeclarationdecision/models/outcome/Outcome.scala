@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.models.outcome
 
-import java.time.ZonedDateTime
+import java.time.Instant
 
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.MessageType
@@ -25,7 +25,7 @@ case class Outcome(
   eori: String,
   correlationId: String,
   submissionId: String,
-  receivedDateTime: ZonedDateTime,
+  receivedDateTime: Instant,
   messageType: MessageType,
   movementReferenceNumber: Option[String],
   outcomeXml: String

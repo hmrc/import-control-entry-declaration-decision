@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.services
 
+import java.time.Clock
+
 import cats.data.EitherT
 import cats.implicits._
 import com.kenshoo.play.metrics.Metrics
@@ -47,6 +49,7 @@ class ProcessDecisionService @Inject()(
   amendmentRejectionXMLBuilder: AmendmentRejectionXMLBuilder,
   schemaValidator: SchemaValidator,
   xmlWrapper: XMLWrapper,
+  override val clock: Clock,
   override val metrics: Metrics)(implicit ex: ExecutionContext)
     extends Timer
     with EventLogger {

@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.models.decision
 
-import java.time.ZonedDateTime
+import java.time.Instant
 
-import org.scalacheck.{Arbitrary, Gen}
 import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.entrydeclarationdecision.models.PropertyCheckSupport
 
 trait ArbitraryDecision extends PropertyCheckSupport {
@@ -34,8 +34,8 @@ trait ArbitraryDecision extends PropertyCheckSupport {
       senderBranch          <- arbitrary[String]
       messageType           <- arbitrary[MessageType]
       messageIdentification <- arbitrary[String]
-      preparationDateTime   <- arbitrary[ZonedDateTime]
-      receivedDateTime      <- arbitrary[ZonedDateTime]
+      preparationDateTime   <- arbitrary[Instant]
+      receivedDateTime      <- arbitrary[Instant]
       correlationId         <- arbitrary[String]
       localReferenceNumber  <- arbitrary[String]
     } yield
@@ -53,13 +53,13 @@ trait ArbitraryDecision extends PropertyCheckSupport {
   implicit val arbitraryAcceptanceDecisionResponse: Arbitrary[DecisionResponse.Acceptance] =
     Arbitrary(for {
       movementReferenceNumber <- arbitrary[String]
-      acceptedDateTime      <- arbitrary[ZonedDateTime]
+      acceptedDateTime      <- arbitrary[Instant]
     } yield DecisionResponse.Acceptance(movementReferenceNumber, acceptedDateTime))
 
   implicit val arbitraryRejectionDecisionResponse: Arbitrary[DecisionResponse.Rejection] =
     Arbitrary(for {
       functionalError   <- arbitrary[Seq[DecisionError]]
-      rejectionDateTime <- arbitrary[ZonedDateTime]
+      rejectionDateTime <- arbitrary[Instant]
     } yield DecisionResponse.Rejection(functionalError, rejectionDateTime))
 
   implicit val arbitraryDecisionError: Arbitrary[DecisionError] = Arbitrary(for {

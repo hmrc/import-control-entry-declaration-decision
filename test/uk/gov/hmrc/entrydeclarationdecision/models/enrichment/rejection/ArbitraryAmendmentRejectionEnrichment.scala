@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection
 
-import java.time.ZonedDateTime
+import java.time.Instant
 
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary._
@@ -29,7 +29,7 @@ trait ArbitraryAmendmentRejectionEnrichment extends PropertyCheckSupport {
   implicit val arbitraryAmendment: Arbitrary[Amendment] = Arbitrary(
     for {
       movementReferenceNumber <- arbitrary[String]
-      dateTime                <- arbitrary[ZonedDateTime]
+      dateTime                <- arbitrary[Instant]
     } yield Amendment(movementReferenceNumber, dateTime)
   )
 

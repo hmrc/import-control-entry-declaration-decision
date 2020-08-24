@@ -16,12 +16,11 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.models
 
-import java.time.{Instant, ZoneId, ZonedDateTime}
+import java.time.Instant
 
 import org.scalacheck.{Arbitrary, Gen}
 
 trait PropertyCheckSupport {
-  implicit val arbZonedDateTime: Arbitrary[ZonedDateTime] =
-    Arbitrary(
-      Gen.choose(0, Long.MaxValue).map(ts => ZonedDateTime.ofInstant(Instant.ofEpochMilli(ts), ZoneId.of("UTC"))))
+  implicit val arbInstant: Arbitrary[Instant] =
+    Arbitrary(Gen.choose(0, Long.MaxValue).map(ts => Instant.ofEpochMilli(ts)))
 }

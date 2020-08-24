@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.connectors
 
-import java.time.ZonedDateTime
+import java.time.Instant
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock._
@@ -98,7 +98,7 @@ class OutcomeConnectorSpec
     "eori",
     "correlationId",
     "submissionId",
-    ZonedDateTime.parse("2020-12-31T23:59:00Z"),
+    Instant.parse("2020-12-31T23:59:00Z"),
     MessageType.IE316,
     Some("TheMRN"),
     "outcomeXml"
