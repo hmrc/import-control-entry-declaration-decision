@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance
 
-import java.time.ZonedDateTime
+import java.time.Instant
 
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary._
@@ -36,7 +36,7 @@ trait ArbitraryAcceptanceEnrichment extends PropertyCheckSupport {
 
   implicit val arbitraryAmendment: Arbitrary[Amendment] = Arbitrary(
     for {
-      dateTime <- arbitrary[ZonedDateTime].map(_.toInstant)
+      dateTime <- arbitrary[Instant]
     } yield Amendment(dateTime)
   )
 
@@ -105,7 +105,7 @@ trait ArbitraryAcceptanceEnrichment extends PropertyCheckSupport {
   implicit val arbitraryOfficeOfFirstEntry: Arbitrary[OfficeOfFirstEntry] = Arbitrary(
     for {
       reference                 <- arbitrary[String]
-      expectedDateTimeOfArrival <- arbitrary[ZonedDateTime].map(_.toInstant)
+      expectedDateTimeOfArrival <- arbitrary[Instant]
     } yield OfficeOfFirstEntry(reference, expectedDateTimeOfArrival)
   )
 
