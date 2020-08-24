@@ -36,7 +36,7 @@ trait ArbitraryAcceptanceEnrichment extends PropertyCheckSupport {
 
   implicit val arbitraryAmendment: Arbitrary[Amendment] = Arbitrary(
     for {
-      dateTime <- arbitrary[ZonedDateTime]
+      dateTime <- arbitrary[ZonedDateTime].map(_.toInstant)
     } yield Amendment(dateTime)
   )
 
@@ -105,7 +105,7 @@ trait ArbitraryAcceptanceEnrichment extends PropertyCheckSupport {
   implicit val arbitraryOfficeOfFirstEntry: Arbitrary[OfficeOfFirstEntry] = Arbitrary(
     for {
       reference                 <- arbitrary[String]
-      expectedDateTimeOfArrival <- arbitrary[ZonedDateTime]
+      expectedDateTimeOfArrival <- arbitrary[ZonedDateTime].map(_.toInstant)
     } yield OfficeOfFirstEntry(reference, expectedDateTimeOfArrival)
   )
 

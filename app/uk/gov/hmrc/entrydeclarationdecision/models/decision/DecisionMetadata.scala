@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.models.decision
 
-import java.time.ZonedDateTime
+import java.time.Instant
 
 import play.api.libs.json.{Json, Reads}
 
@@ -25,8 +25,8 @@ case class DecisionMetadata(
   senderBranch: String,
   messageType: MessageType,
   messageIdentification: String,
-  preparationDateTime: ZonedDateTime,
-  receivedDateTime: ZonedDateTime,
+  preparationDateTime: Instant,
+  receivedDateTime: Instant,
   correlationId: String,
   localReferenceNumber: Option[String]
 )

@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.services
 
-import java.time.{ZoneOffset, ZonedDateTime}
 import java.time.format.DateTimeFormatter
+import java.time.{Instant, ZoneOffset}
 
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.{Decision, DecisionResponse, MessageType}
-import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.{Enrichment, Trader}
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.{AcceptanceEnrichment, GoodsItem, OfficeOfFirstEntry}
+import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.{Enrichment, Trader}
 import uk.gov.hmrc.entrydeclarationdecision.services.XMLBuilder.getDateTimeInXSDFormat
 
 import scala.xml.{Elem, Node}
@@ -32,11 +32,11 @@ object XMLBuilder {
   private val xsdTimeFormatter     = DateTimeFormatter.ofPattern("HHmm").withZone(ZoneOffset.UTC)
   private val xsdDateTimeFormatter = DateTimeFormatter.ofPattern("uuuuMMddHHmm").withZone(ZoneOffset.UTC)
 
-  def getDateFromDateTime(dt: ZonedDateTime): String = xsdDateFormatter.format(dt)
+  def getDateFromDateTime(dt: Instant): String = xsdDateFormatter.format(dt)
 
-  def getTimeFromDateTime(dt: ZonedDateTime): String = xsdTimeFormatter.format(dt)
+  def getTimeFromDateTime(dt: Instant): String = xsdTimeFormatter.format(dt)
 
-  def getDateTimeInXSDFormat(dt: ZonedDateTime): String = xsdDateTimeFormatter.format(dt)
+  def getDateTimeInXSDFormat(dt: Instant): String = xsdDateTimeFormatter.format(dt)
 
   def xmlMessageType(messageType: MessageType): String =
     messageType match {

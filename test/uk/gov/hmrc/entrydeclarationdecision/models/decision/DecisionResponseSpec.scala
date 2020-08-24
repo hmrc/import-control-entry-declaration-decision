@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.models.decision
 
-import java.time.ZonedDateTime
+import java.time.Instant
 
 import play.api.libs.json.Json
 import uk.gov.hmrc.play.test.UnitSpec
@@ -30,7 +30,7 @@ class DecisionResponseSpec extends UnitSpec {
                    |  "acceptedDateTime": "2005-03-15T12:41:00Z"
                    |}
                    |""".stripMargin).as[DecisionResponse] shouldBe
-        DecisionResponse.Acceptance("someMrn", ZonedDateTime.parse("2005-03-15T12:41:00Z"))
+        DecisionResponse.Acceptance("someMrn", Instant.parse("2005-03-15T12:41:00Z"))
     }
 
     "deserialize DecisionResponse.Rejected from Json" in {
@@ -58,7 +58,7 @@ class DecisionResponseSpec extends UnitSpec {
             DecisionError("errorType1", "errorPointer1", Some("reason1"), Some("originalAttrib1")),
             DecisionError("errorType2", "errorPointer2", Some("reason2"), Some("originalAttrib2"))
           ),
-          ZonedDateTime.parse("2020-01-13T15:22:44.000Z")
+          Instant.parse("2020-01-13T15:22:44.000Z")
         )
     }
   }

@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance
 
-import java.time.ZonedDateTime
+import java.time.Instant
 
 import play.api.libs.json.{Format, Json}
 
 case class OfficeOfFirstEntry(
   reference: String,
-  expectedDateTimeOfArrival: ZonedDateTime
+  expectedDateTimeOfArrival: Instant
 )
 
 object OfficeOfFirstEntry {

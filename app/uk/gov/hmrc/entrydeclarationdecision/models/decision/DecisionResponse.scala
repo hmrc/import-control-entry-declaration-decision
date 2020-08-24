@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.models.decision
 
-import java.time.ZonedDateTime
+import java.time.Instant
 
 import play.api.libs.json.{JsPath, Json, Reads}
 
@@ -27,7 +27,7 @@ sealed trait DecisionResponse {
 object DecisionResponse {
   case class Acceptance(
     movementReferenceNumber: String,
-    acceptedDateTime: ZonedDateTime
+    acceptedDateTime: Instant
   ) extends DecisionResponse {
     override def isAcceptance: Boolean = true
   }
@@ -38,7 +38,7 @@ object DecisionResponse {
 
   case class Rejection(
     functionalError: Seq[DecisionError],
-    rejectionDateTime: ZonedDateTime
+    rejectionDateTime: Instant
   ) extends DecisionResponse {
     override def isAcceptance: Boolean = false
   }

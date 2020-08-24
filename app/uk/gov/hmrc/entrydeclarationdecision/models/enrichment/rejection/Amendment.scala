@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection
 
-import java.time.ZonedDateTime
+import java.time.Instant
 
 import play.api.libs.json.{Format, Json}
 
-case class Amendment(movementReferenceNumber: String, dateTime: ZonedDateTime)
+case class Amendment(movementReferenceNumber: String, dateTime: Instant)
 
 object Amendment {
   implicit val jsonFormat: Format[Amendment] = Json.format[Amendment]

@@ -29,7 +29,7 @@ trait ArbitraryAmendmentRejectionEnrichment extends PropertyCheckSupport {
   implicit val arbitraryAmendment: Arbitrary[Amendment] = Arbitrary(
     for {
       movementReferenceNumber <- arbitrary[String]
-      dateTime                <- arbitrary[ZonedDateTime]
+      dateTime                <- arbitrary[ZonedDateTime].map(_.toInstant)
     } yield Amendment(movementReferenceNumber, dateTime)
   )
 
