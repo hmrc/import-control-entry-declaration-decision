@@ -23,7 +23,7 @@ import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
 import uk.gov.hmrc.entrydeclarationdecision.logging.{ContextLogger, LoggingContext}
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
-import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.AmendmentRejectionEnrichment
+import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.{AmendmentRejectionEnrichment, DeclarationRejectionEnrichment}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
 
@@ -48,6 +48,14 @@ class StoreConnector @Inject()(client: HttpClient, appConfig: AppConfig)(implici
     val url = s"${appConfig.storeHost}/import-control/amendment/rejection-enrichment/$submissionId"
 
     getEnrichment[AmendmentRejectionEnrichment](url)
+  }
+
+  def getDeclarationRejectionEnrichment(submissionId: String)(
+    implicit hc: HeaderCarrier,
+    lc: LoggingContext): Future[Either[ErrorCode, DeclarationRejectionEnrichment]] = {
+    val url = s"${appConfig.storeHost}/import-control/declaration/rejection-enrichment/$submissionId"
+
+    getEnrichment[DeclarationRejectionEnrichment](url)
   }
 
   private def getEnrichment[E: Reads](

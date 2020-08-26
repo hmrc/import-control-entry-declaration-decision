@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.entrydeclarationdecision.models.enrichment
+package uk.gov.hmrc.entrydeclarationdecision.services
 
-import java.time.Instant
+import org.scalamock.handlers.CallHandler
+import org.scalamock.scalatest.MockFactory
 
-trait Enrichment {
-  def eisSubmissionDateTime: Option[Instant]
+import scala.xml.Elem
+
+trait MockXMLWrapper extends MockFactory {
+  val mockXMLWrapper: XMLWrapper = mock[XMLWrapper]
+
+  object MockXMLWrapper {
+    def wrapXml(correlationId: String, xml: Elem): CallHandler[Elem] =
+      (mockXMLWrapper.wrapXml(_: String, _: Elem)).expects(correlationId, xml)
+  }
 }

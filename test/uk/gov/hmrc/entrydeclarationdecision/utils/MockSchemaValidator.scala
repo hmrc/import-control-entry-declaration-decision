@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.entrydeclarationdecision.models.enrichment
+package uk.gov.hmrc.entrydeclarationdecision.utils
 
-import java.time.Instant
+import org.scalamock.handlers.CallHandler
+import org.scalamock.scalatest.MockFactory
 
-trait Enrichment {
-  def eisSubmissionDateTime: Option[Instant]
+import scala.xml.Node
+
+trait MockSchemaValidator extends MockFactory {
+  val mockSchemaValidator: SchemaValidator = mock[SchemaValidator]
+
+  object MockSchemaValidator {
+    def validateSchema(schemaType: SchemaType, xml: Node): CallHandler[ValidationResult] =
+      (mockSchemaValidator.validateSchema(_: SchemaType, _: Node)).expects(schemaType, xml)
+  }
 }

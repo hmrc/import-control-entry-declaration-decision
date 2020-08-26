@@ -32,7 +32,7 @@ import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
 import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
-import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.AmendmentRejectionEnrichment
+import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.{AmendmentRejectionEnrichment, DeclarationRejectionEnrichment}
 import uk.gov.hmrc.entrydeclarationdecision.utils.ResourceUtils
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
@@ -82,6 +82,11 @@ class StoreConnectorSpec
       .withInputStreamFor("jsons/AmendmentRejectionEnrichmentAllOptional.json")(Json.parse)
       .as[AmendmentRejectionEnrichment]
 
+  val declarationRejectionEnrichment: DeclarationRejectionEnrichment =
+    ResourceUtils
+      .withInputStreamFor("jsons/DeclarationRejectionEnrichment.json")(Json.parse)
+      .as[DeclarationRejectionEnrichment]
+
   val submissionId = "submissionId"
 
   class Test {
@@ -106,7 +111,7 @@ class StoreConnectorSpec
           .willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)))
   }
 
-  "StoreConnector.getAcceptanceEnrichment for a declaration" when {
+  "StoreConnector.getAcceptanceEnrichment" when {
 
     val declarationUrl =
       s"/import-control/declaration/acceptance-enrichment/$submissionId"
@@ -122,9 +127,7 @@ class StoreConnectorSpec
                 .withBody(Json.toJson(acceptanceEnrichment).toString)
                 .withStatus(OK)))
 
-          val result: Either[ErrorCode, AcceptanceEnrichment] =
-            await(connector.getAcceptanceEnrichment(submissionId, amendment = false))
-          result shouldBe Right(acceptanceEnrichment)
+          await(connector.getAcceptanceEnrichment(submissionId, amendment = false)) shouldBe Right(acceptanceEnrichment)
         }
       }
     }
@@ -138,9 +141,7 @@ class StoreConnectorSpec
                 .withBody(Json.toJson(acceptanceEnrichment).toString)
                 .withStatus(OK)))
 
-          val result: Either[ErrorCode, AcceptanceEnrichment] =
-            await(connector.getAcceptanceEnrichment(submissionId, amendment = true))
-          result shouldBe Right(acceptanceEnrichment)
+          await(connector.getAcceptanceEnrichment(submissionId, amendment = true)) shouldBe Right(acceptanceEnrichment)
         }
       }
     }
@@ -149,9 +150,7 @@ class StoreConnectorSpec
       "return Left with ErrorCode.NoSubmission" in new Test {
         stubRequest(declarationUrl, NOT_FOUND)
 
-        val result: Either[ErrorCode, AcceptanceEnrichment] =
-          await(connector.getAcceptanceEnrichment(submissionId, amendment = false))
-        result shouldBe Left(ErrorCode.NoSubmission)
+        await(connector.getAcceptanceEnrichment(submissionId, amendment = false)) shouldBe Left(ErrorCode.NoSubmission)
       }
     }
 
@@ -159,9 +158,8 @@ class StoreConnectorSpec
       "return Left with ErrorCode.ConnectorError" in new Test {
         stubRequest(declarationUrl, BAD_REQUEST)
 
-        val result: Either[ErrorCode, AcceptanceEnrichment] =
-          await(connector.getAcceptanceEnrichment(submissionId, amendment = false))
-        result shouldBe Left(ErrorCode.ConnectorError)
+        await(connector.getAcceptanceEnrichment(submissionId, amendment = false)) shouldBe Left(
+          ErrorCode.ConnectorError)
       }
     }
 
@@ -169,9 +167,8 @@ class StoreConnectorSpec
       "return Left with ErrorCode.ConnectorError" in new Test {
         stubRequest(declarationUrl, INTERNAL_SERVER_ERROR)
 
-        val result: Either[ErrorCode, AcceptanceEnrichment] =
-          await(connector.getAcceptanceEnrichment(submissionId, amendment = false))
-        result shouldBe Left(ErrorCode.ConnectorError)
+        await(connector.getAcceptanceEnrichment(submissionId, amendment = false)) shouldBe Left(
+          ErrorCode.ConnectorError)
       }
     }
 
@@ -179,31 +176,27 @@ class StoreConnectorSpec
       "return Left with ErrorCode.ConnectorError" in new Test {
         stubConnectionFault(declarationUrl)
 
-        val result: Either[ErrorCode, AcceptanceEnrichment] =
-          await(connector.getAcceptanceEnrichment(submissionId, amendment = false))
-        result shouldBe Left(ErrorCode.ConnectorError)
+        await(connector.getAcceptanceEnrichment(submissionId, amendment = false)) shouldBe Left(
+          ErrorCode.ConnectorError)
       }
     }
   }
 
-  "StoreConnector.getAmendmentRejectionEnrichment for a declaration" when {
+  "StoreConnector.getAmendmentRejectionEnrichment" when {
 
     val amendmentUrl =
       s"/import-control/amendment/rejection-enrichment/$submissionId"
 
-    "called for a amendment" when {
-      "store responds 200 Ok" must {
-        "return Right with the enrichment" in new Test {
-          wireMockServer.stubFor(
-            get(urlPathEqualTo(amendmentUrl))
-              .willReturn(aResponse()
+    "store responds 200 Ok" must {
+      "return Right with the enrichment" in new Test {
+        wireMockServer.stubFor(
+          get(urlPathEqualTo(amendmentUrl))
+            .willReturn(
+              aResponse()
                 .withBody(Json.toJson(amendmentRejectionEnrichment).toString)
                 .withStatus(OK)))
 
-          val result: Either[ErrorCode, AmendmentRejectionEnrichment] =
-            await(connector.getAmendmentRejectionEnrichment(submissionId))
-          result shouldBe Right(amendmentRejectionEnrichment)
-        }
+        await(connector.getAmendmentRejectionEnrichment(submissionId)) shouldBe Right(amendmentRejectionEnrichment)
       }
     }
 
@@ -211,9 +204,7 @@ class StoreConnectorSpec
       "return Left with ErrorCode.NoSubmission" in new Test {
         stubRequest(amendmentUrl, NOT_FOUND)
 
-        val result: Either[ErrorCode, AmendmentRejectionEnrichment] =
-          await(connector.getAmendmentRejectionEnrichment(submissionId))
-        result shouldBe Left(ErrorCode.NoSubmission)
+        await(connector.getAmendmentRejectionEnrichment(submissionId)) shouldBe Left(ErrorCode.NoSubmission)
       }
     }
 
@@ -221,9 +212,7 @@ class StoreConnectorSpec
       "return Left with ErrorCode.ConnectorError" in new Test {
         stubRequest(amendmentUrl, BAD_REQUEST)
 
-        val result: Either[ErrorCode, AmendmentRejectionEnrichment] =
-          await(connector.getAmendmentRejectionEnrichment(submissionId))
-        result shouldBe Left(ErrorCode.ConnectorError)
+        await(connector.getAmendmentRejectionEnrichment(submissionId)) shouldBe Left(ErrorCode.ConnectorError)
       }
     }
 
@@ -231,9 +220,7 @@ class StoreConnectorSpec
       "return Left with ErrorCode.ConnectorError" in new Test {
         stubRequest(amendmentUrl, INTERNAL_SERVER_ERROR)
 
-        val result: Either[ErrorCode, AmendmentRejectionEnrichment] =
-          await(connector.getAmendmentRejectionEnrichment(submissionId))
-        result shouldBe Left(ErrorCode.ConnectorError)
+        await(connector.getAmendmentRejectionEnrichment(submissionId)) shouldBe Left(ErrorCode.ConnectorError)
       }
     }
 
@@ -241,9 +228,58 @@ class StoreConnectorSpec
       "return Left with ErrorCode.ConnectorError" in new Test {
         stubConnectionFault(amendmentUrl)
 
-        val result: Either[ErrorCode, AmendmentRejectionEnrichment] =
-          await(connector.getAmendmentRejectionEnrichment(submissionId))
-        result shouldBe Left(ErrorCode.ConnectorError)
+        await(connector.getAmendmentRejectionEnrichment(submissionId)) shouldBe Left(ErrorCode.ConnectorError)
+      }
+    }
+  }
+
+  "StoreConnector.getDeclarationRejectionEnrichment" when {
+
+    val amendmentUrl =
+      s"/import-control/declaration/rejection-enrichment/$submissionId"
+
+    "store responds 200 Ok" must {
+      "return Right with the enrichment" in new Test {
+        wireMockServer.stubFor(
+          get(urlPathEqualTo(amendmentUrl))
+            .willReturn(
+              aResponse()
+                .withBody(Json.toJson(declarationRejectionEnrichment).toString)
+                .withStatus(OK)))
+
+        await(connector.getDeclarationRejectionEnrichment(submissionId)) shouldBe Right(declarationRejectionEnrichment)
+      }
+    }
+
+    "store responds 404" must {
+      "return Left with ErrorCode.NoSubmission" in new Test {
+        stubRequest(amendmentUrl, NOT_FOUND)
+
+        await(connector.getDeclarationRejectionEnrichment(submissionId)) shouldBe Left(ErrorCode.NoSubmission)
+      }
+    }
+
+    "store responds 4xx" must {
+      "return Left with ErrorCode.ConnectorError" in new Test {
+        stubRequest(amendmentUrl, BAD_REQUEST)
+
+        await(connector.getDeclarationRejectionEnrichment(submissionId)) shouldBe Left(ErrorCode.ConnectorError)
+      }
+    }
+
+    "store responds 5xx" must {
+      "return Left with ErrorCode.ConnectorError" in new Test {
+        stubRequest(amendmentUrl, INTERNAL_SERVER_ERROR)
+
+        await(connector.getDeclarationRejectionEnrichment(submissionId)) shouldBe Left(ErrorCode.ConnectorError)
+      }
+    }
+
+    "unable to connect" must {
+      "return Left with ErrorCode.ConnectorError" in new Test {
+        stubConnectionFault(amendmentUrl)
+
+        await(connector.getDeclarationRejectionEnrichment(submissionId)) shouldBe Left(ErrorCode.ConnectorError)
       }
     }
   }
@@ -253,15 +289,13 @@ class StoreConnectorSpec
     "successful" must {
       "return true" in new Test {
         stubPutRequest(url, NO_CONTENT)
-        val result: Boolean = await(connector.setShortTtl(submissionId))
-        result shouldBe true
+        await(connector.setShortTtl(submissionId)) shouldBe true
       }
     }
     "unsuccessful" must {
       "return false" in new Test {
         stubPutRequest(url, NOT_FOUND)
-        val result: Boolean = await(connector.setShortTtl(submissionId))
-        result shouldBe false
+        await(connector.setShortTtl(submissionId)) shouldBe false
       }
     }
   }

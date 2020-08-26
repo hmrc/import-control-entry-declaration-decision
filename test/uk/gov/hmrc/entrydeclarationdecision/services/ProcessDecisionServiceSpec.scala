@@ -19,13 +19,11 @@ package uk.gov.hmrc.entrydeclarationdecision.services
 import java.time.{Clock, Instant, ZoneOffset}
 
 import com.kenshoo.play.metrics.Metrics
-import org.scalamock.handlers.CallHandler
-import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Span}
 import play.api.libs.json.Json
 import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
-import uk.gov.hmrc.entrydeclarationdecision.connectors.{OutcomeConnector, StoreConnector}
+import uk.gov.hmrc.entrydeclarationdecision.connectors.{MockOutcomeConnector, MockStoreConnector}
 import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.decision._
@@ -38,7 +36,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
-import scala.xml.{Elem, Node, SAXParseException}
+import scala.xml.SAXParseException
 
 class ProcessDecisionServiceSpec
     extends UnitSpec
@@ -48,7 +46,7 @@ class ProcessDecisionServiceSpec
     with MockDeclarationAcceptanceXMLBuilder
     with MockAmendmentAcceptanceXMLBuilder
     with MockAmendmentRejectionXMLBuilder
-    with MockRejectionXMLBuilder
+    with MockDeclarationRejectionXMLBuilder
     with MockSchemaValidator
     with MockXMLWrapper
     with ScalaFutures {
@@ -58,8 +56,8 @@ class ProcessDecisionServiceSpec
   implicit val hc: HeaderCarrier  = HeaderCarrier()
   implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 
-  val time: Instant = Instant.now
-  val clock: Clock  = Clock.fixed(time, ZoneOffset.UTC)
+  val time: Instant          = Instant.now
+  val clock: Clock           = Clock.fixed(time, ZoneOffset.UTC)
   val mockedMetrics: Metrics = new MockMetrics
 
   val service = new ProcessDecisionService(
@@ -85,6 +83,9 @@ class ProcessDecisionServiceSpec
   private val amendmentRejectionEnrichment =
     ResourceUtils.withInputStreamFor("jsons/AmendmentRejectionEnrichment.json")(
       Json.parse(_).as[AmendmentRejectionEnrichment])
+  private val declarationRejectionEnrichment =
+    ResourceUtils.withInputStreamFor("jsons/DeclarationRejectionEnrichment.json")(
+      Json.parse(_).as[DeclarationRejectionEnrichment])
 
   private val rawXml              = <rawXml/>
   private val wrappedXml          = <wrapped/>
@@ -170,7 +171,10 @@ class ProcessDecisionServiceSpec
         val decision = validDeclarationRejectionDecision
 
         MockAppConfig.validateJsonToXMLTransformation returns false
-        MockRejectionXMLBuilder.buildXML(decision, DeclarationRejectionEnrichment) returns rawXml
+        MockStoreConnector
+          .getDeclarationRejectionEnrichment(submissionId) returns Right(declarationRejectionEnrichment)
+
+        MockRejectionXMLBuilder.buildXML(decision, declarationRejectionEnrichment) returns rawXml
         MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
         MockOutcomeConnector.send(validOutcome(MessageType.IE316)) returns Future.successful(Right(()))
         MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
@@ -182,7 +186,10 @@ class ProcessDecisionServiceSpec
         val decision = validDeclarationRejectionDecision
 
         MockAppConfig.validateJsonToXMLTransformation returns true
-        MockRejectionXMLBuilder.buildXML(decision, DeclarationRejectionEnrichment) returns rawXml
+        MockStoreConnector
+          .getDeclarationRejectionEnrichment(submissionId) returns Right(declarationRejectionEnrichment)
+
+        MockRejectionXMLBuilder.buildXML(decision, declarationRejectionEnrichment) returns rawXml
         MockSchemaValidator.validateSchema(SchemaType.CC316A, rawXml) returns failedValidationResult
         MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
         MockOutcomeConnector.send(validOutcome(MessageType.IE316)) returns Future.successful(Right(()))
@@ -356,7 +363,10 @@ class ProcessDecisionServiceSpec
         val decision = validDeclarationRejectionDecision
 
         MockAppConfig.validateJsonToXMLTransformation returns false
-        MockRejectionXMLBuilder.buildXML(decision, DeclarationRejectionEnrichment) returns rawXml
+        MockStoreConnector
+          .getDeclarationRejectionEnrichment(submissionId) returns Right(declarationRejectionEnrichment)
+
+        MockRejectionXMLBuilder.buildXML(decision, declarationRejectionEnrichment) returns rawXml
         MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
         MockOutcomeConnector.send(validOutcome(MessageType.IE316)) returns Future.successful(Left(someErrorCode))
 
@@ -390,7 +400,10 @@ class ProcessDecisionServiceSpec
       val decision = validDeclarationRejectionDecision
 
       MockAppConfig.validateJsonToXMLTransformation returns false
-      MockRejectionXMLBuilder.buildXML(decision, DeclarationRejectionEnrichment) returns rawXml
+      MockStoreConnector
+        .getDeclarationRejectionEnrichment(submissionId) returns Right(declarationRejectionEnrichment)
+
+      MockRejectionXMLBuilder.buildXML(decision, declarationRejectionEnrichment) returns rawXml
       MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
       //WLOG
       MockOutcomeConnector.send(validOutcome(MessageType.IE316)) returns Future.successful(Left(ErrorCode.NoSubmission))
@@ -408,107 +421,4 @@ class ProcessDecisionServiceSpec
 
       override def allErrors: Seq[SAXParseException] = Seq(new SAXParseException("invalid!", null))
     }
-}
-
-trait MockOutcomeConnector extends MockFactory {
-  val mockOutcomeConnector: OutcomeConnector = mock[OutcomeConnector]
-
-  object MockOutcomeConnector {
-    def send(outcome: Outcome): CallHandler[Future[Either[ErrorCode, Unit]]] =
-      (mockOutcomeConnector.send(_: Outcome)(_: HeaderCarrier, _: LoggingContext)).expects(outcome, *, *)
-  }
-
-}
-
-trait MockStoreConnector extends MockFactory {
-  val mockStoreConnector: StoreConnector = mock[StoreConnector]
-
-  object MockStoreConnector {
-    def getAcceptanceEnrichment(
-      submissionId: String,
-      amendment: Boolean): CallHandler[Future[Either[ErrorCode, AcceptanceEnrichment]]] =
-      (mockStoreConnector
-        .getAcceptanceEnrichment(_: String, _: Boolean)(_: HeaderCarrier, _: LoggingContext))
-        .expects(submissionId, amendment, *, *)
-
-    def getAmendmentRejectionEnrichment(
-      submissionId: String): CallHandler[Future[Either[ErrorCode, AmendmentRejectionEnrichment]]] =
-      (mockStoreConnector
-        .getAmendmentRejectionEnrichment(_: String)(_: HeaderCarrier, _: LoggingContext))
-        .expects(submissionId, *, *)
-
-    def setShortTtl(submissionId: String): CallHandler[Future[Boolean]] =
-      (mockStoreConnector.setShortTtl(_: String)(_: HeaderCarrier, _: LoggingContext)).expects(submissionId, *, *)
-  }
-}
-
-trait MockXMLWrapper extends MockFactory {
-  val mockXMLWrapper: XMLWrapper = mock[XMLWrapper]
-
-  object MockXMLWrapper {
-    def wrapXml(correlationId: String, xml: Elem): CallHandler[Elem] =
-      (mockXMLWrapper.wrapXml(_: String, _: Elem)).expects(correlationId, xml)
-  }
-}
-
-trait MockRejectionXMLBuilder extends MockFactory {
-  val mockRejectionXMLBuilder: DeclarationRejectionXMLBuilder = mock[DeclarationRejectionXMLBuilder]
-
-  object MockRejectionXMLBuilder {
-    def buildXML(
-      decision: Decision[DecisionResponse.Rejection],
-      enrichment: DeclarationRejectionEnrichment.type): CallHandler[Elem] =
-      (mockRejectionXMLBuilder
-        .buildXML(_: Decision[DecisionResponse.Rejection], _: DeclarationRejectionEnrichment.type))
-        .expects(decision, enrichment)
-  }
-
-}
-
-trait MockDeclarationAcceptanceXMLBuilder extends MockFactory {
-  val mockDeclarationAcceptanceXMLBuilder: DeclarationAcceptanceXMLBuilder = mock[DeclarationAcceptanceXMLBuilder]
-
-  object MockDeclarationAcceptanceXMLBuilder {
-    def buildXML(decision: Decision[DecisionResponse.Acceptance], enrichment: AcceptanceEnrichment): CallHandler[Elem] =
-      (mockDeclarationAcceptanceXMLBuilder
-        .buildXML(_: Decision[DecisionResponse.Acceptance], _: AcceptanceEnrichment))
-        .expects(decision, enrichment)
-  }
-
-}
-
-trait MockAmendmentAcceptanceXMLBuilder extends MockFactory {
-  val mockAmendmentAcceptanceXMLBuilder: AmendmentAcceptanceXMLBuilder = mock[AmendmentAcceptanceXMLBuilder]
-
-  object MockAmendmentAcceptanceXMLBuilder {
-    def buildXML(decision: Decision[DecisionResponse.Acceptance], enrichment: AcceptanceEnrichment): CallHandler[Elem] =
-      (mockAmendmentAcceptanceXMLBuilder
-        .buildXML(_: Decision[DecisionResponse.Acceptance], _: AcceptanceEnrichment))
-        .expects(decision, enrichment)
-  }
-
-}
-
-trait MockAmendmentRejectionXMLBuilder extends MockFactory {
-  val mockAmendmentRejectionXMLBuilder: AmendmentRejectionXMLBuilder = mock[AmendmentRejectionXMLBuilder]
-
-  object MockAmendmentRejectionXMLBuilder {
-    def buildXML(
-      decision: Decision[DecisionResponse.Rejection],
-      enrichment: AmendmentRejectionEnrichment): CallHandler[Elem] =
-      (mockAmendmentRejectionXMLBuilder
-        .buildXML(_: Decision[DecisionResponse.Rejection], _: AmendmentRejectionEnrichment))
-        .expects(decision, enrichment)
-  }
-
-}
-
-trait MockSchemaValidator extends MockFactory {
-  val mockSchemaValidator: SchemaValidator = mock[SchemaValidator]
-
-  object MockSchemaValidator {
-    def validateSchema(schemaType: SchemaType, xml: Node): CallHandler[ValidationResult] =
-      (mockSchemaValidator.validateSchema(_: SchemaType, _: Node)).expects(schemaType, xml)
-  }
-
 }

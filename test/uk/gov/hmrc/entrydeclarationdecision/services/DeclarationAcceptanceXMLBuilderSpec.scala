@@ -37,12 +37,12 @@ class DeclarationAcceptanceXMLBuilderSpec
   "AcceptanceXMLBuilder" should {
     "return XML formatted correctly" when {
       "an acceptance decision is supplied" in {
-
         val enrichmentJson = ResourceUtils.withInputStreamFor("jsons/DeclarationAcceptanceEnrichment.json")(Json.parse)
         val enrichment     = enrichmentJson.as[AcceptanceEnrichment]
         val decisionJson   = ResourceUtils.withInputStreamFor("jsons/DeclarationAcceptanceDecision.json")(Json.parse)
         val decision       = decisionJson.as[Decision[Acceptance]]
-        val expected       = ResourceUtils.withInputStreamFor("xmls/DeclarationAcceptanceXML.xml")(XML.load)
+
+        val expected = ResourceUtils.withInputStreamFor("xmls/DeclarationAcceptanceXML.xml")(XML.load)
 
         Utility.trim(xmlBuilder.buildXML(decision, enrichment)) shouldBe Utility.trim(expected)
       }
@@ -57,7 +57,7 @@ class DeclarationAcceptanceXMLBuilderSpec
         val xml = xmlBuilder.buildXML(decision, enrichment)
 
         xml.namespace shouldBe "http://ics.dgtaxud.ec/CC328A"
-        xml.prefix            shouldBe "cc3"
+        xml.prefix    shouldBe "cc3"
       }
 
       "an acceptance decision is supplied with all optional fields" in {
