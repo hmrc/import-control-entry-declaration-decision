@@ -25,7 +25,7 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits, Injecting}
 import play.api.{Application, Environment, Mode}
 import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
@@ -72,19 +72,20 @@ class StoreConnectorSpec
     wireMockServer.stop()
 
   //Doesn't matter what enrichments are.
+  val acceptanceEnrichmentJson: JsValue = ResourceUtils
+    .withInputStreamFor("jsons/DeclarationAcceptanceEnrichmentAllOptional.json")(Json.parse)
   val acceptanceEnrichment: AcceptanceEnrichment =
-    ResourceUtils
-      .withInputStreamFor("jsons/DeclarationAcceptanceEnrichmentAllOptional.json")(Json.parse)
-      .as[AcceptanceEnrichment]
+    acceptanceEnrichmentJson.as[AcceptanceEnrichment]
 
+  val amendmentRejectionEnrichmentJson: JsValue = ResourceUtils
+    .withInputStreamFor("jsons/AmendmentRejectionEnrichmentAllOptional.json")(Json.parse)
   val amendmentRejectionEnrichment: AmendmentRejectionEnrichment =
-    ResourceUtils
-      .withInputStreamFor("jsons/AmendmentRejectionEnrichmentAllOptional.json")(Json.parse)
-      .as[AmendmentRejectionEnrichment]
+    amendmentRejectionEnrichmentJson.as[AmendmentRejectionEnrichment]
 
+  private val declarationRejectionEnrichmentJson: JsValue = ResourceUtils
+    .withInputStreamFor("jsons/DeclarationRejectionEnrichment.json")(Json.parse)
   val declarationRejectionEnrichment: DeclarationRejectionEnrichment =
-    ResourceUtils
-      .withInputStreamFor("jsons/DeclarationRejectionEnrichment.json")(Json.parse)
+    declarationRejectionEnrichmentJson
       .as[DeclarationRejectionEnrichment]
 
   val submissionId = "submissionId"
@@ -124,7 +125,7 @@ class StoreConnectorSpec
           wireMockServer.stubFor(
             get(urlPathEqualTo(declarationUrl))
               .willReturn(aResponse()
-                .withBody(Json.toJson(acceptanceEnrichment).toString)
+                .withBody(acceptanceEnrichmentJson.toString)
                 .withStatus(OK)))
 
           await(connector.getAcceptanceEnrichment(submissionId, amendment = false)) shouldBe Right(acceptanceEnrichment)
@@ -138,7 +139,7 @@ class StoreConnectorSpec
           wireMockServer.stubFor(
             get(urlPathEqualTo(amendmentUrl))
               .willReturn(aResponse()
-                .withBody(Json.toJson(acceptanceEnrichment).toString)
+                .withBody(acceptanceEnrichmentJson.toString)
                 .withStatus(OK)))
 
           await(connector.getAcceptanceEnrichment(submissionId, amendment = true)) shouldBe Right(acceptanceEnrichment)
@@ -193,7 +194,7 @@ class StoreConnectorSpec
           get(urlPathEqualTo(amendmentUrl))
             .willReturn(
               aResponse()
-                .withBody(Json.toJson(amendmentRejectionEnrichment).toString)
+                .withBody(amendmentRejectionEnrichmentJson.toString)
                 .withStatus(OK)))
 
         await(connector.getAmendmentRejectionEnrichment(submissionId)) shouldBe Right(amendmentRejectionEnrichment)
@@ -244,7 +245,7 @@ class StoreConnectorSpec
           get(urlPathEqualTo(amendmentUrl))
             .willReturn(
               aResponse()
-                .withBody(Json.toJson(declarationRejectionEnrichment).toString)
+                .withBody(declarationRejectionEnrichmentJson.toString)
                 .withStatus(OK)))
 
         await(connector.getDeclarationRejectionEnrichment(submissionId)) shouldBe Right(declarationRejectionEnrichment)
