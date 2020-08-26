@@ -26,7 +26,7 @@ import scala.xml.Elem
 trait MockDeclarationRejectionXMLBuilder extends MockFactory {
   val mockRejectionXMLBuilder: DeclarationRejectionXMLBuilder = mock[DeclarationRejectionXMLBuilder]
 
-  object MockRejectionXMLBuilder {
+  object MockDeclarationRejectionXMLBuilder {
     def buildXML(
       decision: Decision[DecisionResponse.Rejection],
       enrichment: DeclarationRejectionEnrichment): CallHandler[Elem] =

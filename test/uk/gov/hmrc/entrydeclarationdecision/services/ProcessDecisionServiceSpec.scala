@@ -19,6 +19,7 @@ package uk.gov.hmrc.entrydeclarationdecision.services
 import java.time.{Clock, Instant, ZoneOffset}
 
 import com.kenshoo.play.metrics.Metrics
+import org.scalamock.handlers.CallHandler
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Span}
 import play.api.libs.json.Json
@@ -27,6 +28,7 @@ import uk.gov.hmrc.entrydeclarationdecision.connectors.{MockOutcomeConnector, Mo
 import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.decision._
+import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.Enrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.{AmendmentRejectionEnrichment, DeclarationRejectionEnrichment}
 import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
@@ -36,7 +38,7 @@ import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
-import scala.xml.SAXParseException
+import scala.xml.{Elem, SAXParseException}
 
 class ProcessDecisionServiceSpec
     extends UnitSpec
@@ -96,17 +98,14 @@ class ProcessDecisionServiceSpec
   private val rejectionDateTime   = Instant.parse("2020-12-31T23:59:00Z")
   private val acceptedDateTime    = Instant.parse("2020-12-31T23:59:00Z")
 
-  private def validOutcome(messageType: MessageType) =
-    Outcome("eori", correlationId, submissionId, receivedDateTime, messageType, None, wrappedXml.toString)
-
-  private def validOutcomeWithMRN(messageType: MessageType) =
+  private def validOutcome(messageType: MessageType, includeMrn: Boolean) =
     Outcome(
       "eori",
       correlationId,
       submissionId,
       receivedDateTime,
       messageType,
-      Some("02CHPW67QLOYOB4IA8"),
+      if (includeMrn) Some("02CHPW67QLOYOB4IA8") else None,
       wrappedXml.toString)
 
   private val validDeclarationRejectionDecision = Decision(
@@ -165,253 +164,165 @@ class ProcessDecisionServiceSpec
     DecisionResponse.Rejection(List(DecisionError("cheese", "nisi cupidatat", None, None)), rejectionDateTime)
   )
 
-  "ProcessDecisionService" should {
-    "return a Right" when {
-      "a declaration rejection decision is supplied and the outcome successfully saved" in {
-        val decision = validDeclarationRejectionDecision
-
-        MockAppConfig.validateJsonToXMLTransformation returns false
-        MockStoreConnector
-          .getDeclarationRejectionEnrichment(submissionId) returns Right(declarationRejectionEnrichment)
-
-        MockRejectionXMLBuilder.buildXML(decision, declarationRejectionEnrichment) returns rawXml
-        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
-        MockOutcomeConnector.send(validOutcome(MessageType.IE316)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
-
-        service.processDecision(decision).futureValue shouldBe Right(())
-      }
-
-      "a declaration rejection decision successfully processed despite schema validation failing" in {
-        val decision = validDeclarationRejectionDecision
-
-        MockAppConfig.validateJsonToXMLTransformation returns true
-        MockStoreConnector
-          .getDeclarationRejectionEnrichment(submissionId) returns Right(declarationRejectionEnrichment)
-
-        MockRejectionXMLBuilder.buildXML(decision, declarationRejectionEnrichment) returns rawXml
-        MockSchemaValidator.validateSchema(SchemaType.CC316A, rawXml) returns failedValidationResult
-        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
-        MockOutcomeConnector.send(validOutcome(MessageType.IE316)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
-
-        service.processDecision(decision).futureValue shouldBe Right(())
-      }
-
-      "an declaration acceptance decision is supplied and the outcome successfully saved" in {
-        val decision = validDeclarationAcceptanceDecision
-
-        MockAppConfig.validateJsonToXMLTransformation returns false
-        MockStoreConnector
-          .getAcceptanceEnrichment(submissionId, amendment = false)
-          .returns(Future.successful(Right(declarationAcceptanceEnrichment)))
-
-        MockDeclarationAcceptanceXMLBuilder.buildXML(decision, declarationAcceptanceEnrichment) returns rawXml
-        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
-        MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE328)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
-
-        service.processDecision(decision).futureValue shouldBe Right(())
-      }
-
-      "a declaration acceptance decision successfully processed despite schema validation failing" in {
-        val decision = validDeclarationAcceptanceDecision
-
-        MockAppConfig.validateJsonToXMLTransformation returns true
-        MockStoreConnector
-          .getAcceptanceEnrichment(submissionId, amendment = false)
-          .returns(Future.successful(Right(declarationAcceptanceEnrichment)))
-
-        MockDeclarationAcceptanceXMLBuilder.buildXML(decision, declarationAcceptanceEnrichment) returns rawXml
-        MockSchemaValidator.validateSchema(SchemaType.CC328A, rawXml) returns failedValidationResult
-        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
-        MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE328)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
-
-        service.processDecision(decision).futureValue shouldBe Right(())
-      }
-
-      "an amendment acceptance decision is supplied and the outcome successfully saved" in {
-        val decision = validAmendmentAcceptanceDecision
-
-        MockAppConfig.validateJsonToXMLTransformation returns false
-        MockStoreConnector
-          .getAcceptanceEnrichment(submissionId, amendment = true)
-          .returns(Future.successful(Right(amendmentAcceptanceEnrichment)))
-
-        MockAmendmentAcceptanceXMLBuilder.buildXML(decision, amendmentAcceptanceEnrichment) returns rawXml
-        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
-        MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE304)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
-
-        service.processDecision(decision).futureValue shouldBe Right(())
-      }
-
-      "an amendment acceptance decision successfully processed despite schema validation failing" in {
-        val decision = validAmendmentAcceptanceDecision
-
-        MockAppConfig.validateJsonToXMLTransformation returns true
-        MockStoreConnector
-          .getAcceptanceEnrichment(submissionId, amendment = true)
-          .returns(Future.successful(Right(amendmentAcceptanceEnrichment)))
-
-        MockAmendmentAcceptanceXMLBuilder.buildXML(decision, amendmentAcceptanceEnrichment) returns rawXml
-        MockSchemaValidator.validateSchema(SchemaType.CC304A, rawXml) returns failedValidationResult
-        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
-        MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE304)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
-
-        service.processDecision(decision).futureValue shouldBe Right(())
-      }
-
-      "an amendment rejection decision is supplied and the outcome successfully saved" in {
-        val decision = validAmendmentRejectionDecision
-
-        MockAppConfig.validateJsonToXMLTransformation returns false
-        MockStoreConnector
-          .getAmendmentRejectionEnrichment(submissionId)
-          .returns(Future.successful(Right(amendmentRejectionEnrichment)))
-
-        MockAmendmentRejectionXMLBuilder.buildXML(decision, amendmentRejectionEnrichment) returns rawXml
-        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
-        MockOutcomeConnector.send(validOutcome(MessageType.IE305)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
-
-        service.processDecision(decision).futureValue shouldBe Right(())
-      }
-
-      "an amendment rejection decision successfully processed despite schema validation failing" in {
-        val decision = validAmendmentRejectionDecision
-
-        MockAppConfig.validateJsonToXMLTransformation returns true
-        MockStoreConnector
-          .getAmendmentRejectionEnrichment(submissionId)
-          .returns(Future.successful(Right(amendmentRejectionEnrichment)))
-
-        MockAmendmentRejectionXMLBuilder.buildXML(decision, amendmentRejectionEnrichment) returns rawXml
-        MockSchemaValidator.validateSchema(SchemaType.CC305A, rawXml) returns failedValidationResult
-        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
-        MockOutcomeConnector.send(validOutcome(MessageType.IE305)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
-
-        service.processDecision(decision).futureValue shouldBe Right(())
-      }
-      "set short TTL does not finish" in {
-        //WLOG
-        val decision = validAmendmentRejectionDecision
-
-        MockAppConfig.validateJsonToXMLTransformation returns true
-        MockStoreConnector
-          .getAmendmentRejectionEnrichment(submissionId)
-          .returns(Future.successful(Right(amendmentRejectionEnrichment)))
-
-        MockAmendmentRejectionXMLBuilder.buildXML(decision, amendmentRejectionEnrichment) returns rawXml
-        MockSchemaValidator.validateSchema(SchemaType.CC305A, rawXml) returns failedValidationResult
-        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
-        MockOutcomeConnector.send(validOutcome(MessageType.IE305)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Promise[Boolean].future
-
-        service.processDecision(decision).futureValue shouldBe Right(())
-      }
-      "set short TTL fails" in {
-        //WLOG
-        val decision = validAmendmentRejectionDecision
-
-        MockAppConfig.validateJsonToXMLTransformation returns true
-        MockStoreConnector
-          .getAmendmentRejectionEnrichment(submissionId)
-          .returns(Future.successful(Right(amendmentRejectionEnrichment)))
-
-        MockAmendmentRejectionXMLBuilder.buildXML(decision, amendmentRejectionEnrichment) returns rawXml
-        MockSchemaValidator.validateSchema(SchemaType.CC305A, rawXml) returns failedValidationResult
-        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
-        MockOutcomeConnector.send(validOutcome(MessageType.IE305)) returns Future.successful(Right(()))
-        MockStoreConnector.setShortTtl(submissionId) returns Future.successful(false)
-
-        service.processDecision(decision).futureValue shouldBe Right(())
-      }
-      "set short TTL is called eventually" in {
-        //WLOG
-        val decision = validAmendmentRejectionDecision
-
-        MockAppConfig.validateJsonToXMLTransformation returns true
-        MockStoreConnector
-          .getAmendmentRejectionEnrichment(submissionId)
-          .returns(Future.successful(Right(amendmentRejectionEnrichment)))
-
-        MockAmendmentRejectionXMLBuilder.buildXML(decision, amendmentRejectionEnrichment) returns rawXml
-        MockSchemaValidator.validateSchema(SchemaType.CC305A, rawXml) returns failedValidationResult
-        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
-        MockOutcomeConnector.send(validOutcome(MessageType.IE305)) returns Future.successful(Right(()))
-
-        val setShortTtlComplete: Promise[Unit] = Promise[Unit]
-        MockStoreConnector.setShortTtl(submissionId) returns {
-          setShortTtlComplete.success(())
-          Future.successful(true)
-        }
-
-        service.processDecision(decision).futureValue shouldBe Right(())
-        await(setShortTtlComplete)
-      }
+  "ProcessDecisionService" when {
+    "processing a declaration acceptance" must {
+      behave like decisionProcessing(
+        validDeclarationAcceptanceDecision,
+        declarationAcceptanceEnrichment,
+        MessageType.IE328,
+        SchemaType.CC328A,
+        MockStoreConnector.getAcceptanceEnrichment(_, amendment = false),
+        MockDeclarationAcceptanceXMLBuilder.buildXML
+      )
     }
 
+    "processing a declaration rejection" must {
+      behave like decisionProcessing(
+        validDeclarationRejectionDecision,
+        declarationRejectionEnrichment,
+        MessageType.IE316,
+        SchemaType.CC316A,
+        MockStoreConnector.getDeclarationRejectionEnrichment,
+        MockDeclarationRejectionXMLBuilder.buildXML
+      )
+    }
+
+    "processing a amendment acceptance" must {
+      behave like decisionProcessing(
+        validAmendmentAcceptanceDecision,
+        amendmentAcceptanceEnrichment,
+        MessageType.IE304,
+        SchemaType.CC304A,
+        MockStoreConnector.getAcceptanceEnrichment(_, amendment = true),
+        MockAmendmentAcceptanceXMLBuilder.buildXML
+      )
+    }
+
+    "processing a amendment rejection" must {
+      behave like decisionProcessing(
+        validAmendmentRejectionDecision,
+        amendmentRejectionEnrichment,
+        MessageType.IE305,
+        SchemaType.CC305A,
+        MockStoreConnector.getAmendmentRejectionEnrichment,
+        MockAmendmentRejectionXMLBuilder.buildXML
+      )
+    }
+  }
+
+  private def decisionProcessing[R <: DecisionResponse, E <: Enrichment](
+    decision: Decision[R],
+    enrichment: E,
+    messageType: MessageType,
+    validationSchemaType: SchemaType,
+    enrichmentConnectorMock: String => CallHandler[Future[Either[ErrorCode, E]]],
+    xmlBuilderMock: (Decision[R], E) => CallHandler[Elem]): Unit = {
+    val acceptance = messageType.isAcceptance
+
+    "enrich, build xml and send to outcome" in {
+      MockAppConfig.validateJsonToXMLTransformation returns false
+      enrichmentConnectorMock(submissionId) returns Right(enrichment)
+
+      xmlBuilderMock(decision, enrichment) returns rawXml
+      MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
+      MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Right(()))
+      MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
+
+      service.processDecision(decision).futureValue shouldBe Right(())
+    }
+
+    "process successfully despite schema validation failing" in {
+      MockAppConfig.validateJsonToXMLTransformation returns true
+      enrichmentConnectorMock(submissionId) returns Right(enrichment)
+
+      xmlBuilderMock(decision, enrichment) returns rawXml
+      MockSchemaValidator.validateSchema(validationSchemaType, rawXml) returns failedValidationResult
+      MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
+      MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Right(()))
+      MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
+
+      service.processDecision(decision).futureValue shouldBe Right(())
+    }
+
+    behave like errorHandling(decision, enrichment, messageType, enrichmentConnectorMock, xmlBuilderMock, acceptance)
+
+    behave like storeHousekeepingUpdating(
+      decision,
+      enrichment,
+      messageType,
+      enrichmentConnectorMock,
+      xmlBuilderMock,
+      acceptance)
+  }
+
+  private def errorHandling[E <: Enrichment, R <: DecisionResponse](
+    decision: Decision[R],
+    enrichment: E,
+    messageType: MessageType,
+    enrichmentConnectorMock: String => CallHandler[Future[Either[ErrorCode, E]]],
+    xmlBuilderMock: (Decision[R], E) => CallHandler[Elem],
+    acceptance: Boolean): Unit =
     "return the error code from the connector" when {
       // WLOG
       val someErrorCode = ErrorCode.NoSubmission
 
-      "the rejection outcome cannot be saved" in {
-        val decision = validDeclarationRejectionDecision
-
+      "the outcome cannot be sent" in {
         MockAppConfig.validateJsonToXMLTransformation returns false
-        MockStoreConnector
-          .getDeclarationRejectionEnrichment(submissionId) returns Right(declarationRejectionEnrichment)
+        enrichmentConnectorMock(submissionId)
+          .returns(Future.successful(Right(enrichment)))
 
-        MockRejectionXMLBuilder.buildXML(decision, declarationRejectionEnrichment) returns rawXml
+        xmlBuilderMock(decision, enrichment) returns rawXml
         MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
-        MockOutcomeConnector.send(validOutcome(MessageType.IE316)) returns Future.successful(Left(someErrorCode))
+        MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Left(someErrorCode))
 
         service.processDecision(decision).futureValue shouldBe Left(someErrorCode)
       }
 
-      "the acceptance outcome cannot be saved" in {
-        val decision = validDeclarationAcceptanceDecision
-
-        MockAppConfig.validateJsonToXMLTransformation returns false
-        MockStoreConnector
-          .getAcceptanceEnrichment(submissionId, amendment = false)
-          .returns(Future.successful(Right(declarationAcceptanceEnrichment)))
-
-        MockDeclarationAcceptanceXMLBuilder.buildXML(decision, declarationAcceptanceEnrichment) returns rawXml
-        MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
-        MockOutcomeConnector.send(validOutcomeWithMRN(MessageType.IE328)) returns Future.successful(Left(someErrorCode))
-
-        service.processDecision(decision).futureValue shouldBe Left(someErrorCode)
-      }
-
-      "the acceptance enrichment fails" in {
-        MockStoreConnector
-          .getAcceptanceEnrichment(submissionId, amendment = false)
+      "the enrichment fails" in {
+        enrichmentConnectorMock(submissionId)
           .returns(Future.successful(Left(someErrorCode)))
 
-        service.processDecision(validDeclarationAcceptanceDecision).futureValue shouldBe Left(someErrorCode)
+        service.processDecision(decision).futureValue shouldBe Left(someErrorCode)
       }
     }
-    "not call setShortTTl on failure" in {
-      val decision = validDeclarationRejectionDecision
 
+  private def storeHousekeepingUpdating[E <: Enrichment, R <: DecisionResponse](
+    decision: Decision[R],
+    enrichment: E,
+    messageType: MessageType,
+    enrichmentConnectorMock: String => CallHandler[Future[Either[ErrorCode, E]]],
+    xmlBuilderMock: (Decision[R], E) => CallHandler[Elem],
+    acceptance: Boolean): Unit = {
+
+    "not wait for setShortTtl to finish" in {
       MockAppConfig.validateJsonToXMLTransformation returns false
-      MockStoreConnector
-        .getDeclarationRejectionEnrichment(submissionId) returns Right(declarationRejectionEnrichment)
+      enrichmentConnectorMock(submissionId)
+        .returns(Future.successful(Right(enrichment)))
 
-      MockRejectionXMLBuilder.buildXML(decision, declarationRejectionEnrichment) returns rawXml
+      xmlBuilderMock(decision, enrichment) returns rawXml
+      MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
+      MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Right(()))
+      MockStoreConnector.setShortTtl(submissionId) returns Promise[Boolean].future
+
+      service.processDecision(decision).futureValue shouldBe Right(())
+    }
+
+    "not call setShortTTl on failure" in {
+      MockAppConfig.validateJsonToXMLTransformation returns false
+      enrichmentConnectorMock(submissionId) returns Right(enrichment)
+
+      xmlBuilderMock(decision, enrichment) returns rawXml
       MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
       //WLOG
-      MockOutcomeConnector.send(validOutcome(MessageType.IE316)) returns Future.successful(Left(ErrorCode.NoSubmission))
+      MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(
+        Left(ErrorCode.NoSubmission))
       MockStoreConnector.setShortTtl(submissionId).never returns true
 
       service.processDecision(decision).futureValue shouldBe Left(ErrorCode.NoSubmission)
 
       Thread.sleep(100) // check that MockStoreConnector.setShortTtl(submissionId) isn't called in this time
+
+      fail("this does not fail when remove the Success criteria of the andThen - why?")
     }
   }
 
