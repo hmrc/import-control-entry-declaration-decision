@@ -25,18 +25,17 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.Status._
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsValue, Json, Reads}
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits, Injecting}
 import play.api.{Application, Environment, Mode}
 import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
 import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
-import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
-import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.{AmendmentRejectionEnrichment, DeclarationRejectionEnrichment}
 import uk.gov.hmrc.entrydeclarationdecision.utils.ResourceUtils
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class StoreConnectorSpec
     extends WordSpec
@@ -74,19 +73,12 @@ class StoreConnectorSpec
   //Doesn't matter what enrichments are.
   val acceptanceEnrichmentJson: JsValue = ResourceUtils
     .withInputStreamFor("jsons/DeclarationAcceptanceEnrichmentAllOptional.json")(Json.parse)
-  val acceptanceEnrichment: AcceptanceEnrichment =
-    acceptanceEnrichmentJson.as[AcceptanceEnrichment]
 
   val amendmentRejectionEnrichmentJson: JsValue = ResourceUtils
     .withInputStreamFor("jsons/AmendmentRejectionEnrichmentAllOptional.json")(Json.parse)
-  val amendmentRejectionEnrichment: AmendmentRejectionEnrichment =
-    amendmentRejectionEnrichmentJson.as[AmendmentRejectionEnrichment]
 
-  private val declarationRejectionEnrichmentJson: JsValue = ResourceUtils
+  val declarationRejectionEnrichmentJson: JsValue = ResourceUtils
     .withInputStreamFor("jsons/DeclarationRejectionEnrichment.json")(Json.parse)
-  val declarationRejectionEnrichment: DeclarationRejectionEnrichment =
-    declarationRejectionEnrichmentJson
-      .as[DeclarationRejectionEnrichment]
 
   val submissionId = "submissionId"
 
@@ -112,175 +104,74 @@ class StoreConnectorSpec
           .willReturn(aResponse().withFault(Fault.CONNECTION_RESET_BY_PEER)))
   }
 
-  "StoreConnector.getAcceptanceEnrichment" when {
-
-    val declarationUrl =
-      s"/import-control/declaration/acceptance-enrichment/$submissionId"
-    val amendmentUrl =
-      s"/import-control/amendment/acceptance-enrichment/$submissionId"
-
-    "called for a declaration" when {
-      "store responds 200 Ok" must {
-        "return Right with the enrichment" in new Test {
-          wireMockServer.stubFor(
-            get(urlPathEqualTo(declarationUrl))
-              .willReturn(aResponse()
-                .withBody(acceptanceEnrichmentJson.toString)
-                .withStatus(OK)))
-
-          await(connector.getAcceptanceEnrichment(submissionId, amendment = false)) shouldBe Right(acceptanceEnrichment)
-        }
-      }
-    }
-
-    "called for an amendment" when {
-      "store responds 200 Ok" must {
-        "return Right with the enrichment" in new Test {
-          wireMockServer.stubFor(
-            get(urlPathEqualTo(amendmentUrl))
-              .willReturn(aResponse()
-                .withBody(acceptanceEnrichmentJson.toString)
-                .withStatus(OK)))
-
-          await(connector.getAcceptanceEnrichment(submissionId, amendment = true)) shouldBe Right(acceptanceEnrichment)
-        }
-      }
-    }
-
-    "store responds 404" must {
-      "return Left with ErrorCode.NoSubmission" in new Test {
-        stubRequest(declarationUrl, NOT_FOUND)
-
-        await(connector.getAcceptanceEnrichment(submissionId, amendment = false)) shouldBe Left(ErrorCode.NoSubmission)
-      }
-    }
-
-    "store responds 4xx" must {
-      "return Left with ErrorCode.ConnectorError" in new Test {
-        stubRequest(declarationUrl, BAD_REQUEST)
-
-        await(connector.getAcceptanceEnrichment(submissionId, amendment = false)) shouldBe Left(
-          ErrorCode.ConnectorError)
-      }
-    }
-
-    "store responds 5xx" must {
-      "return Left with ErrorCode.ConnectorError" in new Test {
-        stubRequest(declarationUrl, INTERNAL_SERVER_ERROR)
-
-        await(connector.getAcceptanceEnrichment(submissionId, amendment = false)) shouldBe Left(
-          ErrorCode.ConnectorError)
-      }
-    }
-
-    "unable to connect" must {
-      "return Left with ErrorCode.ConnectorError" in new Test {
-        stubConnectionFault(declarationUrl)
-
-        await(connector.getAcceptanceEnrichment(submissionId, amendment = false)) shouldBe Left(
-          ErrorCode.ConnectorError)
-      }
-    }
+  "StoreConnector.getAcceptanceEnrichment for a declaration" must {
+    behave like gettingAnEnrichmentFor(
+      s"/import-control/declaration/acceptance-enrichment/$submissionId",
+      acceptanceEnrichmentJson)(_.getAcceptanceEnrichment(submissionId, amendment = false))
   }
 
-  "StoreConnector.getAmendmentRejectionEnrichment" when {
+  "StoreConnector.getAcceptanceEnrichment for an amendment" must {
+    behave like gettingAnEnrichmentFor(
+      s"/import-control/amendment/acceptance-enrichment/$submissionId",
+      acceptanceEnrichmentJson)(_.getAcceptanceEnrichment(submissionId, amendment = true))
+  }
 
-    val amendmentUrl =
-      s"/import-control/amendment/rejection-enrichment/$submissionId"
+  "StoreConnector.getDeclarationRejectionEnrichment" must {
+    behave like gettingAnEnrichmentFor(
+      s"/import-control/declaration/rejection-enrichment/$submissionId",
+      declarationRejectionEnrichmentJson)(_.getDeclarationRejectionEnrichment(submissionId))
+  }
 
+  "StoreConnector.getAmendmentRejectionEnrichment" must {
+    behave like gettingAnEnrichmentFor(
+      s"/import-control/amendment/rejection-enrichment/$submissionId",
+      amendmentRejectionEnrichmentJson)(_.getAmendmentRejectionEnrichment(submissionId))
+  }
+
+  private def gettingAnEnrichmentFor[E: Reads](url: String, bodyJson: JsValue)(
+    enrichmentGetter: StoreConnector => Future[Either[ErrorCode, E]]): Unit = {
     "store responds 200 Ok" must {
       "return Right with the enrichment" in new Test {
         wireMockServer.stubFor(
-          get(urlPathEqualTo(amendmentUrl))
+          get(urlPathEqualTo(url))
             .willReturn(
               aResponse()
-                .withBody(amendmentRejectionEnrichmentJson.toString)
+                .withBody(bodyJson.toString)
                 .withStatus(OK)))
 
-        await(connector.getAmendmentRejectionEnrichment(submissionId)) shouldBe Right(amendmentRejectionEnrichment)
+        await(enrichmentGetter(connector)) shouldBe Right(bodyJson.as[E])
       }
     }
 
     "store responds 404" must {
       "return Left with ErrorCode.NoSubmission" in new Test {
-        stubRequest(amendmentUrl, NOT_FOUND)
+        stubRequest(url, NOT_FOUND)
 
-        await(connector.getAmendmentRejectionEnrichment(submissionId)) shouldBe Left(ErrorCode.NoSubmission)
+        await(enrichmentGetter(connector)) shouldBe Left(ErrorCode.NoSubmission)
       }
     }
 
     "store responds 4xx" must {
       "return Left with ErrorCode.ConnectorError" in new Test {
-        stubRequest(amendmentUrl, BAD_REQUEST)
+        stubRequest(url, BAD_REQUEST)
 
-        await(connector.getAmendmentRejectionEnrichment(submissionId)) shouldBe Left(ErrorCode.ConnectorError)
+        await(enrichmentGetter(connector)) shouldBe Left(ErrorCode.ConnectorError)
       }
     }
 
     "store responds 5xx" must {
       "return Left with ErrorCode.ConnectorError" in new Test {
-        stubRequest(amendmentUrl, INTERNAL_SERVER_ERROR)
+        stubRequest(url, INTERNAL_SERVER_ERROR)
 
-        await(connector.getAmendmentRejectionEnrichment(submissionId)) shouldBe Left(ErrorCode.ConnectorError)
+        await(enrichmentGetter(connector)) shouldBe Left(ErrorCode.ConnectorError)
       }
     }
 
     "unable to connect" must {
       "return Left with ErrorCode.ConnectorError" in new Test {
-        stubConnectionFault(amendmentUrl)
+        stubConnectionFault(url)
 
-        await(connector.getAmendmentRejectionEnrichment(submissionId)) shouldBe Left(ErrorCode.ConnectorError)
-      }
-    }
-  }
-
-  "StoreConnector.getDeclarationRejectionEnrichment" when {
-
-    val amendmentUrl =
-      s"/import-control/declaration/rejection-enrichment/$submissionId"
-
-    "store responds 200 Ok" must {
-      "return Right with the enrichment" in new Test {
-        wireMockServer.stubFor(
-          get(urlPathEqualTo(amendmentUrl))
-            .willReturn(
-              aResponse()
-                .withBody(declarationRejectionEnrichmentJson.toString)
-                .withStatus(OK)))
-
-        await(connector.getDeclarationRejectionEnrichment(submissionId)) shouldBe Right(declarationRejectionEnrichment)
-      }
-    }
-
-    "store responds 404" must {
-      "return Left with ErrorCode.NoSubmission" in new Test {
-        stubRequest(amendmentUrl, NOT_FOUND)
-
-        await(connector.getDeclarationRejectionEnrichment(submissionId)) shouldBe Left(ErrorCode.NoSubmission)
-      }
-    }
-
-    "store responds 4xx" must {
-      "return Left with ErrorCode.ConnectorError" in new Test {
-        stubRequest(amendmentUrl, BAD_REQUEST)
-
-        await(connector.getDeclarationRejectionEnrichment(submissionId)) shouldBe Left(ErrorCode.ConnectorError)
-      }
-    }
-
-    "store responds 5xx" must {
-      "return Left with ErrorCode.ConnectorError" in new Test {
-        stubRequest(amendmentUrl, INTERNAL_SERVER_ERROR)
-
-        await(connector.getDeclarationRejectionEnrichment(submissionId)) shouldBe Left(ErrorCode.ConnectorError)
-      }
-    }
-
-    "unable to connect" must {
-      "return Left with ErrorCode.ConnectorError" in new Test {
-        stubConnectionFault(amendmentUrl)
-
-        await(connector.getDeclarationRejectionEnrichment(submissionId)) shouldBe Left(ErrorCode.ConnectorError)
+        await(enrichmentGetter(connector)) shouldBe Left(ErrorCode.ConnectorError)
       }
     }
   }
