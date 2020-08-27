@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import com.kenshoo.play.metrics.Metrics
 import org.scalamock.handlers.CallHandler
+import org.scalatest.{AppendedClues, Assertion}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Span}
 import play.api.libs.json.Json
@@ -52,30 +53,42 @@ class ProcessDecisionServiceSpec
     with MockDeclarationRejectionXMLBuilder
     with MockSchemaValidator
     with MockXMLWrapper
-    with ScalaFutures {
+    with ScalaFutures
+    with AppendedClues {
 
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(500, Millis))
 
   implicit val hc: HeaderCarrier  = HeaderCarrier()
   implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 
-  val time: Instant          = Instant.now
-  val clock: Clock           = Clock.fixed(time, ZoneOffset.UTC)
-  val mockedMetrics: Metrics = new MockMetrics
+  val time: Instant = Instant.now
+  val clock: Clock  = Clock.fixed(time, ZoneOffset.UTC)
 
-  val service = new ProcessDecisionService(
-    mockAppConfig,
-    mockOutcomeConnector,
-    mockStoreConnector,
-    mockDeclarationAcceptanceXMLBuilder,
-    mockRejectionXMLBuilder,
-    mockAmendmentAcceptanceXMLBuilder,
-    mockAmendmentRejectionXMLBuilder,
-    mockSchemaValidator,
-    mockXMLWrapper,
-    clock,
-    mockedMetrics
-  )
+  val e2eTimerName = "E2E.eisDecision-e2eTimer"
+
+  class Test {
+    val mockedMetrics: Metrics = new MockMetrics
+
+    val service = new ProcessDecisionService(
+      mockAppConfig,
+      mockOutcomeConnector,
+      mockStoreConnector,
+      mockDeclarationAcceptanceXMLBuilder,
+      mockRejectionXMLBuilder,
+      mockAmendmentAcceptanceXMLBuilder,
+      mockAmendmentRejectionXMLBuilder,
+      mockSchemaValidator,
+      mockXMLWrapper,
+      clock,
+      mockedMetrics
+    )
+
+    def shouldReportMetric(): Assertion =
+      mockedMetrics.defaultRegistry.timer(e2eTimerName).getCount shouldBe 1 withClue "should report metric"
+
+    def shouldNotReportMetric(): Assertion =
+      mockedMetrics.defaultRegistry.timer(e2eTimerName).getCount shouldBe 0 withClue "should not report metric"
+  }
 
   // WLOG
   private val declarationAcceptanceEnrichment =
@@ -220,7 +233,7 @@ class ProcessDecisionServiceSpec
     xmlBuilderMock: (Decision[R], E) => CallHandler[Elem]): Unit = {
     val acceptance = messageType.isAcceptance
 
-    "enrich, build xml and send to outcome" in {
+    "enrich, build xml and send to outcome" in new Test {
       MockAppConfig.validateJsonToXMLTransformation returns false
       enrichmentConnectorMock(submissionId) returns Right(enrichment)
 
@@ -230,9 +243,11 @@ class ProcessDecisionServiceSpec
       MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
 
       service.processDecision(decision).futureValue shouldBe Right(())
+
+      shouldReportMetric()
     }
 
-    "process successfully despite schema validation failing" in {
+    "process successfully despite schema validation failing" in new Test {
       MockAppConfig.validateJsonToXMLTransformation returns true
       enrichmentConnectorMock(submissionId) returns Right(enrichment)
 
@@ -243,6 +258,8 @@ class ProcessDecisionServiceSpec
       MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
 
       service.processDecision(decision).futureValue shouldBe Right(())
+
+      shouldReportMetric()
     }
 
     behave like errorHandling(decision, enrichment, messageType, enrichmentConnectorMock, xmlBuilderMock, acceptance)
@@ -267,7 +284,7 @@ class ProcessDecisionServiceSpec
       // WLOG
       val someErrorCode = ErrorCode.NoSubmission
 
-      "the outcome cannot be sent" in {
+      "the outcome cannot be sent" in new Test {
         MockAppConfig.validateJsonToXMLTransformation returns false
         enrichmentConnectorMock(submissionId)
           .returns(Future.successful(Right(enrichment)))
@@ -277,13 +294,17 @@ class ProcessDecisionServiceSpec
         MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Left(someErrorCode))
 
         service.processDecision(decision).futureValue shouldBe Left(someErrorCode)
+
+        shouldNotReportMetric()
       }
 
-      "the enrichment fails" in {
+      "the enrichment fails" in new Test {
         enrichmentConnectorMock(submissionId)
           .returns(Future.successful(Left(someErrorCode)))
 
         service.processDecision(decision).futureValue shouldBe Left(someErrorCode)
+
+        shouldNotReportMetric()
       }
     }
 
@@ -303,7 +324,7 @@ class ProcessDecisionServiceSpec
       MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
     }
 
-    "not wait for setShortTtl to finish" in {
+    "not wait for setShortTtl to finish" in new Test {
       setupEnrichmentAndXmlBuilderStubs()
 
       MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Right(()))
@@ -312,11 +333,11 @@ class ProcessDecisionServiceSpec
       service.processDecision(decision).futureValue shouldBe Right(())
     }
 
-    "not call setShortTTl on failure" in {
+    "not call setShortTTl on failure" in new Test {
       setupEnrichmentAndXmlBuilderStubs()
 
       // WLOG
-      val someErrorCode = ErrorCode.NoSubmission
+      val someErrorCode: ErrorCode = ErrorCode.NoSubmission
 
       MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Left(someErrorCode))
 

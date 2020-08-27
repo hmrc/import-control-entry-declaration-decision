@@ -130,7 +130,10 @@ class ProcessDecisionService @Inject()(
         _          = validateSchema(validationSchema, xml)
         wrappedXml = xmlWrapper.wrapXml(decision.metadata.correlationId, xml)
         sendResult <- EitherT(sendOutcome(decision, enrichment, wrappedXml))
-      } yield sendResult
+      } yield {
+        enrichment.eisSubmissionDateTime.foreach(timeFrom("E2E.eisDecision-e2eTimer", _))
+        sendResult
+      }
 
       result.value
     }
