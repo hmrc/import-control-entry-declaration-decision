@@ -17,6 +17,7 @@
 package uk.gov.hmrc.entrydeclarationdecision.services
 
 import java.time.{Clock, Instant, ZoneOffset}
+import java.util.concurrent.atomic.AtomicBoolean
 
 import com.kenshoo.play.metrics.Metrics
 import org.scalamock.handlers.CallHandler
@@ -294,13 +295,17 @@ class ProcessDecisionServiceSpec
     xmlBuilderMock: (Decision[R], E) => CallHandler[Elem],
     acceptance: Boolean): Unit = {
 
-    "not wait for setShortTtl to finish" in {
+    def setupEnrichmentAndXmlBuilderStubs() = {
       MockAppConfig.validateJsonToXMLTransformation returns false
-      enrichmentConnectorMock(submissionId)
-        .returns(Future.successful(Right(enrichment)))
+      enrichmentConnectorMock(submissionId) returns Right(enrichment)
 
       xmlBuilderMock(decision, enrichment) returns rawXml
       MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
+    }
+
+    "not wait for setShortTtl to finish" in {
+      setupEnrichmentAndXmlBuilderStubs()
+
       MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Right(()))
       MockStoreConnector.setShortTtl(submissionId) returns Promise[Boolean].future
 
@@ -308,21 +313,25 @@ class ProcessDecisionServiceSpec
     }
 
     "not call setShortTTl on failure" in {
-      MockAppConfig.validateJsonToXMLTransformation returns false
-      enrichmentConnectorMock(submissionId) returns Right(enrichment)
+      setupEnrichmentAndXmlBuilderStubs()
 
-      xmlBuilderMock(decision, enrichment) returns rawXml
-      MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
-      //WLOG
-      MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(
-        Left(ErrorCode.NoSubmission))
-      MockStoreConnector.setShortTtl(submissionId).never returns true
+      // WLOG
+      val someErrorCode = ErrorCode.NoSubmission
 
-      service.processDecision(decision).futureValue shouldBe Left(ErrorCode.NoSubmission)
+      MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Left(someErrorCode))
 
-      Thread.sleep(100) // check that MockStoreConnector.setShortTtl(submissionId) isn't called in this time
+      val called = new AtomicBoolean(false)
+      MockStoreConnector
+        .setShortTtl(submissionId)
+        .onCall { _ =>
+          called.set(true)
+          Future.successful(true)
+        }
+        .anyNumberOfTimes() // not really but `never()` neither picks up failures nor calls `onCall`.
 
-      fail("this does not fail when remove the Success criteria of the andThen - why?")
+      service.processDecision(decision).futureValue shouldBe Left(someErrorCode)
+
+      called.get shouldBe false
     }
   }
 
