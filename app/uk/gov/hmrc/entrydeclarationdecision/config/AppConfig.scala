@@ -20,6 +20,8 @@ import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.{AppName, ServicesConfig}
 
+import scala.concurrent.duration.{Duration, FiniteDuration}
+
 trait AppConfig {
 
   def authBaseUrl: String
@@ -41,10 +43,21 @@ trait AppConfig {
   def validateIncomingJson: Boolean
 
   def validateJsonToXMLTransformation: Boolean
+
+  def longJourneyTime: FiniteDuration
 }
 
 @Singleton
 class AppConfigImpl @Inject()(config: Configuration, servicesConfig: ServicesConfig) extends AppConfig {
+
+  private final def getFiniteDuration(config: Configuration, path: String): FiniteDuration = {
+    val string = config.get[String](path)
+
+    Duration.create(string) match {
+      case f: FiniteDuration => f
+      case _                 => throw new RuntimeException(s"Not a finite duration '$string' for $path")
+    }
+  }
 
   val authBaseUrl: String = servicesConfig.baseUrl("auth")
 
@@ -68,4 +81,5 @@ class AppConfigImpl @Inject()(config: Configuration, servicesConfig: ServicesCon
   lazy val validateJsonToXMLTransformation: Boolean =
     config.getOptional[Boolean]("validateJsonToXMLTransformation").getOrElse(false)
 
+  lazy val longJourneyTime: FiniteDuration = getFiniteDuration(config, "longJourneyTime")
 }

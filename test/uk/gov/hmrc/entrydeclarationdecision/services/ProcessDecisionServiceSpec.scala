@@ -21,9 +21,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import com.kenshoo.play.metrics.Metrics
 import org.scalamock.handlers.CallHandler
-import org.scalatest.{AppendedClues, Assertion}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Span}
+import org.scalatest.{AppendedClues, Assertion}
 import play.api.libs.json.Json
 import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
 import uk.gov.hmrc.entrydeclarationdecision.connectors.{MockOutcomeConnector, MockStoreConnector}
@@ -39,6 +39,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 import scala.concurrent.{Future, Promise}
 import scala.xml.{Elem, SAXParseException}
 
@@ -111,6 +112,8 @@ class ProcessDecisionServiceSpec
   private val receivedDateTime    = Instant.parse("2020-12-31T23:59:00Z")
   private val rejectionDateTime   = Instant.parse("2020-12-31T23:59:00Z")
   private val acceptedDateTime    = Instant.parse("2020-12-31T23:59:00Z")
+
+  private val longJourneyTime: FiniteDuration = 1.second
 
   private def validOutcome(messageType: MessageType, includeMrn: Boolean) =
     Outcome(
@@ -240,6 +243,7 @@ class ProcessDecisionServiceSpec
       xmlBuilderMock(decision, enrichment) returns rawXml
       MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
       MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Right(()))
+      MockAppConfig.longJourneyTime returns longJourneyTime
       MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
 
       service.processDecision(decision).futureValue shouldBe Right(())
@@ -255,6 +259,7 @@ class ProcessDecisionServiceSpec
       MockSchemaValidator.validateSchema(validationSchemaType, rawXml) returns failedValidationResult
       MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
       MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Right(()))
+      MockAppConfig.longJourneyTime returns longJourneyTime
       MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
 
       service.processDecision(decision).futureValue shouldBe Right(())
@@ -319,40 +324,44 @@ class ProcessDecisionServiceSpec
     def setupEnrichmentAndXmlBuilderStubs() = {
       MockAppConfig.validateJsonToXMLTransformation returns false
       enrichmentConnectorMock(submissionId) returns Right(enrichment)
-
       xmlBuilderMock(decision, enrichment) returns rawXml
       MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
     }
 
     "not wait for setShortTtl to finish" in new Test {
       setupEnrichmentAndXmlBuilderStubs()
-
       MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Right(()))
+      MockAppConfig.longJourneyTime returns longJourneyTime
       MockStoreConnector.setShortTtl(submissionId) returns Promise[Boolean].future
 
       service.processDecision(decision).futureValue shouldBe Right(())
     }
 
-    "not call setShortTTl on failure" in new Test {
+    "not call setShortTTl or isLongJourneyTime on failure" in new Test {
       setupEnrichmentAndXmlBuilderStubs()
-
       // WLOG
       val someErrorCode: ErrorCode = ErrorCode.NoSubmission
-
       MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Left(someErrorCode))
 
-      val called = new AtomicBoolean(false)
+      val setShortTtlCalled = new AtomicBoolean(false)
       MockStoreConnector
         .setShortTtl(submissionId)
         .onCall { _ =>
-          called.set(true)
+          setShortTtlCalled.set(true)
           Future.successful(true)
+        }
+        .anyNumberOfTimes() // not really but `never()` neither picks up failures nor calls `onCall`.
+      val longJourneyTimeCalled = new AtomicBoolean(false)
+      MockAppConfig.longJourneyTime
+        .onCall { _ =>
+          longJourneyTimeCalled.set(true)
+          longJourneyTime
         }
         .anyNumberOfTimes() // not really but `never()` neither picks up failures nor calls `onCall`.
 
       service.processDecision(decision).futureValue shouldBe Left(someErrorCode)
-
-      called.get shouldBe false
+      setShortTtlCalled.get                         shouldBe false
+      longJourneyTimeCalled.get                     shouldBe false
     }
   }
 

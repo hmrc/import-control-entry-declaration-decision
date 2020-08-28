@@ -29,7 +29,6 @@ import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.MessageType.{IE304, IE305, IE316, IE328}
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.{Decision, DecisionResponse, MessageType}
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.Enrichment
-import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.DeclarationRejectionEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
 import uk.gov.hmrc.entrydeclarationdecision.utils.{EventLogger, SchemaType, SchemaValidator, Timer}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -90,7 +89,9 @@ class ProcessDecisionService @Inject()(
         }
 
       processDecisionResponse(decision.response).andThen {
-        case Success(Right(_)) => storeConnector.setShortTtl(decision.submissionId)
+        case Success(Right(_)) =>
+          isLongJourneyTime(decision.metadata.receivedDateTime, appConfig.longJourneyTime)
+          storeConnector.setShortTtl(decision.submissionId)
       }
 
     }
