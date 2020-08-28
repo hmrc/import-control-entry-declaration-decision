@@ -85,7 +85,7 @@ class ProcessDecisionService @Inject()(
               doProcessDecision(
                 decision.withResponse(resp),
                 declarationRejectionXMLBuilder,
-                _ => Future.successful(Right(DeclarationRejectionEnrichment)))
+                storeConnector.getDeclarationRejectionEnrichment)
             }
         }
 

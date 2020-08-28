@@ -16,11 +16,14 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection
 
-import play.api.libs.json.{Format, Json}
+import java.time.Instant
+
+import play.api.libs.json.{Format, Json, Reads}
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.Enrichment
 
-case class AmendmentRejectionEnrichment(payload: EntrySummaryDeclaration) extends Enrichment
+case class AmendmentRejectionEnrichment(eisSubmissionDateTime: Option[Instant], payload: EntrySummaryDeclaration)
+    extends Enrichment
 
 object AmendmentRejectionEnrichment {
-  implicit val jsonFormat: Format[AmendmentRejectionEnrichment] = Json.format[AmendmentRejectionEnrichment]
+  implicit val jsonReads: Reads[AmendmentRejectionEnrichment] = Json.reads[AmendmentRejectionEnrichment]
 }

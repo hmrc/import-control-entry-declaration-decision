@@ -27,9 +27,9 @@ import scala.xml.Elem
 
 @Singleton
 class DeclarationRejectionXMLBuilder @Inject()()(implicit ex: ExecutionContext)
-    extends RejectionXMLBuilder[DeclarationRejectionEnrichment.type] {
+    extends RejectionXMLBuilder[DeclarationRejectionEnrichment] {
 
-  def buildXML(decision: Decision[Rejection], enrichment: DeclarationRejectionEnrichment.type): Elem =
+  def buildXML(decision: Decision[Rejection], enrichment: DeclarationRejectionEnrichment): Elem =
     //Message Receiver is Message Sender as we don't currently support sending the message to anyone other than the message sender.
     //@formatter:off
     <cc3:CC316A xmlns:cc3="http://ics.dgtaxud.ec/CC316A">

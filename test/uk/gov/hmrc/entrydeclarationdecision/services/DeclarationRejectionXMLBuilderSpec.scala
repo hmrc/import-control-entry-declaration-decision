@@ -17,9 +17,10 @@
 package uk.gov.hmrc.entrydeclarationdecision.services
 
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.DecisionResponse.Rejection
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.{ArbitraryDecision, Decision, MessageType}
+import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.DeclarationRejectionEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.utils.{ResourceUtils, SchemaType, SchemaValidator}
 import uk.gov.hmrc.play.test.UnitSpec
@@ -30,34 +31,37 @@ import scala.xml.{Utility, XML}
 class DeclarationRejectionXMLBuilderSpec extends UnitSpec with ScalaCheckDrivenPropertyChecks with ArbitraryDecision {
   val xmlBuilder = new DeclarationRejectionXMLBuilder()
 
+  val enrichmentJson: JsValue =
+    ResourceUtils.withInputStreamFor("jsons/DeclarationRejectionEnrichment.json")(Json.parse)
+  val enrichment: DeclarationRejectionEnrichment = enrichmentJson.as[DeclarationRejectionEnrichment]
+
   "RejectionXMLBuilder" should {
     "return XML formatted correctly" when {
       "a rejection decision is supplied" in {
-
         val expected     = ResourceUtils.withInputStreamFor("xmls/DeclarationRejectionXML.xml")(XML.load)
         val decisionJson = ResourceUtils.withInputStreamFor("jsons/DeclarationRejectionDecision.json")(Json.parse)
         val decision     = decisionJson.as[Decision[Rejection]]
 
-        Utility.trim(xmlBuilder.buildXML(decision, DeclarationRejectionEnrichment)) shouldBe Utility.trim(expected)
+        Utility.trim(xmlBuilder.buildXML(decision, enrichment)) shouldBe Utility.trim(expected)
       }
-      "with the correct namespace and prefix" in {
 
+      "with the correct namespace and prefix" in {
         val decisionJson = ResourceUtils.withInputStreamFor("jsons/DeclarationRejectionDecision.json")(Json.parse)
         val decision     = decisionJson.as[Decision[Rejection]]
 
-        val xml = xmlBuilder.buildXML(decision, DeclarationRejectionEnrichment)
+        val xml = xmlBuilder.buildXML(decision, enrichment)
 
         xml.namespace shouldBe "http://ics.dgtaxud.ec/CC316A"
-        xml.prefix            shouldBe "cc3"
+        xml.prefix    shouldBe "cc3"
       }
-      "an rejection decision is supplied with all optional fields" in {
 
+      "an rejection decision is supplied with all optional fields" in {
         val expected = ResourceUtils.withInputStreamFor("xmls/DeclarationRejectionAllOptionalXML.xml")(XML.load)
         val decisionJson =
           ResourceUtils.withInputStreamFor("jsons/DeclarationRejectionDecisionAllOptional.json")(Json.parse)
         val decision = decisionJson.as[Decision[Rejection]]
 
-        Utility.trim(xmlBuilder.buildXML(decision, DeclarationRejectionEnrichment)) shouldBe Utility.trim(expected)
+        Utility.trim(xmlBuilder.buildXML(decision, enrichment)) shouldBe Utility.trim(expected)
       }
     }
 
@@ -68,7 +72,7 @@ class DeclarationRejectionXMLBuilderSpec extends UnitSpec with ScalaCheckDrivenP
 
       forAll { decision: Decision[Rejection] =>
         val xml = xmlBuilder
-          .buildXML(decision, DeclarationRejectionEnrichment)
+          .buildXML(decision, enrichment)
 
         schemaValidator.validateSchema(SchemaType.CC316A, xml).allErrors.filterNot { ex =>
           // Ignore type related errors

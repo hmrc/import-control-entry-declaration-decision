@@ -80,7 +80,8 @@ trait ArbitraryAmendmentRejectionEnrichment extends PropertyCheckSupport {
   implicit def arbitraryRejectionEnrichment(
     implicit messageType: MessageType): Arbitrary[AmendmentRejectionEnrichment] = Arbitrary(
     for {
-      payload <- arbitrary[EntrySummaryDeclaration]
-    } yield AmendmentRejectionEnrichment(payload)
+      eisSubmissionDateTime <- arbitrary[Option[Instant]]
+      payload               <- arbitrary[EntrySummaryDeclaration]
+    } yield AmendmentRejectionEnrichment(eisSubmissionDateTime, payload)
   )
 }
