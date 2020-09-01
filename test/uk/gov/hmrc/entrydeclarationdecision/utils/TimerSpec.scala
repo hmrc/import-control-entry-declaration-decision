@@ -22,7 +22,6 @@ import com.kenshoo.play.metrics.Metrics
 import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.{FiniteDuration, SECONDS}
 
 class TimerSpec extends UnitSpec with Timer with EventLogger {
   val metrics: Metrics   = new MockMetrics
@@ -55,22 +54,6 @@ class TimerSpec extends UnitSpec with Timer with EventLogger {
     }
     "TimeFrom calculates the time correctly" in {
       timeFrom("test timer", startTime) shouldBe Duration.between(startTime, endTime)
-    }
-    "isLongJourneyTime returns true" when {
-      "startTime - endTime > longJourneyTime" in {
-        val longJourneyTime = new FiniteDuration(1, SECONDS)
-        isLongJourneyTime(startTime, longJourneyTime) shouldBe true
-      }
-      "startTime - endTime = longJourneyTime" in {
-        val longJourneyTime = new FiniteDuration(2, SECONDS)
-        isLongJourneyTime(startTime, longJourneyTime) shouldBe true
-      }
-    }
-    "isLongJourneyTime returns false" when {
-      "startTime - endTime < longJourneyTime" in {
-        val longJourneyTime = new FiniteDuration(3, SECONDS)
-        isLongJourneyTime(startTime, longJourneyTime) shouldBe false
-      }
     }
   }
 }

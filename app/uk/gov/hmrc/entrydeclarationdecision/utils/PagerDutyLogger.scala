@@ -16,7 +16,10 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.utils
 
+import play.api.Logger
 import uk.gov.hmrc.entrydeclarationdecision.logging.{ContextLogger, LoggingContext}
+
+import scala.concurrent.duration.FiniteDuration
 
 class PagerDutyLogger {
   def logEventFailure(statusCode: Int)(implicit lc: LoggingContext): Unit =
@@ -24,4 +27,9 @@ class PagerDutyLogger {
 
   def logEventError(e: Throwable)(implicit lc: LoggingContext): Unit =
     ContextLogger.error(s"Send event failed with error", e)
+
+  def logLongJourneyTime(journeyTime: FiniteDuration, longJourneyTime: FiniteDuration): Unit = {
+      Logger.warn(
+        s"End to End journey is greater than ${longJourneyTime.toSeconds} seconds. Journey took ${journeyTime.toSeconds} seconds")
+  }
 }

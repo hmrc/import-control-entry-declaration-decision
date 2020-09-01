@@ -53,6 +53,7 @@ class ProcessDecisionServiceSpec
     with MockAmendmentRejectionXMLBuilder
     with MockDeclarationRejectionXMLBuilder
     with MockSchemaValidator
+    with MockPagerDutyLogger
     with MockXMLWrapper
     with ScalaFutures
     with AppendedClues {
@@ -80,6 +81,7 @@ class ProcessDecisionServiceSpec
       mockAmendmentRejectionXMLBuilder,
       mockSchemaValidator,
       mockXMLWrapper,
+      mockPagerDutyLogger,
       clock,
       mockedMetrics
     )
@@ -104,16 +106,17 @@ class ProcessDecisionServiceSpec
     ResourceUtils.withInputStreamFor("jsons/DeclarationRejectionEnrichment.json")(
       Json.parse(_).as[DeclarationRejectionEnrichment])
 
+  private val longJourneyTime: FiniteDuration = 2.seconds
+  private val journeyTime: FiniteDuration     = 1.seconds
+
   private val rawXml              = <rawXml/>
   private val wrappedXml          = <wrapped/>
   private val submissionId        = "sumbissionID"
   private val correlationId       = "15digitCorrelationID"
   private val preparationDateTime = Instant.parse("2020-12-31T23:59:00Z")
-  private val receivedDateTime    = Instant.parse("2020-12-31T23:59:00Z")
+  private val receivedDateTime    = time.minusSeconds(journeyTime.toSeconds)
   private val rejectionDateTime   = Instant.parse("2020-12-31T23:59:00Z")
   private val acceptedDateTime    = Instant.parse("2020-12-31T23:59:00Z")
-
-  private val longJourneyTime: FiniteDuration = 1.second
 
   private def validOutcome(messageType: MessageType, includeMrn: Boolean) =
     Outcome(
@@ -236,32 +239,32 @@ class ProcessDecisionServiceSpec
     xmlBuilderMock: (Decision[R], E) => CallHandler[Elem]): Unit = {
     val acceptance = messageType.isAcceptance
 
-    "enrich, build xml and send to outcome" in new Test {
-      MockAppConfig.validateJsonToXMLTransformation returns false
+    def setupMocks(validateJsonToXMLTransformation: Boolean, longJourneyTime: FiniteDuration) = {
+      MockAppConfig.validateJsonToXMLTransformation returns validateJsonToXMLTransformation
+      MockAppConfig.longJourneyTime returns longJourneyTime
       enrichmentConnectorMock(submissionId) returns Right(enrichment)
-
       xmlBuilderMock(decision, enrichment) returns rawXml
       MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
       MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Right(()))
-      MockAppConfig.longJourneyTime returns longJourneyTime
       MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
+    }
 
+    "enrich, build xml and send to outcome" in new Test {
+      setupMocks(validateJsonToXMLTransformation = false, longJourneyTime)
       service.processDecision(decision).futureValue shouldBe Right(())
 
       shouldReportMetric()
     }
+    "log for long journey times" in new Test {
+      setupMocks(validateJsonToXMLTransformation = false, journeyTime)
+      service.processDecision(decision).futureValue shouldBe Right(())
 
+      shouldReportMetric()
+      MockPagerDutyLogger.logLongJourneyTime(journeyTime, journeyTime) returns Unit
+    }
     "process successfully despite schema validation failing" in new Test {
-      MockAppConfig.validateJsonToXMLTransformation returns true
-      enrichmentConnectorMock(submissionId) returns Right(enrichment)
-
-      xmlBuilderMock(decision, enrichment) returns rawXml
+      setupMocks(validateJsonToXMLTransformation = true, longJourneyTime)
       MockSchemaValidator.validateSchema(validationSchemaType, rawXml) returns failedValidationResult
-      MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
-      MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Right(()))
-      MockAppConfig.longJourneyTime returns longJourneyTime
-      MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
-
       service.processDecision(decision).futureValue shouldBe Right(())
 
       shouldReportMetric()

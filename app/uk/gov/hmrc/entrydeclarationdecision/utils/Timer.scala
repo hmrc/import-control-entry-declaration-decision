@@ -17,13 +17,10 @@
 package uk.gov.hmrc.entrydeclarationdecision.utils
 
 import java.time.{Clock, Duration, Instant}
-import java.util.concurrent.TimeUnit
 
 import com.codahale.metrics._
 import com.kenshoo.play.metrics.Metrics
-import play.api.Logger
 
-import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
 trait Timer {
@@ -36,15 +33,6 @@ trait Timer {
 
   class LocalMetrics {
     def startTimer(metric: Metric): Timer.Context = metrics.defaultRegistry.timer(s"$metric-timer").time()
-  }
-
-  def isLongJourneyTime(startTime: Instant, longJourneyTime: FiniteDuration): Boolean = {
-    val journeyTime = FiniteDuration(Duration.between(startTime, Instant.now(clock)).toNanos, TimeUnit.NANOSECONDS)
-    if (journeyTime >= longJourneyTime) {
-      Logger.warn(
-        s"End to End journey is greater than ${longJourneyTime.toSeconds} seconds. Journey took ${journeyTime.toSeconds} seconds")
-      true
-    } else { false }
   }
 
   def timeFrom(metric: String, startTime: Instant): Duration = {
