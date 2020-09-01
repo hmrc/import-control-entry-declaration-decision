@@ -20,6 +20,8 @@ import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 
+import scala.concurrent.duration.FiniteDuration
+
 trait MockPagerDutyLogger extends MockFactory {
   val mockPagerDutyLogger: PagerDutyLogger = stub[PagerDutyLogger]
 
@@ -29,6 +31,11 @@ trait MockPagerDutyLogger extends MockFactory {
 
     def logEventError: CallHandler[Unit] =
       (mockPagerDutyLogger.logEventError(_: Throwable)(_: LoggingContext)).verify(*, *)
+
+    def logLongJourneyTime(journeyTime: FiniteDuration, longJourneyTime: FiniteDuration): CallHandler[Unit] =
+      (mockPagerDutyLogger
+        .logLongJourneyTime(_: FiniteDuration, _: FiniteDuration))
+        .verify(journeyTime, longJourneyTime)
   }
 
 }

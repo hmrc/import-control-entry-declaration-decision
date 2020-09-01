@@ -26,7 +26,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class TimerSpec extends UnitSpec with Timer with EventLogger {
   val metrics: Metrics   = new MockMetrics
   val startTime: Instant = Instant.now
-  val endTime: Instant   = startTime.plusSeconds(1)
+  val endTime: Instant   = startTime.plusSeconds(2)
   val clock: Clock       = Clock.fixed(endTime, ZoneOffset.UTC)
 
   var timeMs: Long = _

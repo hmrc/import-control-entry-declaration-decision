@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.services
 
-import java.time.Clock
+import java.time.{Clock, Duration, Instant}
+import java.util.concurrent.TimeUnit
 
 import cats.data.EitherT
 import cats.implicits._
@@ -29,11 +30,11 @@ import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.MessageType.{IE304, IE305, IE316, IE328}
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.{Decision, DecisionResponse, MessageType}
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.Enrichment
-import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.DeclarationRejectionEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
-import uk.gov.hmrc.entrydeclarationdecision.utils.{EventLogger, SchemaType, SchemaValidator, Timer}
+import uk.gov.hmrc.entrydeclarationdecision.utils._
 import uk.gov.hmrc.http.HeaderCarrier
 
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Success
 import scala.xml.{Node, Utility}
@@ -49,6 +50,7 @@ class ProcessDecisionService @Inject()(
   amendmentRejectionXMLBuilder: AmendmentRejectionXMLBuilder,
   schemaValidator: SchemaValidator,
   xmlWrapper: XMLWrapper,
+  pagerDutyLogger: PagerDutyLogger,
   override val clock: Clock,
   override val metrics: Metrics)(implicit ex: ExecutionContext)
     extends Timer
@@ -90,7 +92,9 @@ class ProcessDecisionService @Inject()(
         }
 
       processDecisionResponse(decision.response).andThen {
-        case Success(Right(_)) => storeConnector.setShortTtl(decision.submissionId)
+        case Success(Right(_)) =>
+          logLongJourneyTime(decision.metadata.receivedDateTime, appConfig.longJourneyTime)
+          storeConnector.setShortTtl(decision.submissionId)
       }
 
     }
@@ -171,4 +175,12 @@ class ProcessDecisionService @Inject()(
           s"\n$xml\n is not valid against $schemaType schema:\n ${result.allErrors.map(_.getMessage).mkString("\n")}")
       }
     }
+
+  private def logLongJourneyTime(startTime: Instant, longJourneyTime: FiniteDuration): Unit = {
+    val journeyTime =
+      FiniteDuration(Duration.between(startTime, Instant.now(clock)).toNanos, TimeUnit.NANOSECONDS)
+    if (journeyTime >= longJourneyTime) {
+      pagerDutyLogger.logLongJourneyTime(journeyTime, longJourneyTime)
+    }
+  }
 }

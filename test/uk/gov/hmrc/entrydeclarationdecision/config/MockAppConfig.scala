@@ -19,6 +19,8 @@ package uk.gov.hmrc.entrydeclarationdecision.config
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 
+import scala.concurrent.duration.FiniteDuration
+
 trait MockAppConfig extends MockFactory {
   val mockAppConfig: AppConfig = mock[AppConfig]
 
@@ -40,6 +42,8 @@ trait MockAppConfig extends MockFactory {
 
     def validateJsonToXMLTransformation: CallHandler[Boolean] =
       (mockAppConfig.validateJsonToXMLTransformation _).expects
+
+    def longJourneyTime: CallHandler[FiniteDuration] = mockAppConfig.longJourneyTime _ expects ()
   }
 
 }
