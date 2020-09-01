@@ -106,7 +106,8 @@ class ProcessDecisionServiceSpec
     ResourceUtils.withInputStreamFor("jsons/DeclarationRejectionEnrichment.json")(
       Json.parse(_).as[DeclarationRejectionEnrichment])
 
-  private val longJourneyTime: FiniteDuration = 2.seconds
+  private val shortJourneyTimeThreshold: FiniteDuration = 0.seconds
+  private val longJourneyTimeThreshold: FiniteDuration = 2.seconds
   private val journeyTime: FiniteDuration     = 1.seconds
 
   private val rawXml              = <rawXml/>
@@ -250,20 +251,20 @@ class ProcessDecisionServiceSpec
     }
 
     "enrich, build xml and send to outcome" in new Test {
-      setupMocks(validateJsonToXMLTransformation = false, longJourneyTime)
+      setupMocks(validateJsonToXMLTransformation = false, longJourneyTimeThreshold)
       service.processDecision(decision).futureValue shouldBe Right(())
 
       shouldReportMetric()
     }
     "log for long journey times" in new Test {
-      setupMocks(validateJsonToXMLTransformation = false, journeyTime)
+      setupMocks(validateJsonToXMLTransformation = false, shortJourneyTimeThreshold)
       service.processDecision(decision).futureValue shouldBe Right(())
 
       shouldReportMetric()
-      MockPagerDutyLogger.logLongJourneyTime(journeyTime, journeyTime) returns Unit
+      MockPagerDutyLogger.logLongJourneyTime(journeyTime, shortJourneyTimeThreshold) returns Unit
     }
     "process successfully despite schema validation failing" in new Test {
-      setupMocks(validateJsonToXMLTransformation = true, longJourneyTime)
+      setupMocks(validateJsonToXMLTransformation = true, longJourneyTimeThreshold)
       MockSchemaValidator.validateSchema(validationSchemaType, rawXml) returns failedValidationResult
       service.processDecision(decision).futureValue shouldBe Right(())
 
@@ -334,7 +335,7 @@ class ProcessDecisionServiceSpec
     "not wait for setShortTtl to finish" in new Test {
       setupEnrichmentAndXmlBuilderStubs()
       MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Right(()))
-      MockAppConfig.longJourneyTime returns longJourneyTime
+      MockAppConfig.longJourneyTime returns longJourneyTimeThreshold
       MockStoreConnector.setShortTtl(submissionId) returns Promise[Boolean].future
 
       service.processDecision(decision).futureValue shouldBe Right(())
@@ -358,7 +359,7 @@ class ProcessDecisionServiceSpec
       MockAppConfig.longJourneyTime
         .onCall { _ =>
           longJourneyTimeCalled.set(true)
-          longJourneyTime
+          longJourneyTimeThreshold
         }
         .anyNumberOfTimes() // not really but `never()` neither picks up failures nor calls `onCall`.
 
