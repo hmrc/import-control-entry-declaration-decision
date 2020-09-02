@@ -16,17 +16,16 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.services
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.Singleton
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.Decision
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.DecisionResponse.Rejection
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.DeclarationRejectionEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.services.XMLBuilder._
 
-import scala.concurrent.ExecutionContext
 import scala.xml.Elem
 
 @Singleton
-class DeclarationRejectionXMLBuilder @Inject()()(implicit ex: ExecutionContext)
+class DeclarationRejectionXMLBuilder
     extends RejectionXMLBuilder[DeclarationRejectionEnrichment] {
 
   def buildXML(decision: Decision[Rejection], enrichment: DeclarationRejectionEnrichment): Elem =

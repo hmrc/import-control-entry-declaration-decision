@@ -19,7 +19,7 @@ package uk.gov.hmrc.entrydeclarationdecision.services
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.Json
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.DecisionResponse.Rejection
-import uk.gov.hmrc.entrydeclarationdecision.models.decision.{ArbitraryDecision, Decision, MessageType}
+import uk.gov.hmrc.entrydeclarationdecision.models.decision.{ArbitraryDecision, Decision}
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.{AmendmentRejectionEnrichment, ArbitraryAmendmentRejectionEnrichment}
 import uk.gov.hmrc.entrydeclarationdecision.utils.{ResourceUtils, SchemaType, SchemaValidator}
 import uk.gov.hmrc.play.test.UnitSpec
@@ -76,8 +76,6 @@ class AmendmentRejectionXMLBuilderSpec
 
     "generate schema valid XML for all inputs" in {
       val schemaValidator = new SchemaValidator
-
-      implicit val messageType: MessageType = MessageType.IE305
 
       forAll { (decision: Decision[Rejection], enrichment: AmendmentRejectionEnrichment) =>
         val xml = xmlBuilder

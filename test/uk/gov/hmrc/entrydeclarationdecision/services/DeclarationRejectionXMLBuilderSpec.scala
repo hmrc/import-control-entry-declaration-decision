@@ -19,13 +19,11 @@ package uk.gov.hmrc.entrydeclarationdecision.services
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.DecisionResponse.Rejection
-import uk.gov.hmrc.entrydeclarationdecision.models.decision.{ArbitraryDecision, Decision, MessageType}
-import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
+import uk.gov.hmrc.entrydeclarationdecision.models.decision.{ArbitraryDecision, Decision}
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.DeclarationRejectionEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.utils.{ResourceUtils, SchemaType, SchemaValidator}
 import uk.gov.hmrc.play.test.UnitSpec
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.xml.{Utility, XML}
 
 class DeclarationRejectionXMLBuilderSpec extends UnitSpec with ScalaCheckDrivenPropertyChecks with ArbitraryDecision {
@@ -67,8 +65,6 @@ class DeclarationRejectionXMLBuilderSpec extends UnitSpec with ScalaCheckDrivenP
 
     "generate schema valid XML for all inputs" in {
       val schemaValidator = new SchemaValidator
-
-      implicit val messageType: MessageType = MessageType.IE316
 
       forAll { decision: Decision[Rejection] =>
         val xml = xmlBuilder
