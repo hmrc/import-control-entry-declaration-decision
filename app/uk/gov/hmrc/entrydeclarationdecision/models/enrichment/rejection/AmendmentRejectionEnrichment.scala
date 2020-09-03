@@ -18,7 +18,7 @@ package uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection
 
 import java.time.Instant
 
-import play.api.libs.json.{Format, Json, Reads}
+import play.api.libs.json.{Json, Reads}
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.Enrichment
 
 case class AmendmentRejectionEnrichment(eisSubmissionDateTime: Option[Instant], payload: EntrySummaryDeclaration)

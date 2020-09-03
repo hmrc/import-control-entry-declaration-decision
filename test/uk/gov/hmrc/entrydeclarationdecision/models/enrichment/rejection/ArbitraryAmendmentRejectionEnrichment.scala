@@ -21,7 +21,6 @@ import java.time.Instant
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary._
 import uk.gov.hmrc.entrydeclarationdecision.models.PropertyCheckSupport
-import uk.gov.hmrc.entrydeclarationdecision.models.decision.MessageType
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.{Address, Trader}
 
 trait ArbitraryAmendmentRejectionEnrichment extends PropertyCheckSupport {
@@ -70,15 +69,14 @@ trait ArbitraryAmendmentRejectionEnrichment extends PropertyCheckSupport {
     } yield Itinerary(officeOfFirstEntry)
   )
 
-  implicit def arbitraryEntrySummaryDeclaration(implicit messageType: MessageType): Arbitrary[EntrySummaryDeclaration] =
+  implicit def arbitraryEntrySummaryDeclaration: Arbitrary[EntrySummaryDeclaration] =
     Arbitrary(for {
       parties   <- arbitrary[Parties]
       itinerary <- arbitrary[Itinerary]
       amendment <- arbitrary[Amendment]
     } yield EntrySummaryDeclaration(parties, itinerary, amendment))
 
-  implicit def arbitraryRejectionEnrichment(
-    implicit messageType: MessageType): Arbitrary[AmendmentRejectionEnrichment] = Arbitrary(
+  implicit def arbitraryRejectionEnrichment: Arbitrary[AmendmentRejectionEnrichment] = Arbitrary(
     for {
       eisSubmissionDateTime <- arbitrary[Option[Instant]]
       payload               <- arbitrary[EntrySummaryDeclaration]

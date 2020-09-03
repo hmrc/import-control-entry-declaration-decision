@@ -69,8 +69,7 @@ trait ArbitraryDecision extends PropertyCheckSupport {
     originalAttributeValue <- arbitrary[Option[String]]
   } yield DecisionError(errorType, errorPointer, errorReason, originalAttributeValue))
 
-  implicit def arbitraryAcceptanceDecision(
-    implicit messageType: MessageType): Arbitrary[Decision[DecisionResponse.Acceptance]] = Arbitrary(
+  implicit def arbitraryAcceptanceDecision: Arbitrary[Decision[DecisionResponse.Acceptance]] = Arbitrary(
     for {
       submissionId <- arbitrary[String]
       metadata     <- arbitrary[DecisionMetadata]
@@ -78,8 +77,7 @@ trait ArbitraryDecision extends PropertyCheckSupport {
     } yield Decision(submissionId, metadata, response)
   )
 
-  implicit def arbitraryRejectionDecision(
-    implicit messageType: MessageType): Arbitrary[Decision[DecisionResponse.Rejection]] = Arbitrary(
+  implicit def arbitraryRejectionDecision: Arbitrary[Decision[DecisionResponse.Rejection]] = Arbitrary(
     for {
       submissionId <- arbitrary[String]
       metadata     <- arbitrary[DecisionMetadata]
