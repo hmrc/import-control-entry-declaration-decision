@@ -169,7 +169,7 @@ class DecisionReceiverControllerSpec
 
       val input = Seq(
         (ErrorCode.ConnectorError, SERVICE_UNAVAILABLE, Json.toJson(ErrorResponse.unavailable)),
-        (ErrorCode.NoSubmission, CONFLICT, Json.toJson(ErrorResponse.noSubmission))
+        (ErrorCode.NoSubmission, BAD_REQUEST, Json.toJson(ErrorResponse.noSubmission))
       )
 
       input.foreach(args => (run _).tupled(args))

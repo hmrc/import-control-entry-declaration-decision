@@ -79,7 +79,7 @@ class DecisionReceiverController @Inject()(
               case Left(errorCode) =>
                 reportSender.sendReport(report(Some(errorCode)))
                 errorCode match {
-                  case ErrorCode.NoSubmission   => Conflict(Json.toJson(ErrorResponse.noSubmission))
+                  case ErrorCode.NoSubmission   => BadRequest(Json.toJson(ErrorResponse.noSubmission))
                   case ErrorCode.ConnectorError => ServiceUnavailable(Json.toJson(ErrorResponse.unavailable))
                 }
             }
