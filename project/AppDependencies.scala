@@ -4,21 +4,21 @@ import sbt._
 object AppDependencies {
 
   val compile: Seq[ModuleID] = Seq(
-    "uk.gov.hmrc"    %% "bootstrap-backend-play-26" % "2.24.0",
+    "uk.gov.hmrc"    %% "bootstrap-backend-play-26" % "3.0.0",
     "com.github.fge" % "json-schema-validator"      % "2.2.6",
-    "org.typelevel"  %% "cats-core"                 % "2.0.0",
+    "org.typelevel"  %% "cats-core"                 % "2.2.0",
     "com.chuusai"    %% "shapeless"                 % "2.3.3"
   )
 
   val test: Seq[ModuleID] = Seq(
-    "org.scalatest"          %% "scalatest"          % "3.0.8"         % "test, it",
+    "org.scalatest"          %% "scalatest"          % "3.0.9"         % "test, it",
     "com.typesafe.play"      %% "play-test"          % current         % "test, it",
     "org.pegdown"            % "pegdown"             % "1.6.0"         % "test, it",
-    "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2"         % "test, it",
-    "org.scalamock"          %% "scalamock"          % "4.4.0"         % "test, it",
-    "org.scalacheck"         %% "scalacheck"         % "1.14.1"        % "test, it",
+    "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.3"         % "test, it",
+    "org.scalamock"          %% "scalamock"          % "5.0.0"         % "test, it",
+    "org.scalacheck"         %% "scalacheck"         % "1.14.3"        % "test, it",
     "uk.gov.hmrc"            %% "hmrctest"           % "3.9.0-play-26" % "test, it",
-    "com.github.tomakehurst" % "wiremock"            % "2.25.1"        % "test, it"
+    "com.github.tomakehurst" % "wiremock"            % "2.27.2"        % "test, it"
   )
 
   // Fixes a transitive dependency clash between wiremock and scalatestplus-play
