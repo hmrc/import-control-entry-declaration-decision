@@ -31,6 +31,7 @@ import uk.gov.hmrc.entrydeclarationdecision.models.decision.MessageType.{IE304, 
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.{Decision, DecisionResponse, MessageType}
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.Enrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
+import uk.gov.hmrc.entrydeclarationdecision.reporting.{EisResponseTime, ReportSender}
 import uk.gov.hmrc.entrydeclarationdecision.utils._
 import uk.gov.hmrc.http.HeaderCarrier
 
@@ -51,6 +52,7 @@ class ProcessDecisionService @Inject()(
   schemaValidator: SchemaValidator,
   xmlWrapper: XMLWrapper,
   pagerDutyLogger: PagerDutyLogger,
+  reportSender: ReportSender,
   override val clock: Clock,
   override val metrics: Metrics)(implicit ex: ExecutionContext)
     extends Timer
@@ -133,9 +135,10 @@ class ProcessDecisionService @Inject()(
         xml        = buildXML(decision, enrichment)
         _          = validateSchema(validationSchema, xml)
         wrappedXml = xmlWrapper.wrapXml(decision.metadata.correlationId, xml)
-        sendResult <- EitherT(sendOutcome(decision, enrichment, wrappedXml))
+        sendResult <- EitherT(sendOutcome(decision, wrappedXml))
       } yield {
-        enrichment.eisSubmissionDateTime.foreach(timeFrom("E2E.eisDecision-e2eTimer", _))
+        enrichment.eisSubmissionDateTime.foreach(time =>
+          reportSender.sendReport(EisResponseTime(timeFrom("E2E.eisDecision-e2eTimer", time).toMillis)))
         sendResult
       }
 
@@ -143,7 +146,7 @@ class ProcessDecisionService @Inject()(
     }
   }
 
-  private def sendOutcome[R <: DecisionResponse](decision: Decision[R], enrichment: Enrichment, xml: Node)(
+  private def sendOutcome[R <: DecisionResponse](decision: Decision[R], xml: Node)(
     implicit hc: HeaderCarrier,
     lc: LoggingContext): Future[Either[ErrorCode, Unit]] =
     timeFuture("Save Outcome", "processDecision.sendOutcome") {

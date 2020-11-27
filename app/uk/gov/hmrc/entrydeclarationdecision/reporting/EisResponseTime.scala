@@ -16,20 +16,19 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.reporting
 
-import org.scalamock.handlers.CallHandler
-import org.scalamock.scalatest.MockFactory
-import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
-import uk.gov.hmrc.http.HeaderCarrier
+import java.time.Clock
 
-import scala.concurrent.Future
+import play.api.libs.json.Json
+import uk.gov.hmrc.entrydeclarationdecision.reporting.audit.AuditEvent
+import uk.gov.hmrc.entrydeclarationdecision.reporting.events.Event
 
-trait MockReportSender extends MockFactory {
-  val mockReportSender: ReportSender = mock[ReportSender]
+case class EisResponseTime(timeInMillis: Long)
 
-  object MockReportSender {
-    def sendReport[R](report: R): CallHandler[Future[Unit]] =
-      (mockReportSender
-        .sendReport(_: R)(_: EventSources[R], _: HeaderCarrier, _: LoggingContext)) expects (report, *, *, *)
+object EisResponseTime {
+  implicit val eventSources: EventSources[EisResponseTime] = new EventSources[EisResponseTime] {
+    override def eventFor(clock: Clock, report: EisResponseTime): Option[Event] = None
+
+    override def auditEventFor(report: EisResponseTime): Option[AuditEvent] =
+      Some(AuditEvent("EisResponseTime", "EIS Response Time", Json.obj("duration" -> report.timeInMillis)))
   }
-
 }

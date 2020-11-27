@@ -34,6 +34,7 @@ import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.Enrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.{AmendmentRejectionEnrichment, DeclarationRejectionEnrichment}
 import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
+import uk.gov.hmrc.entrydeclarationdecision.reporting.{EisResponseTime, MockReportSender}
 import uk.gov.hmrc.entrydeclarationdecision.utils._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.test.UnitSpec
@@ -54,6 +55,7 @@ class ProcessDecisionServiceSpec
     with MockDeclarationRejectionXMLBuilder
     with MockSchemaValidator
     with MockPagerDutyLogger
+    with MockReportSender
     with MockXMLWrapper
     with ScalaFutures
     with AppendedClues {
@@ -82,6 +84,7 @@ class ProcessDecisionServiceSpec
       mockSchemaValidator,
       mockXMLWrapper,
       mockPagerDutyLogger,
+      mockReportSender,
       clock,
       mockedMetrics
     )
@@ -118,6 +121,8 @@ class ProcessDecisionServiceSpec
   private val receivedDateTime    = time.minusSeconds(journeyTime.toSeconds)
   private val rejectionDateTime   = Instant.parse("2020-12-31T23:59:00Z")
   private val acceptedDateTime    = Instant.parse("2020-12-31T23:59:00Z")
+  private val eisSubmissionDateTime = Instant.parse("2003-02-11T12:34:00.000Z") //From Json bodies
+  private val timeDifference: Long          = time.toEpochMilli - eisSubmissionDateTime.toEpochMilli
 
   private def validOutcome(messageType: MessageType, includeMrn: Boolean) =
     Outcome(
@@ -252,12 +257,14 @@ class ProcessDecisionServiceSpec
 
     "enrich, build xml and send to outcome" in new Test {
       setupMocks(validateJsonToXMLTransformation = false, longJourneyTimeThreshold)
+      MockReportSender.sendReport(EisResponseTime(timeDifference)) returns Future.successful((): Unit)
       service.processDecision(decision).futureValue shouldBe Right(())
 
       shouldReportMetric()
     }
     "log for long journey times" in new Test {
       setupMocks(validateJsonToXMLTransformation = false, shortJourneyTimeThreshold)
+      MockReportSender.sendReport(EisResponseTime(timeDifference)) returns Future.successful((): Unit)
       service.processDecision(decision).futureValue shouldBe Right(())
 
       shouldReportMetric()
@@ -265,6 +272,7 @@ class ProcessDecisionServiceSpec
     }
     "process successfully despite schema validation failing" in new Test {
       setupMocks(validateJsonToXMLTransformation = true, longJourneyTimeThreshold)
+      MockReportSender.sendReport(EisResponseTime(timeDifference)) returns Future.successful((): Unit)
       MockSchemaValidator.validateSchema(validationSchemaType, rawXml) returns failedValidationResult
       service.processDecision(decision).futureValue shouldBe Right(())
 
@@ -335,8 +343,18 @@ class ProcessDecisionServiceSpec
     "not wait for setShortTtl to finish" in new Test {
       setupEnrichmentAndXmlBuilderStubs()
       MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Right(()))
+      MockReportSender.sendReport(EisResponseTime(timeDifference)) returns Future.successful((): Unit)
       MockAppConfig.longJourneyTime returns longJourneyTimeThreshold
       MockStoreConnector.setShortTtl(submissionId) returns Promise[Boolean].future
+
+      service.processDecision(decision).futureValue shouldBe Right(())
+    }
+    "not wait for report sender to finish" in new Test {
+      setupEnrichmentAndXmlBuilderStubs()
+      MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Right(()))
+      MockReportSender.sendReport(EisResponseTime(timeDifference)) returns Promise[Unit].future
+      MockAppConfig.longJourneyTime returns longJourneyTimeThreshold
+      MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
 
       service.processDecision(decision).futureValue shouldBe Right(())
     }
