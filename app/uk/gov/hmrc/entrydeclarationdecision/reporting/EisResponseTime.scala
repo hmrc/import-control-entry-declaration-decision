@@ -16,19 +16,19 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.reporting
 
-import java.time.Clock
+import java.time.{Clock, Duration}
 
 import play.api.libs.json.Json
 import uk.gov.hmrc.entrydeclarationdecision.reporting.audit.AuditEvent
 import uk.gov.hmrc.entrydeclarationdecision.reporting.events.Event
 
-case class EisResponseTime(timeInMillis: Long)
+case class EisResponseTime(timeTaken: Duration)
 
 object EisResponseTime {
   implicit val eventSources: EventSources[EisResponseTime] = new EventSources[EisResponseTime] {
     override def eventFor(clock: Clock, report: EisResponseTime): Option[Event] = None
 
     override def auditEventFor(report: EisResponseTime): Option[AuditEvent] =
-      Some(AuditEvent("EisResponseTime", "EIS Response Time", Json.obj("duration" -> report.timeInMillis)))
+      Some(AuditEvent("EisResponseTime", "EIS Response Time", Json.obj("duration" -> report.timeTaken.toMillis)))
   }
 }

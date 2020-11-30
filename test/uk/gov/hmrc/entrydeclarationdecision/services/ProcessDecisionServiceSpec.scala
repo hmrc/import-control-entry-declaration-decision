@@ -122,7 +122,8 @@ class ProcessDecisionServiceSpec
   private val rejectionDateTime   = Instant.parse("2020-12-31T23:59:00Z")
   private val acceptedDateTime    = Instant.parse("2020-12-31T23:59:00Z")
   private val eisSubmissionDateTime = Instant.parse("2003-02-11T12:34:00.000Z") //From Json bodies
-  private val timeDifference: Long          = time.toEpochMilli - eisSubmissionDateTime.toEpochMilli
+
+  private val timeDifference: java.time.Duration = java.time.Duration.between(eisSubmissionDateTime, time)
 
   private def validOutcome(messageType: MessageType, includeMrn: Boolean) =
     Outcome(

@@ -138,7 +138,7 @@ class ProcessDecisionService @Inject()(
         sendResult <- EitherT(sendOutcome(decision, wrappedXml))
       } yield {
         enrichment.eisSubmissionDateTime.foreach(time =>
-          reportSender.sendReport(EisResponseTime(timeFrom("E2E.eisDecision-e2eTimer", time).toMillis)))
+          reportSender.sendReport(EisResponseTime(timeFrom("E2E.eisDecision-e2eTimer", time))))
         sendResult
       }
 

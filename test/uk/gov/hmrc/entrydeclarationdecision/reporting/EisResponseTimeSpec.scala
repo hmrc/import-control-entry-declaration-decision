@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.reporting
 
-import java.time.{Clock, Instant, ZoneOffset}
+import java.time.{Clock, Duration, Instant, ZoneOffset}
 
 import play.api.libs.json.Json
 import uk.gov.hmrc.play.test.UnitSpec
@@ -28,7 +28,7 @@ class EisResponseTimeSpec extends UnitSpec {
 
   val timeTaken = 100
 
-  val eisResponseTime: EisResponseTime = EisResponseTime(timeTaken)
+  val eisResponseTime: EisResponseTime = EisResponseTime(Duration.ofMillis(timeTaken))
 
   "EisResponseTime" must {
     "have the correct associated JSON event" in {
