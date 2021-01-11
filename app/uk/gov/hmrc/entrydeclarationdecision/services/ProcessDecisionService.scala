@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -179,7 +179,8 @@ class ProcessDecisionService @Inject()(
       }
     }
 
-  private def logLongJourneyTime(startTime: Instant, longJourneyTime: FiniteDuration): Unit = {
+  private def logLongJourneyTime(startTime: Instant, longJourneyTime: FiniteDuration)(
+    implicit lc: LoggingContext): Unit = {
     val journeyTime =
       FiniteDuration(Duration.between(startTime, Instant.now(clock)).toNanos, TimeUnit.NANOSECONDS)
     if (journeyTime >= longJourneyTime) {

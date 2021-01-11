@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,8 @@ trait MockPagerDutyLogger extends MockFactory {
 
     def logLongJourneyTime(journeyTime: FiniteDuration, longJourneyTime: FiniteDuration): CallHandler[Unit] =
       (mockPagerDutyLogger
-        .logLongJourneyTime(_: FiniteDuration, _: FiniteDuration))
-        .verify(journeyTime, longJourneyTime)
+        .logLongJourneyTime(_: FiniteDuration, _: FiniteDuration)(_: LoggingContext))
+        .verify(journeyTime, longJourneyTime, *)
   }
 
 }
