@@ -28,7 +28,8 @@ class PagerDutyLogger {
   def logEventError(e: Throwable)(implicit lc: LoggingContext): Unit =
     ContextLogger.error(s"Send event failed with error", e)
 
-  def logLongJourneyTime(journeyTime: FiniteDuration, longJourneyTime: FiniteDuration): Unit =
-    Logger.warn("LONG_END_TO_END_JOURNEY_TIME - " +
+  def logLongJourneyTime(journeyTime: FiniteDuration, longJourneyTime: FiniteDuration)(
+    implicit lc: LoggingContext): Unit =
+    ContextLogger.warn("LONG_END_TO_END_JOURNEY_TIME - " +
       s"End to End journey is greater than ${longJourneyTime.toSeconds} seconds. Journey took ${journeyTime.toSeconds} seconds")
 }

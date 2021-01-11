@@ -179,7 +179,8 @@ class ProcessDecisionService @Inject()(
       }
     }
 
-  private def logLongJourneyTime(startTime: Instant, longJourneyTime: FiniteDuration): Unit = {
+  private def logLongJourneyTime(startTime: Instant, longJourneyTime: FiniteDuration)(
+    implicit lc: LoggingContext): Unit = {
     val journeyTime =
       FiniteDuration(Duration.between(startTime, Instant.now(clock)).toNanos, TimeUnit.NANOSECONDS)
     if (journeyTime >= longJourneyTime) {

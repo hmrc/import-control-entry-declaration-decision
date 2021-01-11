@@ -34,8 +34,8 @@ trait MockPagerDutyLogger extends MockFactory {
 
     def logLongJourneyTime(journeyTime: FiniteDuration, longJourneyTime: FiniteDuration): CallHandler[Unit] =
       (mockPagerDutyLogger
-        .logLongJourneyTime(_: FiniteDuration, _: FiniteDuration))
-        .verify(journeyTime, longJourneyTime)
+        .logLongJourneyTime(_: FiniteDuration, _: FiniteDuration)(_: LoggingContext))
+        .verify(journeyTime, longJourneyTime, *)
   }
 
 }
