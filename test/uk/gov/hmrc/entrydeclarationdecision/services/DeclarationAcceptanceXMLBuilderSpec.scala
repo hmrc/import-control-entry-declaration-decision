@@ -72,6 +72,30 @@ class DeclarationAcceptanceXMLBuilderSpec
 
         Utility.trim(xmlBuilder.buildXML(decision, enrichment)) shouldBe Utility.trim(expected)
       }
+
+      "an acceptance decision is supplied with empty address fields (only streetAndNumber)" in {
+        val enrichmentJson =
+          ResourceUtils.withInputStreamFor("jsons/DeclarationAcceptanceEnrichmentEmptyAddresses1.json")(Json.parse)
+        val enrichment = enrichmentJson.as[AcceptanceEnrichment]
+        val decisionJson =
+          ResourceUtils.withInputStreamFor("jsons/DeclarationAcceptanceDecisionAllOptional.json")(Json.parse)
+        val decision = decisionJson.as[Decision[Acceptance]]
+        val expected = ResourceUtils.withInputStreamFor("xmls/DeclarationAcceptanceEmptyAddresses1XML.xml")(XML.load)
+
+        Utility.trim(xmlBuilder.buildXML(decision, enrichment)) shouldBe Utility.trim(expected)
+      }
+
+      "an acceptance decision is supplied with empty address fields (all but streetAndNumber)" in {
+        val enrichmentJson =
+          ResourceUtils.withInputStreamFor("jsons/DeclarationAcceptanceEnrichmentEmptyAddresses2.json")(Json.parse)
+        val enrichment = enrichmentJson.as[AcceptanceEnrichment]
+        val decisionJson =
+          ResourceUtils.withInputStreamFor("jsons/DeclarationAcceptanceDecisionAllOptional.json")(Json.parse)
+        val decision = decisionJson.as[Decision[Acceptance]]
+        val expected = ResourceUtils.withInputStreamFor("xmls/DeclarationAcceptanceEmptyAddresses2XML.xml")(XML.load)
+
+        Utility.trim(xmlBuilder.buildXML(decision, enrichment)) shouldBe Utility.trim(expected)
+      }
     }
 
     "generate schema valid XML for all inputs" in {

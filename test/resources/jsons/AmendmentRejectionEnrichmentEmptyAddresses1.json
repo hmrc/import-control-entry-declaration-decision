@@ -1,0 +1,33 @@
+{
+  "eisSubmissionDateTime": "2003-02-11T12:34:00.000Z",
+  "payload": {
+    "parties": {
+      "declarant": {
+        "name": "declarant name",
+        "address": {
+          "streetAndNumber": "declarant street"
+        },
+        "language": "en",
+        "eori": "GBdeceori"
+      },
+      "representative": {
+        "name": "rep name",
+        "address": {
+          "streetAndNumber": "rep street"
+        },
+        "language": "es",
+        "eori": "GBrepeori"
+      }
+    },
+    "itinerary": {
+      "officeOfFirstEntry": {
+        "reference": "AB3C4D5E",
+        "expectedDateTimeOfArrival": "2003-02-11T12:34:00Z"
+      }
+    },
+    "amendment": {
+      "movementReferenceNumber": "12GB12345678901230",
+      "dateTime": "2003-02-11T12:34:00.000Z"
+    }
+  }
+}
