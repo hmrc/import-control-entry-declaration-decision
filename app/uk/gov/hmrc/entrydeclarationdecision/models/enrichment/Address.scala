@@ -19,10 +19,10 @@ package uk.gov.hmrc.entrydeclarationdecision.models.enrichment
 import play.api.libs.json.{Format, Json}
 
 case class Address(
-  streetAndNumber: String,
-  city: String,
-  postalCode: String,
-  countryCode: String
+  streetAndNumber: Option[String],
+  city: Option[String],
+  postalCode: Option[String],
+  countryCode: Option[String]
 )
 
 object Address {
