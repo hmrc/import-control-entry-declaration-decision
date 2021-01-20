@@ -18,7 +18,6 @@ package uk.gov.hmrc.entrydeclarationdecision.models.enrichment
 
 import play.api.libs.json.{Format, Json}
 
-// Note: amalgamation of two types: #/definitions/traderContactDetails and #/definitions/tin
 case class Trader(
   name: Option[String],
   address: Option[Address],
