@@ -18,8 +18,9 @@ package uk.gov.hmrc.entrydeclarationdecision.services
 
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.Json
-import uk.gov.hmrc.entrydeclarationdecision.models.decision.DecisionResponse.Rejection
+import uk.gov.hmrc.entrydeclarationdecision.models.decision.DecisionResponse.{Acceptance, Rejection}
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.{ArbitraryDecision, Decision}
+import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.{AmendmentRejectionEnrichment, ArbitraryAmendmentRejectionEnrichment}
 import uk.gov.hmrc.entrydeclarationdecision.utils.{ResourceUtils, SchemaType, SchemaValidator}
 import uk.gov.hmrc.play.test.UnitSpec
@@ -69,6 +70,30 @@ class AmendmentRejectionXMLBuilderSpec
           ResourceUtils.withInputStreamFor("jsons/AmendmentRejectionDecisionAllOptional.json")(Json.parse)
         val decision = decisionJson.as[Decision[Rejection]]
         val expected = ResourceUtils.withInputStreamFor("xmls/AmendmentRejectionAllOptionalXML.xml")(XML.load)
+
+        Utility.trim(xmlBuilder.buildXML(decision, enrichment)) shouldBe Utility.trim(expected)
+      }
+
+      "an rejection decision is supplied with empty address fields (only streetAndNumber)" in {
+        val enrichmentJson =
+          ResourceUtils.withInputStreamFor("jsons/AmendmentRejectionEnrichmentEmptyAddresses1.json")(Json.parse)
+        val enrichment = enrichmentJson.as[AmendmentRejectionEnrichment]
+        val decisionJson =
+          ResourceUtils.withInputStreamFor("jsons/AmendmentRejectionDecisionAllOptional.json")(Json.parse)
+        val decision = decisionJson.as[Decision[Rejection]]
+        val expected = ResourceUtils.withInputStreamFor("xmls/AmendmentRejectionEmptyAddresses1XML.xml")(XML.load)
+
+        Utility.trim(xmlBuilder.buildXML(decision, enrichment)) shouldBe Utility.trim(expected)
+      }
+
+      "an rejection decision is supplied with empty address fields (all but streetAndNumber)" in {
+        val enrichmentJson =
+          ResourceUtils.withInputStreamFor("jsons/AmendmentRejectionEnrichmentEmptyAddresses2.json")(Json.parse)
+        val enrichment = enrichmentJson.as[AmendmentRejectionEnrichment]
+        val decisionJson =
+          ResourceUtils.withInputStreamFor("jsons/AmendmentRejectionDecisionAllOptional.json")(Json.parse)
+        val decision = decisionJson.as[Decision[Rejection]]
+        val expected = ResourceUtils.withInputStreamFor("xmls/AmendmentRejectionEmptyAddresses2XML.xml")(XML.load)
 
         Utility.trim(xmlBuilder.buildXML(decision, enrichment)) shouldBe Utility.trim(expected)
       }

@@ -1,0 +1,41 @@
+<cc3:CC305A xmlns:cc3="http://ics.dgtaxud.ec/CC305A">
+    <MesSenMES3>eori/branch</MesSenMES3>
+    <MesRecMES6>eori/branch</MesRecMES6>
+    <DatOfPreMES9>200113</DatOfPreMES9>
+    <TimOfPreMES10>1522</TimOfPreMES10>
+    <MesIdeMES19>messId</MesIdeMES19>
+    <MesTypMES20>CC305A</MesTypMES20>
+    <CorIdeMES25>corrid</CorIdeMES25>
+    <HEAHEA>
+        <DocNumHEA5>12GB12345678901230</DocNumHEA5>
+        <DatTimAmeHEA113>200302111234</DatTimAmeHEA113>
+        <AmeRejDatTimHEA112>202001131522</AmeRejDatTimHEA112>
+    </HEAHEA>
+    <FUNERRER1>
+        <ErrTypER11>errorType1</ErrTypER11>
+        <ErrPoiER12>errorPointer1</ErrPoiER12>
+        <ErrReaER13>reason1</ErrReaER13>
+        <OriAttValER14>originalAttrib1</OriAttValER14>
+    </FUNERRER1>
+    <FUNERRER1>
+        <ErrTypER11>errorType2</ErrTypER11>
+        <ErrPoiER12>errorPointer2</ErrPoiER12>
+        <ErrReaER13>reason2</ErrReaER13>
+        <OriAttValER14>originalAttrib2</OriAttValER14>
+    </FUNERRER1>
+    <TRAREP>
+        <NamTRE1>rep name</NamTRE1>
+        <StrAndNumTRE1>rep street</StrAndNumTRE1>
+        <TRAREPLNG>es</TRAREPLNG>
+        <TINTRE1>GBrepeori</TINTRE1>
+    </TRAREP>
+    <PERLODSUMDEC>
+        <NamPLD1>declarant name</NamPLD1>
+        <StrAndNumPLD1>declarant street</StrAndNumPLD1>
+        <PERLODSUMDECLNG>en</PERLODSUMDECLNG>
+        <TINPLD1>GBdeceori</TINPLD1>
+    </PERLODSUMDEC>
+    <CUSOFFFENT730>
+        <RefNumCUSOFFFENT731>AB3C4D5E</RefNumCUSOFFFENT731>
+    </CUSOFFFENT730>
+</cc3:CC305A>

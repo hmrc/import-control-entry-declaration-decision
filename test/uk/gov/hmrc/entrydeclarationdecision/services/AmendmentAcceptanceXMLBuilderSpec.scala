@@ -57,7 +57,7 @@ class AmendmentAcceptanceXMLBuilderSpec
         val xml = xmlBuilder.buildXML(decision, enrichment)
 
         xml.namespace shouldBe "http://ics.dgtaxud.ec/CC304A"
-        xml.prefix            shouldBe "cc3"
+        xml.prefix    shouldBe "cc3"
       }
 
       "an acceptance decision is supplied with all optional fields" in {
@@ -69,6 +69,30 @@ class AmendmentAcceptanceXMLBuilderSpec
           ResourceUtils.withInputStreamFor("jsons/AmendmentAcceptanceDecisionAllOptional.json")(Json.parse)
         val decision = decisionJson.as[Decision[Acceptance]]
         val expected = ResourceUtils.withInputStreamFor("xmls/AmendmentAcceptanceAllOptionalXML.xml")(XML.load)
+
+        Utility.trim(xmlBuilder.buildXML(decision, enrichment)) shouldBe Utility.trim(expected)
+      }
+
+      "an acceptance decision is supplied with empty address fields (only streetAndNumber)" in {
+        val enrichmentJson =
+          ResourceUtils.withInputStreamFor("jsons/AmendmentAcceptanceEnrichmentEmptyAddresses1.json")(Json.parse)
+        val enrichment = enrichmentJson.as[AcceptanceEnrichment]
+        val decisionJson =
+          ResourceUtils.withInputStreamFor("jsons/AmendmentAcceptanceDecisionAllOptional.json")(Json.parse)
+        val decision = decisionJson.as[Decision[Acceptance]]
+        val expected = ResourceUtils.withInputStreamFor("xmls/AmendmentAcceptanceEmptyAddresses1XML.xml")(XML.load)
+
+        Utility.trim(xmlBuilder.buildXML(decision, enrichment)) shouldBe Utility.trim(expected)
+      }
+
+      "an acceptance decision is supplied with empty address fields (all but streetAndNumber)" in {
+        val enrichmentJson =
+          ResourceUtils.withInputStreamFor("jsons/AmendmentAcceptanceEnrichmentEmptyAddresses2.json")(Json.parse)
+        val enrichment = enrichmentJson.as[AcceptanceEnrichment]
+        val decisionJson =
+          ResourceUtils.withInputStreamFor("jsons/AmendmentAcceptanceDecisionAllOptional.json")(Json.parse)
+        val decision = decisionJson.as[Decision[Acceptance]]
+        val expected = ResourceUtils.withInputStreamFor("xmls/AmendmentAcceptanceEmptyAddresses2XML.xml")(XML.load)
 
         Utility.trim(xmlBuilder.buildXML(decision, enrichment)) shouldBe Utility.trim(expected)
       }

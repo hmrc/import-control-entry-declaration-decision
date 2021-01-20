@@ -1,0 +1,67 @@
+<cc3:CC304A xmlns:cc3="http://ics.dgtaxud.ec/CC304A">
+    <MesSenMES3>eori/branch</MesSenMES3>
+    <MesRecMES6>eori/branch</MesRecMES6>
+    <DatOfPreMES9>050315</DatOfPreMES9>
+    <TimOfPreMES10>1234</TimOfPreMES10>
+    <MesIdeMES19>ex Excepte</MesIdeMES19>
+    <MesTypMES20>CC304A</MesTypMES20>
+    <CorIdeMES25>e</CorIdeMES25>
+    <HEAHEA>
+        <DocNumHEA5>12GB12345678901230</DocNumHEA5>
+        <TraModAtBorHEA76>2</TraModAtBorHEA76>
+        <IdeOfMeaOfTraCroHEA85>Identity</IdeOfMeaOfTraCroHEA85>
+        <IdeOfMeaOfTraCroHEA85LNG>EN</IdeOfMeaOfTraCroHEA85LNG>
+        <NatOfMeaOfTraCroHEA87>GB</NatOfMeaOfTraCroHEA87>
+        <ComRefNumHEA>commercialRefNum</ComRefNumHEA>
+        <ConRefNumHEA>conveyanceRefNum</ConRefNumHEA>
+        <AmeAccDatTimHEA111>200503151241</AmeAccDatTimHEA111>
+        <DatTimAmeHEA113>200302111234</DatTimAmeHEA113>
+    </HEAHEA>
+    <GOOITEGDS>
+        <IteNumGDS7>42</IteNumGDS7>
+        <ComRefNumGIM1>Commercial Reference Number</ComRefNumGIM1>
+        <PRODOCDC2>
+            <DocTypDC21>type</DocTypDC21>
+            <DocRefDC23>Document reference</DocRefDC23>
+            <DocRefDCLNG>es</DocRefDCLNG>
+        </PRODOCDC2>
+        <PRODOCDC2>
+            <DocTypDC21>typ2</DocTypDC21>
+            <DocRefDC23>Document reference2</DocRefDC23>
+            <DocRefDCLNG>en</DocRefDCLNG>
+        </PRODOCDC2>
+        <CONNR2>
+            <ConNumNR21>Container 1</ConNumNR21>
+        </CONNR2>
+        <CONNR2>
+            <ConNumNR21>Container 2</ConNumNR21>
+        </CONNR2>
+        <IDEMEATRAGI970>
+            <NatIDEMEATRAGI973>GB</NatIDEMEATRAGI973>
+            <IdeMeaTraGIMEATRA971>Identity of motcb</IdeMeaTraGIMEATRA971>
+            <IdeMeaTraGIMEATRA972LNG>en</IdeMeaTraGIMEATRA972LNG>
+        </IDEMEATRAGI970>
+    </GOOITEGDS>
+    <TRAREP>
+        <NamTRE1>rep name</NamTRE1>
+        <StrAndNumTRE1>rep street</StrAndNumTRE1>
+        <TRAREPLNG>es</TRAREPLNG>
+        <TINTRE1>GBrepeori</TINTRE1>
+    </TRAREP>
+    <PERLODSUMDEC>
+        <NamPLD1>declarant name</NamPLD1>
+        <StrAndNumPLD1>declarant street</StrAndNumPLD1>
+        <PERLODSUMDECLNG>en</PERLODSUMDECLNG>
+        <TINPLD1>GBdeceori</TINPLD1>
+    </PERLODSUMDEC>
+    <CUSOFFFENT730>
+        <RefNumCUSOFFFENT731>AB3C4D5E</RefNumCUSOFFFENT731>
+        <ExpDatOfArrFIRENT733>200302111234</ExpDatOfArrFIRENT733>
+    </CUSOFFFENT730>
+    <TRACARENT601>
+        <NamTRACARENT604>carrier name</NamTRACARENT604>
+        <StrNumTRACARENT607>carrier street</StrNumTRACARENT607>
+        <TRACARENT601LNG>en</TRACARENT601LNG>
+        <TINTRACARENT602>GBcareori</TINTRACARENT602>
+    </TRACARENT601>
+</cc3:CC304A>
