@@ -174,8 +174,10 @@ class ProcessDecisionService @Inject()(
     if (appConfig.validateJsonToXMLTransformation) {
       val result = schemaValidator.validateSchema(schemaType, xml)
       if (!result.isValid) {
-        ContextLogger.warn(
+        ContextLogger.debug(
           s"\n$xml\n is not valid against $schemaType schema:\n ${result.allErrors.map(_.getMessage).mkString("\n")}")
+        ContextLogger.warn(
+          s"XML is not valid against $schemaType schema:\n ${result.allErrors.map(_.getMessage).mkString("\n")}")
       }
     }
 
