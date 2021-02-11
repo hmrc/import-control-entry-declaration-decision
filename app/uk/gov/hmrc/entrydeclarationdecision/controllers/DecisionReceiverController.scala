@@ -67,7 +67,8 @@ class DecisionReceiverController @Inject()(
                 decision.metadata.messageType,
                 request.body,
                 resultSummary,
-                failure
+                failure,
+                mrn = decision.movementReferenceNumber
               )
             }
 

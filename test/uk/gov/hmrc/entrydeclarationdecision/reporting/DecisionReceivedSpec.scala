@@ -28,20 +28,21 @@ class DecisionReceivedSpec extends UnitSpec {
   val now: Instant = Instant.now
   val clock: Clock = Clock.fixed(now, ZoneOffset.UTC)
 
-  def report(resultSummary: ResultSummary, failure: Option[ErrorCode]): DecisionReceived = DecisionReceived(
+  def report(resultSummary: ResultSummary, failure: Option[ErrorCode], mrn: Option[String]): DecisionReceived = DecisionReceived(
     eori          = "eori",
     correlationId = "correlationId",
     submissionId  = "submissionId",
     messageType   = if (resultSummary == ResultSummary.Accepted) MessageType.IE328 else MessageType.IE316,
     body          = JsObject(Seq("body1" -> JsString("value"))),
     resultSummary = resultSummary,
-    failure       = failure
+    failure       = failure,
+    mrn           = mrn
   )
 
   "DecisionReceived" must {
     "have the correct associated JSON event" when {
       "accepted" in {
-        val event = implicitly[EventSources[DecisionReceived]].eventFor(clock, report(ResultSummary.Accepted, None)).get
+        val event = implicitly[EventSources[DecisionReceived]].eventFor(clock, report(ResultSummary.Accepted, None, mrn = Some("00GB12345678912340"))).get
 
         Json.toJson(event) shouldBe
           Json.parse(s"""
@@ -55,7 +56,8 @@ class DecisionReceivedSpec extends UnitSpec {
                         |    "detail": {
                         |       "summary" : {
                         |         "type": "ACCEPTED"
-                        |       }
+                        |       },
+                        |       "decisionMrn" : "00GB12345678912340"
                         |    }
                         |}
                         |""".stripMargin)
@@ -63,7 +65,7 @@ class DecisionReceivedSpec extends UnitSpec {
 
       "rejected" in {
         val event =
-          implicitly[EventSources[DecisionReceived]].eventFor(clock, report(ResultSummary.Rejected(123), None)).get
+          implicitly[EventSources[DecisionReceived]].eventFor(clock, report(ResultSummary.Rejected(123), None, None)).get
 
         Json.toJson(event) shouldBe
           Json.parse(s"""
@@ -86,7 +88,7 @@ class DecisionReceivedSpec extends UnitSpec {
 
       "processing errors occur" in {
         val event = implicitly[EventSources[DecisionReceived]]
-          .eventFor(clock, report(ResultSummary.Accepted, Some(ErrorCode.NoSubmission)))
+          .eventFor(clock, report(ResultSummary.Accepted, Some(ErrorCode.NoSubmission), Some("00GB12345678912340")))
           .get
 
         Json.toJson(event) shouldBe
@@ -104,7 +106,8 @@ class DecisionReceivedSpec extends UnitSpec {
                         |       },
                         |       "failure": {
                         |         "type": "NO_SUBMISSION"
-                        |       }
+                        |       },
+                        |       "decisionMrn" : "00GB12345678912340"
                         |    }
                         |}
                         |""".stripMargin)
@@ -112,7 +115,7 @@ class DecisionReceivedSpec extends UnitSpec {
     }
 
     "have the correct associated audit event" in {
-      val event = implicitly[EventSources[DecisionReceived]].auditEventFor(report(ResultSummary.Accepted, None)).get
+      val event = implicitly[EventSources[DecisionReceived]].auditEventFor(report(ResultSummary.Accepted, None, None)).get
 
       event.auditType       shouldBe "DecisionReceived"
       event.transactionName shouldBe "ENS decision received from EIS"
