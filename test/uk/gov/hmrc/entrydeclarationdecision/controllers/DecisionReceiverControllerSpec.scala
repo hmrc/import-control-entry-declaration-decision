@@ -59,12 +59,14 @@ class DecisionReceiverControllerSpec
   private val eori          = "eori"
   private val correlationid = "correlationid"
   private val submissionId  = "submissionId"
+  private val movementReferenceNumber= "12345678"
 
   private def decisionReceivedReport(
     validDecision: JsValue,
     messageType: MessageType,
     resultSummary: ResultSummary,
-    failure: Option[ErrorCode]) =
+    failure: Option[ErrorCode],
+    mrn: Option[String]) =
     DecisionReceived(
       eori          = eori,
       correlationId = correlationid,
@@ -72,7 +74,8 @@ class DecisionReceiverControllerSpec
       messageType,
       validDecision,
       resultSummary,
-      failure)
+      failure,
+      mrn)
 
   val validAcceptance: JsValue = Json.parse(s"""{
                                                |  "submissionId": "$submissionId",
@@ -86,7 +89,7 @@ class DecisionReceiverControllerSpec
                                                |    "receivedDateTime": "2020-12-31T23:59:00Z"
                                                |  },
                                                |  "response": {
-                                               |    "movementReferenceNumber": "12345678",
+                                               |    "movementReferenceNumber": "$movementReferenceNumber",
                                                |    "acceptedDateTime": "2005-03-15T12:41:00Z"
                                                |  }
                                                |}""".stripMargin)
@@ -122,7 +125,7 @@ class DecisionReceiverControllerSpec
         .processDecision(validAcceptance.as[Decision[Acceptance]])
         .returns(Future.successful(Right(())))
       MockReportSender.sendReport(
-        decisionReceivedReport(validAcceptance, MessageType.IE328, ResultSummary.Accepted, None))
+        decisionReceivedReport(validAcceptance, MessageType.IE328, ResultSummary.Accepted, None, Some(movementReferenceNumber)))
 
       val result = controller.handlePost(request)
 
@@ -139,7 +142,7 @@ class DecisionReceiverControllerSpec
         .processDecision(validRejection.as[Decision[Rejection]])
         .returns(Future.successful(Right(())))
       MockReportSender.sendReport(
-        decisionReceivedReport(validRejection, MessageType.IE305, ResultSummary.Rejected(1), None))
+        decisionReceivedReport(validRejection, MessageType.IE305, ResultSummary.Rejected(1), None, None))
 
       val result = controller.handlePost(request)
 
@@ -159,7 +162,7 @@ class DecisionReceiverControllerSpec
             .returns(Future.successful(Left(errorCode)))
 
           MockReportSender.sendReport(
-            decisionReceivedReport(validRejection, MessageType.IE305, ResultSummary.Rejected(1), Some(errorCode)))
+            decisionReceivedReport(validRejection, MessageType.IE305, ResultSummary.Rejected(1), Some(errorCode), None))
 
           val result = controller.handlePost(request)
 
@@ -217,6 +220,7 @@ class DecisionReceiverControllerSpec
           MessageType.IE316,
           decision,
           ResultSummary.Rejected(1),
+          None,
           None))
 
       val result = controller.handlePost(request)

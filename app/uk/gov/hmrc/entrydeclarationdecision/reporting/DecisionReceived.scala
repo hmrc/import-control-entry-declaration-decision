@@ -31,7 +31,8 @@ case class DecisionReceived(
   messageType: MessageType,
   body: JsValue,
   resultSummary: ResultSummary,
-  failure: Option[ErrorCode]
+  failure: Option[ErrorCode],
+  mrn: Option[String]
 ) extends Report
 
 object DecisionReceived {
@@ -44,7 +45,8 @@ object DecisionReceived {
           "summary" -> Json.toJson(resultSummary)
         ) ++ failure.map { errorCode =>
           "failure" -> Json.toJson(errorCode)
-        })
+        } ++ mrn.map("decisionMrn" -> Json.toJson(_))
+      )
 
       val event = Event(
         eventCode      = EventCode.ENS_RESP,
