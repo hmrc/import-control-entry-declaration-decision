@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.utils
 
-import play.api.Logger
 import uk.gov.hmrc.entrydeclarationdecision.logging.{ContextLogger, LoggingContext}
 
 import scala.concurrent.duration.FiniteDuration

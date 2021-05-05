@@ -1,5 +1,4 @@
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
-import uk.gov.hmrc.SbtArtifactory
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 
 val appName = "import-control-entry-declaration-decision"
@@ -31,8 +30,10 @@ lazy val coverageSettings: Seq[Setting[_]] = {
   )
 }
 
+val silencerVersion = "1.7.1"
+
 lazy val microservice = Project(appName, file("."))
-  .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin, SbtArtifactory)
+  .enablePlugins(play.sbt.PlayScala, SbtAutoBuildPlugin, SbtGitVersioning, SbtDistributablesPlugin)
   .disablePlugins(JUnitXmlReportPlugin)
   .settings(
     scalaVersion := "2.12.12",
@@ -40,7 +41,12 @@ lazy val microservice = Project(appName, file("."))
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     dependencyOverrides ++= AppDependencies.overrides,
     resolvers += Resolver.jcenterRepo,
-    PlayKeys.playDefaultPort := 9816
+    PlayKeys.playDefaultPort := 9816,
+    scalacOptions += "-P:silencer:pathFilters=routes",
+    libraryDependencies ++= Seq(
+      compilerPlugin("com.github.ghik" % "silencer-plugin" % silencerVersion cross CrossVersion.full),
+      "com.github.ghik" % "silencer-lib" % silencerVersion % Provided cross CrossVersion.full
+    )
   )
   .settings(publishingSettings: _*)
   .settings(coverageSettings: _*)
