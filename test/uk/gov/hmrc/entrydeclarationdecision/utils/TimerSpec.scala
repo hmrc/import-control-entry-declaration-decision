@@ -16,14 +16,17 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.utils
 
-import java.time.{Clock, Duration, Instant, ZoneOffset}
-
+import akka.util.Timeout
 import com.kenshoo.play.metrics.Metrics
-import uk.gov.hmrc.play.test.UnitSpec
+import org.scalatest.Matchers.convertToAnyShouldWrapper
+import org.scalatestplus.play.PlaySpec
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
 
+import java.time.{Clock, Duration, Instant, ZoneOffset}
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
-class TimerSpec extends UnitSpec with Timer with EventLogger {
+class TimerSpec extends PlaySpec with Timer with EventLogger {
   val metrics: Metrics   = new MockMetrics
   val startTime: Instant = Instant.now
   val endTime: Instant   = startTime.plusSeconds(2)
@@ -34,21 +37,22 @@ class TimerSpec extends UnitSpec with Timer with EventLogger {
   override def stopAndLog[A](name: String, timer: com.codahale.metrics.Timer.Context): Unit =
     timeMs = timer.stop() / 1000000
 
-  "Timer" should {
+  "Timer" must {
     val sleepMs = 300
+    val timeout: Timeout = defaultAwaitTimeout
 
     "Time a future correctly" in {
       await(timeFuture("test timer", "test.sleep") {
-        Thread.sleep(sleepMs)
-      })
+        Future.successful(Thread.sleep(sleepMs))
+      })(timeout)
       val beWithinTolerance = be >= sleepMs.toLong and be <= (sleepMs + 100).toLong
       timeMs should beWithinTolerance
     }
 
     "Time a block correctly" in {
       await(time("test timer", "test.sleep") {
-        Thread.sleep(sleepMs)
-      })
+        Future.successful(Thread.sleep(sleepMs))
+      })(timeout)
       val beWithinTolerance = be >= sleepMs.toLong and be <= (sleepMs + 100).toLong
       timeMs should beWithinTolerance
     }

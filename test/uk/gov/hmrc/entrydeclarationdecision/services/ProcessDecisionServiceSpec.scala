@@ -16,14 +16,12 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.services
 
-import java.time.{Clock, Instant, ZoneOffset}
-import java.util.concurrent.atomic.AtomicBoolean
-
 import com.kenshoo.play.metrics.Metrics
 import org.scalamock.handlers.CallHandler
+import org.scalatest.Matchers.convertToAnyShouldWrapper
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Span}
-import org.scalatest.{AppendedClues, Assertion}
+import org.scalatest.{AppendedClues, Assertion, WordSpec}
 import play.api.libs.json.Json
 import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
 import uk.gov.hmrc.entrydeclarationdecision.connectors.{MockOutcomeConnector, MockStoreConnector}
@@ -37,15 +35,16 @@ import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
 import uk.gov.hmrc.entrydeclarationdecision.reporting.{EisResponseTime, MockReportSender}
 import uk.gov.hmrc.entrydeclarationdecision.utils._
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.test.UnitSpec
 
+import java.time.{Clock, Instant, ZoneOffset}
+import java.util.concurrent.atomic.AtomicBoolean
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Future, Promise}
 import scala.xml.{Elem, SAXParseException}
 
 class ProcessDecisionServiceSpec
-    extends UnitSpec
+    extends WordSpec
     with MockAppConfig
     with MockOutcomeConnector
     with MockStoreConnector
@@ -249,7 +248,7 @@ class ProcessDecisionServiceSpec
     def setupMocks(validateJsonToXMLTransformation: Boolean, longJourneyTime: FiniteDuration) = {
       MockAppConfig.validateJsonToXMLTransformation returns validateJsonToXMLTransformation
       MockAppConfig.longJourneyTime returns longJourneyTime
-      enrichmentConnectorMock(submissionId) returns Right(enrichment)
+      enrichmentConnectorMock(submissionId) returns Future.successful(Right(enrichment))
       xmlBuilderMock(decision, enrichment) returns rawXml
       MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
       MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Right(()))
@@ -336,7 +335,7 @@ class ProcessDecisionServiceSpec
 
     def setupEnrichmentAndXmlBuilderStubs() = {
       MockAppConfig.validateJsonToXMLTransformation returns false
-      enrichmentConnectorMock(submissionId) returns Right(enrichment)
+      enrichmentConnectorMock(submissionId) returns Future.successful(Right(enrichment))
       xmlBuilderMock(decision, enrichment) returns rawXml
       MockXMLWrapper.wrapXml(correlationId, rawXml) returns wrappedXml
     }

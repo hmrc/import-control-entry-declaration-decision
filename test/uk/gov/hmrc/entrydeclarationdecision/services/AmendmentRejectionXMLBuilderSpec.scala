@@ -16,25 +16,26 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.services
 
+import org.scalatest.Matchers.convertToAnyShouldWrapper
+import org.scalatest.WordSpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.Json
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.DecisionResponse.Rejection
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.{ArbitraryDecision, Decision}
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.{AmendmentRejectionEnrichment, ArbitraryAmendmentRejectionEnrichment}
 import uk.gov.hmrc.entrydeclarationdecision.utils.{ResourceUtils, SchemaType, SchemaValidator}
-import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.xml.{Utility, XML}
 
 class AmendmentRejectionXMLBuilderSpec
-    extends UnitSpec
+    extends WordSpec
     with ScalaCheckDrivenPropertyChecks
     with ArbitraryDecision
     with ArbitraryAmendmentRejectionEnrichment {
 
   val xmlBuilder = new AmendmentRejectionXMLBuilder
 
-  "RejectionXMLBuilder" should {
+  "RejectionXMLBuilder" must {
     "return XML formatted correctly" when {
       "a rejection decision is supplied" in {
 

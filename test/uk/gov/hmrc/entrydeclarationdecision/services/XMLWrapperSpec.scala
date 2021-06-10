@@ -17,15 +17,16 @@
 package uk.gov.hmrc.entrydeclarationdecision.services
 
 import org.apache.commons.lang3.StringUtils
-import uk.gov.hmrc.play.test.UnitSpec
+import org.scalatest.Matchers.convertToAnyShouldWrapper
+import org.scalatest.WordSpec
 
 import scala.xml.{Elem, Utility}
 
-class XMLWrapperSpec extends UnitSpec {
+class XMLWrapperSpec extends WordSpec {
   val xmlWrapper = new XMLWrapper
   val correlationId = "corrid"
 
-  "XMLWrapper wrapXml" should {
+  "XMLWrapper wrapXml" must {
     "return wrapped xml for an acceptance decision" in {
       val xml: Elem = <cc3:abc xmlns:cc3="http://ics.dgtaxud.ec/CC304A">abcd</cc3:abc>
       val expected: Elem =

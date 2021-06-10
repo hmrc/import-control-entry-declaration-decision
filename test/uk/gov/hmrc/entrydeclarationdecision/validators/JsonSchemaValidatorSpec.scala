@@ -16,15 +16,16 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.validators
 
+import org.scalatest.Matchers.convertToAnyShouldWrapper
+import org.scalatest.WordSpec
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
-import uk.gov.hmrc.play.test.UnitSpec
 
-class JsonSchemaValidatorSpec extends UnitSpec {
+class JsonSchemaValidatorSpec extends WordSpec {
 
   implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 
-  "JsonSchemaValidator" should {
+  "JsonSchemaValidator" must {
     "return true " when {
       "a valid message is supplied" in {
         val validRejection: JsValue = Json.parse("""{

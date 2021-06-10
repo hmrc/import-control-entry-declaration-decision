@@ -17,7 +17,7 @@
 package uk.gov.hmrc.entrydeclarationdecision.controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
+import play.api.{Logger, Logging}
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
@@ -36,7 +36,7 @@ class DecisionReceiverController @Inject()(
   cc: ControllerComponents,
   service: ProcessDecisionService,
   reportSender: ReportSender)(implicit ec: ExecutionContext)
-    extends EisInboundAuthorisedController(cc, appConfig) {
+    extends EisInboundAuthorisedController(cc, appConfig) with Logging {
 
   val handlePost: Action[JsValue] = authorisedAction.async(parse.json) { implicit request =>
     request.body.validate[Decision[DecisionResponse]] match {
@@ -87,7 +87,7 @@ class DecisionReceiverController @Inject()(
         }
 
       case JsError(errs) =>
-        Logger.error(s"Unable to parse decision payload: $errs")
+        logger.error(s"Unable to parse decision payload: $errs")
         Future.successful(BadRequest(Json.toJson(ErrorResponse.errorParse)).as("application/json"))
     }
   }
