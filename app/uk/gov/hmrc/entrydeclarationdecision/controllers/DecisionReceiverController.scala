@@ -17,7 +17,7 @@
 package uk.gov.hmrc.entrydeclarationdecision.controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.{Logger, Logging}
+import play.api.Logging
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
