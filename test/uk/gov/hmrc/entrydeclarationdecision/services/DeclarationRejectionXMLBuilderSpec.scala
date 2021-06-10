@@ -16,24 +16,25 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.services
 
+import org.scalatest.Matchers.convertToAnyShouldWrapper
+import org.scalatest.WordSpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.DecisionResponse.Rejection
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.{ArbitraryDecision, Decision}
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.DeclarationRejectionEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.utils.{ResourceUtils, SchemaType, SchemaValidator}
-import uk.gov.hmrc.play.test.UnitSpec
 
 import scala.xml.{Utility, XML}
 
-class DeclarationRejectionXMLBuilderSpec extends UnitSpec with ScalaCheckDrivenPropertyChecks with ArbitraryDecision {
+class DeclarationRejectionXMLBuilderSpec extends WordSpec with ScalaCheckDrivenPropertyChecks with ArbitraryDecision {
   val xmlBuilder = new DeclarationRejectionXMLBuilder()
 
   val enrichmentJson: JsValue =
     ResourceUtils.withInputStreamFor("jsons/DeclarationRejectionEnrichment.json")(Json.parse)
   val enrichment: DeclarationRejectionEnrichment = enrichmentJson.as[DeclarationRejectionEnrichment]
 
-  "RejectionXMLBuilder" should {
+  "RejectionXMLBuilder" must {
     "return XML formatted correctly" when {
       "a rejection decision is supplied" in {
         val expected     = ResourceUtils.withInputStreamFor("xmls/DeclarationRejectionXML.xml")(XML.load)

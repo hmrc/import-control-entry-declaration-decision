@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.models.decision
 
+import org.scalatest.Matchers.convertToAnyShouldWrapper
+import org.scalatest.WordSpec
+import play.api.libs.json.Json
+
 import java.time.Instant
 
-import play.api.libs.json.Json
-import uk.gov.hmrc.play.test.UnitSpec
-
-class DecisionResponseSpec extends UnitSpec {
+class DecisionResponseSpec extends WordSpec {
   "Json reads" must {
     "deserialize DecisionResponse.Accepted from Json" in {
       Json.parse("""

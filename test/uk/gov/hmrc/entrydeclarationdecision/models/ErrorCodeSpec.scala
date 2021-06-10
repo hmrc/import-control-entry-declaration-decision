@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.models
 
+import org.scalatest.Matchers.convertToAnyShouldWrapper
+import org.scalatest.WordSpec
 import play.api.libs.json.Json
-import uk.gov.hmrc.play.test.UnitSpec
 
-class ErrorCodeSpec extends UnitSpec {
+class ErrorCodeSpec extends WordSpec {
 
-  "ErrorCode" should {
+  "ErrorCode" must {
     "write to Json correctly" in {
       Json.toJson(ErrorCode.NoSubmission) shouldBe
         Json.parse("""

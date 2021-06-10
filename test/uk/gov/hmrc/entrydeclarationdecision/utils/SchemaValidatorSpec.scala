@@ -16,15 +16,16 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.utils
 
-import uk.gov.hmrc.play.test.UnitSpec
+import org.scalatest.Matchers.convertToAnyShouldWrapper
+import org.scalatest.WordSpec
 
 import scala.xml.XML
 
-class SchemaValidatorSpec extends UnitSpec {
+class SchemaValidatorSpec extends WordSpec {
   val schemaValidator = new SchemaValidator
 
   "SchemaValidator" when {
-    "XML is valid" should {
+    "XML is valid" must {
       val schemaType = SchemaType.CC328A
 
       "validate a sample valid xml correctly" in {

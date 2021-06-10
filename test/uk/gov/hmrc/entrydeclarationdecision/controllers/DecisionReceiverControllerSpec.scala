@@ -116,7 +116,7 @@ class DecisionReceiverControllerSpec
                                               |  }
                                               |}""".stripMargin)
 
-  "Post a valid acceptance message" should {
+  "Post a valid acceptance message" must {
     "return a 201 Created " in {
       val request = fakeRequest.withBody(validAcceptance)
       MockAppConfig.eisInboundBearerToken.returns(bearerToken)
@@ -133,7 +133,7 @@ class DecisionReceiverControllerSpec
     }
   }
 
-  "Post a valid rejection message" should {
+  "Post a valid rejection message" must {
     "return a 201 Created " in {
       val request = fakeRequest.withBody(validRejection)
       MockAppConfig.eisInboundBearerToken.returns(bearerToken)
@@ -150,7 +150,7 @@ class DecisionReceiverControllerSpec
     }
   }
 
-  "Post a decision that cannot be processed" should {
+  "Post a decision that cannot be processed" must {
     "convert error codes from the service to the appropriate responses" when {
       def run(errorCode: ErrorCode, expectedStatus: Int, expectedBody: JsValue): Unit =
         s"a $errorCode error is returned from the service" in {
@@ -229,7 +229,7 @@ class DecisionReceiverControllerSpec
     }
   }
 
-  "Post an invalid message" should {
+  "Post an invalid message" must {
     "return 400 Bad Request when reject message type does have reject body" in {
       val request = fakeRequest.withBody(Json.parse(s"""
                                                        |{

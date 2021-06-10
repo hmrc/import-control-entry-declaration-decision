@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.controllers
 
+import akka.util.Timeout
+import org.scalatest.WordSpec
 import org.scalatest.concurrent.ScalaFutures
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.Json
@@ -24,12 +26,12 @@ import play.api.test.Helpers._
 import play.api.test.{FakeRequest, ResultExtractors}
 import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.test.UnitSpec
+import org.scalatest.Matchers.convertToAnyShouldWrapper
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 
 class EisInboundAuthorisedControllerSpec
-    extends UnitSpec
+    extends WordSpec
     with Status
     with HeaderNames
     with ResultExtractors
@@ -53,6 +55,8 @@ class EisInboundAuthorisedControllerSpec
 
   "calling an action" when {
 
+    val timeout: Timeout = defaultAwaitTimeout
+
     "return a 200" when {
       "the user is authorised" in new Test {
         MockAppConfig.eisInboundBearerToken returns bearerToken
@@ -61,7 +65,7 @@ class EisInboundAuthorisedControllerSpec
           FakeRequest().withHeaders(HeaderNames.AUTHORIZATION -> s"Bearer $bearerToken")
         private val result: Future[Result] = controller.action()(fakeGetRequest)
 
-        status(await(result)) shouldBe OK
+        Await.result(result, timeout.duration).header.status shouldBe OK
       }
     }
 
@@ -74,12 +78,12 @@ class EisInboundAuthorisedControllerSpec
           FakeRequest().withHeaders(HeaderNames.AUTHORIZATION -> s"Bearer $badBearerToken")
         private val result: Future[Result] = controller.action()(fakeGetRequest)
 
-        status(await(result)) shouldBe FORBIDDEN
+        Await.result(result, timeout.duration).header.status shouldBe FORBIDDEN
       }
       "no bearer token is supplied" in new Test {
         private val result: Future[Result] = controller.action()(FakeRequest())
 
-        status(await(result)) shouldBe FORBIDDEN
+        Await.result(result, timeout.duration).header.status shouldBe FORBIDDEN
       }
     }
   }

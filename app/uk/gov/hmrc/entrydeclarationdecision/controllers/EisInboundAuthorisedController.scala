@@ -18,7 +18,7 @@ package uk.gov.hmrc.entrydeclarationdecision.controllers
 
 import play.api.mvc._
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
-import uk.gov.hmrc.http.logging.Authorization
+import uk.gov.hmrc.http.Authorization
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
