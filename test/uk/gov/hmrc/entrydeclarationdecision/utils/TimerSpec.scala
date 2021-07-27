@@ -25,8 +25,9 @@ import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import java.time.{Clock, Duration, Instant, ZoneOffset}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import play.api.Logging
 
-class TimerSpec extends PlaySpec with Timer with EventLogger {
+class TimerSpec extends PlaySpec with Timer with Logging {
   val metrics: Metrics   = new MockMetrics
   val startTime: Instant = Instant.now
   val endTime: Instant   = startTime.plusSeconds(2)

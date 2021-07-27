@@ -34,6 +34,7 @@ import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
 import uk.gov.hmrc.entrydeclarationdecision.reporting.{EisResponseTime, ReportSender}
 import uk.gov.hmrc.entrydeclarationdecision.utils._
 import uk.gov.hmrc.http.HeaderCarrier
+import play.api.Logging
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
@@ -56,7 +57,7 @@ class ProcessDecisionService @Inject()(
   override val clock: Clock,
   override val metrics: Metrics)(implicit ex: ExecutionContext)
     extends Timer
-    with EventLogger {
+    with Logging {
 
   def processDecision[R <: DecisionResponse](
     decision: Decision[R])(implicit hc: HeaderCarrier, lc: LoggingContext): Future[Either[ErrorCode, Unit]] =
