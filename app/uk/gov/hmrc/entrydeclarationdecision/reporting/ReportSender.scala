@@ -23,8 +23,9 @@ import com.kenshoo.play.metrics.Metrics
 import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 import uk.gov.hmrc.entrydeclarationdecision.reporting.audit.{AuditEvent, AuditHandler}
 import uk.gov.hmrc.entrydeclarationdecision.reporting.events.{Event, EventConnector}
-import uk.gov.hmrc.entrydeclarationdecision.utils.{EventLogger, Timer}
+import uk.gov.hmrc.entrydeclarationdecision.utils.Timer
 import uk.gov.hmrc.http.HeaderCarrier
+import play.api.Logging
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -34,7 +35,7 @@ class ReportSender @Inject()(
   override val clock: Clock,
   override val metrics: Metrics)(implicit ec: ExecutionContext)
     extends Timer
-    with EventLogger {
+    with Logging {
   def sendReport[R: EventSources](report: R)(implicit hc: HeaderCarrier, lc: LoggingContext): Future[Unit] = {
 
     val eventSources: EventSources[R] = implicitly

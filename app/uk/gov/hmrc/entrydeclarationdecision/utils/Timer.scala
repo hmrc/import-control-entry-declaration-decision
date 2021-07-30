@@ -20,11 +20,11 @@ import java.time.{Clock, Duration, Instant}
 
 import com.codahale.metrics._
 import com.kenshoo.play.metrics.Metrics
-
+import play.api.Logging
 import scala.concurrent.{ExecutionContext, Future}
 
 trait Timer {
-  self: EventLogger =>
+  self: Logging =>
   type Metric = String
 
   val metrics: Metrics
