@@ -7,6 +7,7 @@ The Import Control Entry Declaration Decision responsibilities:
 
 ## Development Setup
 - Run locally: `sbt run` which runs on port `9816` by default
+- Run with test end points: `sbt 'run -Dplay.http.router=testOnlyDoNotUseInAppConf.Routes'`
 
 ## Tests
 - Run Unit Tests: `sbt test`
