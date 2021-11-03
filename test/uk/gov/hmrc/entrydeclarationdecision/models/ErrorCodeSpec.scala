@@ -16,22 +16,23 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.models
 
-import org.scalatest.Matchers.convertToAnyShouldWrapper
-import org.scalatest.WordSpec
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
+import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode.{ConnectorError, NoSubmission}
 
-class ErrorCodeSpec extends WordSpec {
+class ErrorCodeSpec extends PlaySpec {
 
   "ErrorCode" must {
     "write to Json correctly" in {
-      Json.toJson(ErrorCode.NoSubmission) shouldBe
+      Json.toJson[ErrorCode](NoSubmission) shouldBe
         Json.parse("""
                      |{
                      |  "type": "NO_SUBMISSION"
                      |}
                      |""".stripMargin)
 
-      Json.toJson(ErrorCode.ConnectorError) shouldBe
+      Json.toJson[ErrorCode](ConnectorError) shouldBe
         Json.parse("""
                      |{
                      |  "type": "CONNECTOR_ERROR"

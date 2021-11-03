@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.services
 
-import org.scalatest.Matchers.convertToAnyShouldWrapper
-import org.scalatest.WordSpec
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.entrydeclarationdecision.services.XMLBuilder._
 
 import java.time.Instant
 
-class XMLBuilderSpec extends WordSpec {
+class XMLBuilderSpec extends PlaySpec {
   "XMLBuilder" must {
     "use the correct format" when {
       "formatting with getDateFromDateTime" in {

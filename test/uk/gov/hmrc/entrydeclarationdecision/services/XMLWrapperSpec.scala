@@ -17,12 +17,12 @@
 package uk.gov.hmrc.entrydeclarationdecision.services
 
 import org.apache.commons.lang3.StringUtils
-import org.scalatest.Matchers.convertToAnyShouldWrapper
-import org.scalatest.WordSpec
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatestplus.play.PlaySpec
 
 import scala.xml.{Elem, Utility}
 
-class XMLWrapperSpec extends WordSpec {
+class XMLWrapperSpec extends PlaySpec {
   val xmlWrapper = new XMLWrapper
   val correlationId = "corrid"
 

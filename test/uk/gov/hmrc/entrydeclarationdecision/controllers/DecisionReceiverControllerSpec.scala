@@ -18,7 +18,8 @@ package uk.gov.hmrc.entrydeclarationdecision.controllers
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.{JsValue, Json}
@@ -37,8 +38,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class DecisionReceiverControllerSpec
-    extends WordSpec
-    with Matchers
+    extends PlaySpec
     with GuiceOneAppPerSuite
     with MockProcessDecisionService
     with MockAppConfig
