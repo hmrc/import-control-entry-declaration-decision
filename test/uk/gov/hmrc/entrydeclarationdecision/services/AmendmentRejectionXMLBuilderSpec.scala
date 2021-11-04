@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.services
 
-import org.scalatest.Matchers.convertToAnyShouldWrapper
-import org.scalatest.WordSpec
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.Json
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.DecisionResponse.Rejection
@@ -28,7 +28,7 @@ import uk.gov.hmrc.entrydeclarationdecision.utils.{ResourceUtils, SchemaType, Sc
 import scala.xml.{Utility, XML}
 
 class AmendmentRejectionXMLBuilderSpec
-    extends WordSpec
+    extends PlaySpec
     with ScalaCheckDrivenPropertyChecks
     with ArbitraryDecision
     with ArbitraryAmendmentRejectionEnrichment {

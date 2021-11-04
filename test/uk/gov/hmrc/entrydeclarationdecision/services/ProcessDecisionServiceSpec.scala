@@ -18,10 +18,11 @@ package uk.gov.hmrc.entrydeclarationdecision.services
 
 import com.kenshoo.play.metrics.Metrics
 import org.scalamock.handlers.CallHandler
-import org.scalatest.Matchers.convertToAnyShouldWrapper
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.time.{Millis, Span}
-import org.scalatest.{AppendedClues, Assertion, WordSpec}
+import org.scalatest.{AppendedClues, Assertion}
+import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
 import uk.gov.hmrc.entrydeclarationdecision.connectors.{MockOutcomeConnector, MockStoreConnector}
@@ -44,7 +45,7 @@ import scala.concurrent.{Future, Promise}
 import scala.xml.{Elem, SAXParseException}
 
 class ProcessDecisionServiceSpec
-    extends WordSpec
+    extends PlaySpec
     with MockAppConfig
     with MockOutcomeConnector
     with MockStoreConnector

@@ -16,22 +16,23 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.reporting
 
-import org.scalatest.Matchers.convertToAnyShouldWrapper
-import org.scalatest.WordSpec
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
+import uk.gov.hmrc.entrydeclarationdecision.reporting.ResultSummary.{Accepted, Rejected}
 
-class ResultSummarySpec extends WordSpec {
+class ResultSummarySpec extends PlaySpec {
 
   "ResultSummary" must {
     "write to Json correctly" in {
-      Json.toJson(ResultSummary.Accepted) shouldBe
+      Json.toJson[ResultSummary](Accepted) shouldBe
         Json.parse("""
                      |{
                      |  "type": "ACCEPTED"
                      |}
                      |""".stripMargin)
 
-      Json.toJson(ResultSummary.Rejected(123)) shouldBe
+      Json.toJson[ResultSummary](Rejected(123)) shouldBe
         Json.parse("""
                      |{
                      |  "type": "REJECTED",

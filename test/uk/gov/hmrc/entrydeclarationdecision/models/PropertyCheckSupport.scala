@@ -16,11 +16,26 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.models
 
-import java.time.Instant
+import org.scalacheck.Gen.choose
 
+import java.time.Instant
 import org.scalacheck.{Arbitrary, Gen}
 
 trait PropertyCheckSupport {
   implicit val arbInstant: Arbitrary[Instant] =
     Arbitrary(Gen.choose(0, Long.MaxValue).map(ts => Instant.ofEpochMilli(ts)))
+
+  //The two below lazy vals have been added to circumvent a bug in scalacheck
+  implicit lazy val arbChar: Arbitrary[Char] = Arbitrary {
+    // valid ranges are [0x0000, 0xD7FF] and [0xE000, 0xFFFD].
+    //
+    // ((0xFFFD + 1) - 0xE000) + ((0xD7FF + 1) - 0x0000)
+    choose(0, 63485).map { i =>
+      if (i <= 0xD7FF) i.toChar
+      else (i + 2048).toChar
+    }
+  }
+
+  implicit lazy val arbString: Arbitrary[String] =
+    Arbitrary(Gen.stringOf(arbChar.arbitrary))
 }

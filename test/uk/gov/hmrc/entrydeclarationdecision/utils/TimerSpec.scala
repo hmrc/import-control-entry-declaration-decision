@@ -18,7 +18,7 @@ package uk.gov.hmrc.entrydeclarationdecision.utils
 
 import akka.util.Timeout
 import com.kenshoo.play.metrics.Metrics
-import org.scalatest.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatestplus.play.PlaySpec
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 

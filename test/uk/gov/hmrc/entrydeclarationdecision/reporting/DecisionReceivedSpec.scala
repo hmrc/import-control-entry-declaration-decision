@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.reporting
 
-import org.scalatest.Matchers.convertToAnyShouldWrapper
-import org.scalatest.WordSpec
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsObject, JsString, Json}
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.MessageType
 
 import java.time.{Clock, Instant, ZoneOffset}
 
-class DecisionReceivedSpec extends WordSpec {
+class DecisionReceivedSpec extends PlaySpec {
 
   val now: Instant = Instant.now
   val clock: Clock = Clock.fixed(now, ZoneOffset.UTC)

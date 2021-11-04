@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.utils
 
-import org.scalatest.Matchers.convertToAnyShouldWrapper
-import org.scalatest.WordSpec
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatestplus.play.PlaySpec
 
 import scala.xml.XML
 
-class SchemaValidatorSpec extends WordSpec {
+class SchemaValidatorSpec extends PlaySpec {
   val schemaValidator = new SchemaValidator
 
   "SchemaValidator" when {

@@ -16,14 +16,15 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.reporting.events
 
-import akka.stream.actor.ActorPublisherMessage.Request
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
@@ -39,8 +40,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 import scala.concurrent.ExecutionContext
 
 class EventConnectorSpec
-    extends WordSpec
-    with Matchers
+    extends PlaySpec
     with FutureAwaits
     with DefaultAwaitTimeout
     with BeforeAndAfterAll
@@ -58,7 +58,6 @@ class EventConnectorSpec
 
   implicit val hc: HeaderCarrier    = HeaderCarrier()
   implicit val ec: ExecutionContext = ExecutionContext.global
-  implicit val request: Request     = Request(0L)
   implicit val lc: LoggingContext   = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 
   private val wireMockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort())
