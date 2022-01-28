@@ -4,9 +4,9 @@ import sbt._
 object AppDependencies {
 
   val compile: Seq[ModuleID] = Seq(
-    "uk.gov.hmrc"                %% "bootstrap-backend-play-28" % "5.16.0",
+    "uk.gov.hmrc"                %% "bootstrap-backend-play-28" % "5.18.0",
     "com.github.java-json-tools" %  "json-schema-validator"     % "2.2.14",
-    "org.typelevel"              %% "cats-core"                 % "2.6.1",
+    "org.typelevel"              %% "cats-core"                 % "2.7.0",
     "com.chuusai"                %% "shapeless"                 % "2.3.7"
   )
 
@@ -14,10 +14,10 @@ object AppDependencies {
     "com.typesafe.play"            %% "play-test"            % current    % "test, it",
     "org.pegdown"                  %  "pegdown"              % "1.6.0"    % "test, it",
     "org.scalatestplus.play"       %% "scalatestplus-play"   % "5.1.0"    % "test, it",
-    "org.scalamock"                %% "scalamock"            % "5.1.0"    % "test, it",
+    "org.scalamock"                %% "scalamock"            % "5.2.0"    % "test, it",
     "org.scalacheck"               %% "scalacheck"           % "1.15.4"   % "test, it",
-    "com.github.tomakehurst"       %  "wiremock-jre8"        % "2.31.0"   % "test, it",
-    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.0"   % "test, it",
+    "com.github.tomakehurst"       %  "wiremock-jre8"        % "2.32.0"   % "test, it",
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.1"   % "test, it",
     "org.scalatestplus"            %% "scalacheck-1-15"      % "3.2.10.0" % "test, it",
     "com.vladsch.flexmark"         %  "flexmark-all"         % "0.36.8"   % "test, it"
   )
