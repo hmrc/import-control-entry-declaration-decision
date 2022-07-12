@@ -39,7 +39,6 @@ lazy val microservice = Project(appName, file("."))
     scalaVersion := "2.12.12",
     majorVersion := 0,
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
-    dependencyOverrides ++= AppDependencies.overrides,
     resolvers += Resolver.jcenterRepo,
     PlayKeys.playDefaultPort := 9816,
     scalacOptions += "-P:silencer:pathFilters=routes",
