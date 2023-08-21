@@ -56,7 +56,7 @@ class AuditHandlerSpec extends PlaySpec with MockFactory with MockAppConfig with
     "audit with the correct audit event" in {
 
       val eventCapture: CaptureOne[ExtendedDataEvent] = CaptureOne[ExtendedDataEvent]()
-      (mockAuditConnector.sendExtendedEvent(_: ExtendedDataEvent)(_: HeaderCarrier, _: ExecutionContext)) expects (capture(
+      (mockAuditConnector.sendExtendedEvent(_: ExtendedDataEvent)(_: HeaderCarrier, _: ExecutionContext)).expects(capture(
         eventCapture), hc, *) returns Future.successful(AuditResult.Success)
 
       auditHandler.audit(event)

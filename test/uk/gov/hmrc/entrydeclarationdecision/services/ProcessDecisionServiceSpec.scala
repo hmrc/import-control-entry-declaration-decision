@@ -269,7 +269,7 @@ class ProcessDecisionServiceSpec
       service.processDecision(decision).futureValue shouldBe Right(())
 
       shouldReportMetric()
-      MockPagerDutyLogger.logLongJourneyTime(journeyTime, shortJourneyTimeThreshold) returns Unit
+      MockPagerDutyLogger.logLongJourneyTime(journeyTime, shortJourneyTimeThreshold) returns ()
     }
     "process successfully despite schema validation failing" in new Test {
       setupMocks(validateJsonToXMLTransformation = true, longJourneyTimeThreshold)
@@ -346,14 +346,14 @@ class ProcessDecisionServiceSpec
       MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Right(()))
       MockReportSender.sendReport(EisResponseTime(timeDifference)) returns Future.successful((): Unit)
       MockAppConfig.longJourneyTime returns longJourneyTimeThreshold
-      MockStoreConnector.setShortTtl(submissionId) returns Promise[Boolean].future
+      MockStoreConnector.setShortTtl(submissionId) returns Promise[Boolean]().future
 
       service.processDecision(decision).futureValue shouldBe Right(())
     }
     "not wait for report sender to finish" in new Test {
       setupEnrichmentAndXmlBuilderStubs()
       MockOutcomeConnector.send(validOutcome(messageType, acceptance)) returns Future.successful(Right(()))
-      MockReportSender.sendReport(EisResponseTime(timeDifference)) returns Promise[Unit].future
+      MockReportSender.sendReport(EisResponseTime(timeDifference)) returns Promise[Unit]().future
       MockAppConfig.longJourneyTime returns longJourneyTimeThreshold
       MockStoreConnector.setShortTtl(submissionId) returns Future.successful(true)
 

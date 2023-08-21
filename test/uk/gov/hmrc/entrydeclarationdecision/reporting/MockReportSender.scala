@@ -29,7 +29,7 @@ trait MockReportSender extends MockFactory {
   object MockReportSender {
     def sendReport[R](report: R): CallHandler[Future[Unit]] =
       (mockReportSender
-        .sendReport(_: R)(_: EventSources[R], _: HeaderCarrier, _: LoggingContext)) expects (report, *, *, *)
+        .sendReport(_: R)(_: EventSources[R], _: HeaderCarrier, _: LoggingContext)).expects(report, *, *, *)
   }
 
 }

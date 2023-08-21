@@ -25,7 +25,7 @@ case class Decision[R <: DecisionResponse](submissionId: String, metadata: Decis
   def movementReferenceNumber: Option[String] =
     response match {
       case DecisionResponse.Acceptance(mrn, _) => Some(mrn)
-      case _: DecisionResponse.Rejection       => None
+      case _                                   => None
     }
 }
 

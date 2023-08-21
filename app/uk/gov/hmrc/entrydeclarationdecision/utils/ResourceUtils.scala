@@ -20,7 +20,7 @@ import java.io.InputStream
 import java.net.URL
 import java.util.Collections
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object ResourceUtils {
   def resourceList(directoryName: String): Seq[String] = {

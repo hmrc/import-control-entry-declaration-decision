@@ -25,25 +25,21 @@ trait MockAppConfig extends MockFactory {
   val mockAppConfig: AppConfig = mock[AppConfig]
 
   object MockAppConfig {
-    def appName: CallHandler[String] = mockAppConfig.appName _ expects ()
+    def appName: CallHandler[String] = (() => mockAppConfig.appName).expects()
 
-    def eisInboundBearerToken: CallHandler[String] = mockAppConfig.eisInboundBearerToken _ expects ()
+    def eisInboundBearerToken: CallHandler[String] = (() => mockAppConfig.eisInboundBearerToken).expects()
 
-    def eventsHost: CallHandler[String] = mockAppConfig.eventsHost _ expects ()
+    def eventsHost: CallHandler[String] = (() => mockAppConfig.eventsHost).expects()
 
-    def outcomeHost: CallHandler[String] =
-      (mockAppConfig.outcomeHost _).expects
+    def outcomeHost: CallHandler[String] = (() => mockAppConfig.outcomeHost).expects()
 
-    def storeHost: CallHandler[String] =
-      (mockAppConfig.storeHost _).expects
+    def storeHost: CallHandler[String] = (() => mockAppConfig.storeHost).expects()
 
-    def validateIncomingJson: CallHandler[Boolean] =
-      (mockAppConfig.validateIncomingJson _).expects
+    def validateIncomingJson: CallHandler[Boolean] = (() => mockAppConfig.validateIncomingJson).expects()
 
-    def validateJsonToXMLTransformation: CallHandler[Boolean] =
-      (mockAppConfig.validateJsonToXMLTransformation _).expects
+    def validateJsonToXMLTransformation: CallHandler[Boolean] = (() => mockAppConfig.validateJsonToXMLTransformation).expects()
 
-    def longJourneyTime: CallHandler[FiniteDuration] = mockAppConfig.longJourneyTime _ expects ()
+    def longJourneyTime: CallHandler[FiniteDuration] = (() => mockAppConfig.longJourneyTime).expects()
   }
 
 }
