@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,7 +113,7 @@ class EventConnectorSpec
 
         val result: Unit = await(connector.sendEvent(event))
 
-        result shouldBe (_: Unit)
+        result shouldBe ()
       }
     }
 
@@ -122,7 +122,7 @@ class EventConnectorSpec
         stubResponse(BAD_REQUEST)
         val result: Unit = await(connector.sendEvent(event))
 
-        result shouldBe (_: Unit)
+        result shouldBe ()
 
         MockPagerDutyLogger.logEventFailure.once()
       }
@@ -138,7 +138,7 @@ class EventConnectorSpec
 
         val result: Unit = await(connector.sendEvent(event))
 
-        result shouldBe (_: Unit)
+        result shouldBe ()
 
         MockPagerDutyLogger.logEventError.once()
       }
