@@ -21,4 +21,6 @@ object AppDependencies {
     "uk.gov.hmrc"                  %% "bootstrap-test-play-28" % "7.21.0"   % "test, it"
   )
 
+  val itDependencies: Seq[ModuleID] = Seq()
+
 }

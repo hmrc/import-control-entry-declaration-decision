@@ -1,7 +1,9 @@
-import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
+import uk.gov.hmrc.DefaultBuildSettings
 
 val appName = "import-control-entry-declaration-decision"
+
+ThisBuild / majorVersion := 0
+ThisBuild / scalaVersion := "2.13.8"
 
 lazy val coverageSettings: Seq[Setting[_]] = {
   import scoverage.ScoverageKeys
@@ -34,8 +36,6 @@ lazy val microservice = Project(appName, file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
   .disablePlugins(JUnitXmlReportPlugin)
   .settings(
-    scalaVersion := "2.13.8",
-    majorVersion := 0,
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     resolvers += Resolver.jcenterRepo,
     PlayKeys.playDefaultPort := 9816,
@@ -44,4 +44,9 @@ lazy val microservice = Project(appName, file("."))
   )
   .settings(coverageSettings: _*)
   .configs(IntegrationTest)
-  .settings(integrationTestSettings(): _*)
+
+lazy val it = project
+  .enablePlugins(PlayScala)
+  .dependsOn(microservice % "test->test") // the "test->test" allows reusing test code and test dependencies
+  .settings(DefaultBuildSettings.itSettings)
+  .settings(libraryDependencies ++= AppDependencies.itDependencies)
