@@ -16,13 +16,10 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.services
 
-import java.time.{Clock, Duration, Instant}
-import java.util.concurrent.TimeUnit
-
 import cats.data.EitherT
 import cats.implicits._
-import com.kenshoo.play.metrics.Metrics
-import javax.inject.{Inject, Singleton}
+import com.codahale.metrics.MetricRegistry
+import play.api.Logging
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
 import uk.gov.hmrc.entrydeclarationdecision.connectors.{OutcomeConnector, StoreConnector}
 import uk.gov.hmrc.entrydeclarationdecision.logging.{ContextLogger, LoggingContext}
@@ -34,8 +31,10 @@ import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
 import uk.gov.hmrc.entrydeclarationdecision.reporting.{EisResponseTime, ReportSender}
 import uk.gov.hmrc.entrydeclarationdecision.utils._
 import uk.gov.hmrc.http.HeaderCarrier
-import play.api.Logging
 
+import java.time.{Clock, Duration, Instant}
+import java.util.concurrent.TimeUnit
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Success
@@ -55,7 +54,7 @@ class ProcessDecisionService @Inject()(
   pagerDutyLogger: PagerDutyLogger,
   reportSender: ReportSender,
   override val clock: Clock,
-  override val metrics: Metrics)(implicit ex: ExecutionContext)
+  override val metrics: MetricRegistry)(implicit ex: ExecutionContext)
     extends Timer
     with Logging {
 

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.reporting
 
-import com.kenshoo.play.metrics.Metrics
+import com.codahale.metrics.MetricRegistry
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatestplus.play.PlaySpec
@@ -25,7 +25,6 @@ import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.MessageType
 import uk.gov.hmrc.entrydeclarationdecision.reporting.audit.{AuditEvent, MockAuditHandler}
 import uk.gov.hmrc.entrydeclarationdecision.reporting.events.{Event, EventCode, MockEventConnector}
-import uk.gov.hmrc.entrydeclarationdecision.utils.MockMetrics
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.{Clock, Duration, Instant, ZoneOffset}
@@ -46,9 +45,9 @@ class ReportSenderSpec extends PlaySpec with MockAuditHandler with MockEventConn
   implicit val hc: HeaderCarrier  = HeaderCarrier()
   implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 
-  val mockedMetrics: Metrics = new MockMetrics
+  val metricRegistry: MetricRegistry = new MetricRegistry()
 
-  val reportSender = new ReportSender(mockAuditHandler, mockEventConnector, clock, mockedMetrics)
+  val reportSender = new ReportSender(mockAuditHandler, mockEventConnector, clock, metricRegistry)
 
   "ReportSender" must {
     object Report

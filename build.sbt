@@ -3,7 +3,7 @@ import uk.gov.hmrc.DefaultBuildSettings
 val appName = "import-control-entry-declaration-decision"
 
 ThisBuild / majorVersion := 0
-ThisBuild / scalaVersion := "2.13.8"
+ThisBuild / scalaVersion := "2.13.12"
 
 lazy val coverageSettings: Seq[Setting[_]] = {
   import scoverage.ScoverageKeys
@@ -39,11 +39,9 @@ lazy val microservice = Project(appName, file("."))
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     resolvers += Resolver.jcenterRepo,
     PlayKeys.playDefaultPort := 9816,
-    scalacOptions += "-Wconf:src=routes/.*:s",
-    scalacOptions += "-Wconf:cat=unused-imports&src=html/.*:s"
+    scalacOptions += "-Wconf:cat=unused-imports&src=routes/.*:s"
   )
   .settings(coverageSettings: _*)
-  .configs(IntegrationTest)
 
 lazy val it = project
   .enablePlugins(PlayScala)

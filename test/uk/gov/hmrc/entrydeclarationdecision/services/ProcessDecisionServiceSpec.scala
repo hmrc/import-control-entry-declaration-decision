@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.services
 
-import com.kenshoo.play.metrics.Metrics
+import com.codahale.metrics.MetricRegistry
 import org.scalamock.handlers.CallHandler
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
@@ -71,7 +71,7 @@ class ProcessDecisionServiceSpec
   val e2eTimerName = "E2E.eisDecision-e2eTimer"
 
   class Test {
-    val mockedMetrics: Metrics = new MockMetrics
+    val metricRegistry: MetricRegistry = new MetricRegistry()
 
     val service = new ProcessDecisionService(
       mockAppConfig,
@@ -86,14 +86,14 @@ class ProcessDecisionServiceSpec
       mockPagerDutyLogger,
       mockReportSender,
       clock,
-      mockedMetrics
+      metricRegistry
     )
 
     def shouldReportMetric(): Assertion =
-      mockedMetrics.defaultRegistry.timer(e2eTimerName).getCount shouldBe 1 withClue "should report metric"
+      metricRegistry.timer(e2eTimerName).getCount shouldBe 1 withClue "should report metric"
 
     def shouldNotReportMetric(): Assertion =
-      mockedMetrics.defaultRegistry.timer(e2eTimerName).getCount shouldBe 0 withClue "should not report metric"
+      metricRegistry.timer(e2eTimerName).getCount shouldBe 0 withClue "should not report metric"
   }
 
   // WLOG

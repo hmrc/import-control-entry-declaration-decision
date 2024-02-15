@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.controllers
 
-import akka.util.Timeout
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatestplus.play.PlaySpec
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.Json
 import play.api.mvc._
+import org.apache.pekko.util.Timeout
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, ResultExtractors}
 import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
