@@ -39,6 +39,6 @@ lazy val microservice = Project(appName, file("."))
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     resolvers += Resolver.jcenterRepo,
     PlayKeys.playDefaultPort := 9816,
-    scalacOptions += "-Wconf:cat=unused-imports&src=routes/.*:s"
+    scalacOptions += "-Wconf:src=routes/.*:s"
   )
   .settings(coverageSettings: _*)
