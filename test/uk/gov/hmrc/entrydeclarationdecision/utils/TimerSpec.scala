@@ -16,19 +16,18 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.utils
 
-import akka.util.Timeout
-import com.kenshoo.play.metrics.Metrics
+import com.codahale.metrics.MetricRegistry
+import org.apache.pekko.util.Timeout
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatestplus.play.PlaySpec
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-
 import java.time.{Clock, Duration, Instant, ZoneOffset}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import play.api.Logging
 
 class TimerSpec extends PlaySpec with Timer with Logging {
-  val metrics: Metrics   = new MockMetrics
+  val metrics: MetricRegistry   = new MetricRegistry()
   val startTime: Instant = Instant.now
   val endTime: Instant   = startTime.plusSeconds(2)
   val clock: Clock       = Clock.fixed(endTime, ZoneOffset.UTC)
