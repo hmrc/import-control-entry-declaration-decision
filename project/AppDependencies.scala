@@ -16,7 +16,7 @@ object AppDependencies {
   "org.scalamock"                %% "scalamock"              % "5.2.0"           % Test,
   "org.scalacheck"               %% "scalacheck"             % "1.17.0"          % Test,
   "com.fasterxml.jackson.module" %% "jackson-module-scala"   % "2.16.1"          % Test,
-    "org.wiremock"               % "wiremock"                % "3.3.1"           % Test,
+  "org.wiremock"                 % "wiremock"                % "3.4.0"           % Test,
   "org.scalatestplus"            %% "scalacheck-1-15"        % "3.2.11.0"        % Test
   )
 
