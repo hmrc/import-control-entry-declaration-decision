@@ -18,6 +18,7 @@ package uk.gov.hmrc.entrydeclarationdecision.connectors
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
@@ -26,7 +27,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.Future
 
-trait MockStoreConnector extends MockFactory {
+trait MockStoreConnector extends TestSuite with MockFactory {
   val mockStoreConnector: StoreConnector = mock[StoreConnector]
 
   object MockStoreConnector {
