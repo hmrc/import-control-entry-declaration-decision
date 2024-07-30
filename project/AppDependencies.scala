@@ -13,7 +13,7 @@ object AppDependencies {
 
   val test: Seq[ModuleID] = Seq(
   "uk.gov.hmrc"                  %% "bootstrap-test-play-30" % bootstrapVersion  % Test,
-  "org.scalamock"                %% "scalamock"              % "5.2.0"           % Test,
+  "org.scalamock"                %% "scalamock"              % "6.0.0"           % Test,
   "org.scalacheck"               %% "scalacheck"             % "1.18.0"          % Test,
   "com.fasterxml.jackson.module" %% "jackson-module-scala"   % "2.17.2"          % Test,
   "org.wiremock"                 %  "wiremock"               % "3.9.1"           % Test,

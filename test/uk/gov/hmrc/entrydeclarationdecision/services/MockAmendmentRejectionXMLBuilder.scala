@@ -18,12 +18,13 @@ package uk.gov.hmrc.entrydeclarationdecision.services
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.{Decision, DecisionResponse}
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.AmendmentRejectionEnrichment
 
 import scala.xml.Elem
 
-trait MockAmendmentRejectionXMLBuilder extends MockFactory {
+trait MockAmendmentRejectionXMLBuilder extends TestSuite with MockFactory {
   val mockAmendmentRejectionXMLBuilder: AmendmentRejectionXMLBuilder = mock[AmendmentRejectionXMLBuilder]
 
   object MockAmendmentRejectionXMLBuilder {

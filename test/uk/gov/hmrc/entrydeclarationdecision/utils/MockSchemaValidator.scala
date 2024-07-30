@@ -18,10 +18,11 @@ package uk.gov.hmrc.entrydeclarationdecision.utils
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 
 import scala.xml.Node
 
-trait MockSchemaValidator extends MockFactory {
+trait MockSchemaValidator extends TestSuite with MockFactory {
   val mockSchemaValidator: SchemaValidator = mock[SchemaValidator]
 
   object MockSchemaValidator {

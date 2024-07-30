@@ -18,6 +18,7 @@ package uk.gov.hmrc.entrydeclarationdecision.controllers
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -37,7 +38,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class DecisionReceiverControllerSpec
+class   DecisionReceiverControllerSpec
     extends PlaySpec
     with GuiceOneAppPerSuite
     with MockProcessDecisionService
@@ -358,7 +359,7 @@ class DecisionReceiverControllerSpec
   }
 }
 
-trait MockProcessDecisionService extends MockFactory {
+trait MockProcessDecisionService extends TestSuite with MockFactory {
   val mockProcessDecisionService: ProcessDecisionService = mock[ProcessDecisionService]
 
   object MockProcessDecisionService {

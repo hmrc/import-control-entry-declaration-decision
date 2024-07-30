@@ -18,10 +18,11 @@ package uk.gov.hmrc.entrydeclarationdecision.services
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.TestSuite
 
 import scala.xml.Elem
 
-trait MockXMLWrapper extends MockFactory {
+trait MockXMLWrapper extends TestSuite with MockFactory {
   val mockXMLWrapper: XMLWrapper = mock[XMLWrapper]
 
   object MockXMLWrapper {
