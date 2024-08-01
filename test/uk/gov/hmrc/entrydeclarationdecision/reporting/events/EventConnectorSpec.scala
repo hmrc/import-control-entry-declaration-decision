@@ -35,7 +35,8 @@ import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
 import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.MessageType
 import uk.gov.hmrc.entrydeclarationdecision.utils.MockPagerDutyLogger
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import scala.concurrent.ExecutionContext
 
@@ -54,7 +55,7 @@ class EventConnectorSpec
     .configure("metrics.enabled" -> "false")
     .build()
 
-  val httpClient: HttpClient = inject[HttpClient]
+  val httpClient: HttpClientV2 = inject[HttpClientV2]
 
   implicit val hc: HeaderCarrier    = HeaderCarrier()
   implicit val ec: ExecutionContext = ExecutionContext.global
