@@ -34,7 +34,8 @@ import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
 import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.utils.ResourceUtils
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -55,7 +56,7 @@ class StoreConnectorSpec
     .configure("metrics.enabled" -> "false")
     .build()
 
-  val httpClient: HttpClient = inject[HttpClient]
+  val httpClient: HttpClientV2 = inject[HttpClientV2]
 
   implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 

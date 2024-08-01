@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.connectors
 
-import javax.inject.{Inject, Singleton}
 import play.api.http.Status._
 import play.api.libs.json.{JsObject, Reads}
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
@@ -25,13 +24,15 @@ import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.{AmendmentRejectionEnrichment, DeclarationRejectionEnrichment}
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
-class StoreConnector @Inject()(client: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) {
+class StoreConnector @Inject()(client: HttpClientV2, appConfig: AppConfig)(implicit ec: ExecutionContext) {
 
   def getAcceptanceEnrichment(submissionId: String, amendment: Boolean)(
     implicit hc: HeaderCarrier,
@@ -63,7 +64,7 @@ class StoreConnector @Inject()(client: HttpClient, appConfig: AppConfig)(implici
     ContextLogger.info(s"sending GET request to $url")
 
     client
-      .GET[HttpResponse](url)
+      .get(url"$url").execute[HttpResponse]
       .map(response =>
         response.status match {
           case OK =>
@@ -88,7 +89,7 @@ class StoreConnector @Inject()(client: HttpClient, appConfig: AppConfig)(implici
     ContextLogger.info(s"sending PUT request to $url")
 
     client
-      .PUT[JsObject, HttpResponse](url, JsObject.empty)
+      .put(url"$url").withBody(JsObject.empty).execute[HttpResponse]
       .map(response =>
         response.status match {
           case NO_CONTENT => true
