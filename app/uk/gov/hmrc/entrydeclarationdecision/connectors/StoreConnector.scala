@@ -17,7 +17,7 @@
 package uk.gov.hmrc.entrydeclarationdecision.connectors
 
 import play.api.http.Status._
-import play.api.libs.json.{JsObject, Reads}
+import play.api.libs.json.Reads
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
 import uk.gov.hmrc.entrydeclarationdecision.logging.{ContextLogger, LoggingContext}
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
@@ -89,7 +89,7 @@ class StoreConnector @Inject()(client: HttpClientV2, appConfig: AppConfig)(impli
     ContextLogger.info(s"sending PUT request to $url")
 
     client
-      .put(url"$url").withBody(JsObject.empty).execute[HttpResponse]
+      .put(url"$url").execute[HttpResponse]
       .map(response =>
         response.status match {
           case NO_CONTENT => true
