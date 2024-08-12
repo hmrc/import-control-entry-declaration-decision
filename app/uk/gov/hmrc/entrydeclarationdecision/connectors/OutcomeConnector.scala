@@ -16,20 +16,22 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.connectors
 
-import javax.inject.{Inject, Singleton}
 import play.api.http.Status.CREATED
+import play.api.libs.json.Json
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
 import uk.gov.hmrc.entrydeclarationdecision.logging.{ContextLogger, LoggingContext}
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpResponse}
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
-class OutcomeConnector @Inject()(client: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) {
+class OutcomeConnector @Inject()(client: HttpClientV2, appConfig: AppConfig)(implicit ec: ExecutionContext) {
 
   lazy val url = s"${appConfig.outcomeHost}/import-control/outcome"
 
@@ -37,7 +39,7 @@ class OutcomeConnector @Inject()(client: HttpClient, appConfig: AppConfig)(impli
     ContextLogger.info(s"sending POST request to $url")
 
     client
-      .POST[Outcome, HttpResponse](url, outcome)
+      .post(url"$url").withBody(Json.toJson(outcome)).execute[HttpResponse]
       .map { response =>
         response.status match {
           case CREATED =>
