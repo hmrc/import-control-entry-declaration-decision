@@ -41,3 +41,5 @@ lazy val microservice = Project(appName, file("."))
     scalacOptions += "-Wconf:src=routes/.*:s"
   )
   .settings(coverageSettings: _*)
+
+addCommandAlias("runAllChecks", ";clean;compile;coverage;test;coverageReport")
