@@ -22,7 +22,7 @@ The Import Control Entry Declaration Decision responsibilities:
 
 > `sbt runAllChecks`
 
-This is an sbt command alias specific to this project. It will run
+This is a sbt command alias specific to this project. It will run
 
 - clean
 - compile
