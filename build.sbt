@@ -3,7 +3,7 @@ import uk.gov.hmrc.DefaultBuildSettings
 val appName = "import-control-entry-declaration-decision"
 
 ThisBuild / majorVersion := 0
-ThisBuild / scalaVersion := "2.13.16"
+ThisBuild / scalaVersion := "2.13.17"
 
 lazy val coverageSettings: Seq[Setting[_]] = {
   import scoverage.ScoverageKeys
@@ -41,3 +41,5 @@ lazy val microservice = Project(appName, file("."))
     scalacOptions += "-Wconf:src=routes/.*:s"
   )
   .settings(coverageSettings: _*)
+
+addCommandAlias("runAllChecks", ";clean;compile;coverage;test;coverageReport")
