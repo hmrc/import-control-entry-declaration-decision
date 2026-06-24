@@ -24,11 +24,11 @@ import uk.gov.hmrc.entrydeclarationdecision.models.PropertyCheckSupport
 
 trait ArbitraryDecision extends PropertyCheckSupport {
 
-  implicit val messageType: Arbitrary[MessageType] = Arbitrary(
+  given messageType: Arbitrary[MessageType] = Arbitrary(
     Gen
       .oneOf(MessageType.IE304, MessageType.IE305, MessageType.IE316, MessageType.IE328))
 
-  implicit val arbitraryDecisionMetaData: Arbitrary[DecisionMetadata] = Arbitrary(
+  given arbitraryDecisionMetaData: Arbitrary[DecisionMetadata] = Arbitrary(
     for {
       senderEORI            <- arbitrary[String]
       senderBranch          <- arbitrary[String]
@@ -50,26 +50,26 @@ trait ArbitraryDecision extends PropertyCheckSupport {
         Some(localReferenceNumber))
   )
 
-  implicit val arbitraryAcceptanceDecisionResponse: Arbitrary[DecisionResponse.Acceptance] =
+  given arbitraryAcceptanceDecisionResponse: Arbitrary[DecisionResponse.Acceptance] =
     Arbitrary(for {
       movementReferenceNumber <- arbitrary[String]
       acceptedDateTime      <- arbitrary[Instant]
     } yield DecisionResponse.Acceptance(movementReferenceNumber, acceptedDateTime))
 
-  implicit val arbitraryRejectionDecisionResponse: Arbitrary[DecisionResponse.Rejection] =
+  given arbitraryRejectionDecisionResponse: Arbitrary[DecisionResponse.Rejection] =
     Arbitrary(for {
       functionalError   <- arbitrary[Seq[DecisionError]]
       rejectionDateTime <- arbitrary[Instant]
     } yield DecisionResponse.Rejection(functionalError, rejectionDateTime))
 
-  implicit val arbitraryDecisionError: Arbitrary[DecisionError] = Arbitrary(for {
+  given arbitraryDecisionError: Arbitrary[DecisionError] = Arbitrary(for {
     errorType              <- arbitrary[String]
     errorPointer           <- arbitrary[String]
     errorReason            <- arbitrary[Option[String]]
     originalAttributeValue <- arbitrary[Option[String]]
   } yield DecisionError(errorType, errorPointer, errorReason, originalAttributeValue))
 
-  implicit def arbitraryAcceptanceDecision: Arbitrary[Decision[DecisionResponse.Acceptance]] = Arbitrary(
+  given arbitraryAcceptanceDecision: Arbitrary[Decision[DecisionResponse.Acceptance]] = Arbitrary(
     for {
       submissionId <- arbitrary[String]
       metadata     <- arbitrary[DecisionMetadata]
@@ -77,7 +77,7 @@ trait ArbitraryDecision extends PropertyCheckSupport {
     } yield Decision(submissionId, metadata, response)
   )
 
-  implicit def arbitraryRejectionDecision: Arbitrary[Decision[DecisionResponse.Rejection]] = Arbitrary(
+  given arbitraryRejectionDecision: Arbitrary[Decision[DecisionResponse.Rejection]] = Arbitrary(
     for {
       submissionId <- arbitrary[String]
       metadata     <- arbitrary[DecisionMetadata]

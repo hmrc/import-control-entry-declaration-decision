@@ -19,7 +19,7 @@ package uk.gov.hmrc.entrydeclarationdecision.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.libs.json.{JsError, JsSuccess, JsValue, Json}
-import play.api.mvc.{Action, ControllerComponents}
+import play.api.mvc.{Action, ControllerComponents, Request}
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
 import uk.gov.hmrc.entrydeclarationdecision.logging.{ContextLogger, LoggingContext}
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.{Decision, DecisionResponse}
@@ -35,13 +35,14 @@ class DecisionReceiverController @Inject()(
   appConfig: AppConfig,
   cc: ControllerComponents,
   service: ProcessDecisionService,
-  reportSender: ReportSender)(implicit ec: ExecutionContext)
+  reportSender: ReportSender)(using ec: ExecutionContext)
     extends EisInboundAuthorisedController(cc, appConfig) with Logging {
 
-  val handlePost: Action[JsValue] = authorisedAction.async(parse.json) { implicit request =>
+  val handlePost: Action[JsValue] = authorisedAction.async(parse.json) { request =>
+    given Request[JsValue] = request
     request.body.validate[Decision[DecisionResponse]] match {
       case JsSuccess(decision, _) =>
-        implicit val lc: LoggingContext = LoggingContext(
+        given lc: LoggingContext = LoggingContext(
           eori                    = decision.metadata.senderEORI,
           correlationId           = decision.metadata.correlationId,
           submissionId            = decision.submissionId,
@@ -93,7 +94,7 @@ class DecisionReceiverController @Inject()(
   }
 
   private def getValidationErrors[R <: DecisionResponse](decision: Decision[R], json: JsValue)(
-    implicit lc: LoggingContext): Option[JsValue] =
+   using lc: LoggingContext): Option[JsValue] =
     if (appConfig.validateIncomingJson) {
       if (!JsonSchemaValidator.validateJSONAgainstSchema(json)) {
         Some(Json.toJson(ErrorResponse.errorSchema))

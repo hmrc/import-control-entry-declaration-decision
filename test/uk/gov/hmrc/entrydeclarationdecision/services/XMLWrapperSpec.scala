@@ -17,7 +17,7 @@
 package uk.gov.hmrc.entrydeclarationdecision.services
 
 import org.apache.commons.lang3.StringUtils
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.*
 import org.scalatestplus.play.PlaySpec
 
 import scala.xml.{Elem, Utility}

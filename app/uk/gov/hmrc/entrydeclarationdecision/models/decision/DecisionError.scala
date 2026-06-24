@@ -26,5 +26,5 @@ case class DecisionError(
 )
 
 object DecisionError {
-  implicit val jsonReads: Reads[DecisionError] = Json.reads[DecisionError]
+  given jsonReads: Reads[DecisionError] = Json.reads[DecisionError]
 }

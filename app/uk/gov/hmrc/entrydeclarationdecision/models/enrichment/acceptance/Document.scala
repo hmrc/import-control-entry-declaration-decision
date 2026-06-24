@@ -25,5 +25,5 @@ case class Document(
 )
 
 object Document {
-  implicit val jsonFormat: Format[Document] = Json.format[Document]
+  given jsonFormat: Format[Document] = Json.format[Document]
 }

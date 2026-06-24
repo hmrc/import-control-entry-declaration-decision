@@ -17,7 +17,7 @@
 package uk.gov.hmrc.entrydeclarationdecision.services
 
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.*
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.DecisionResponse.Rejection
@@ -67,7 +67,7 @@ class DeclarationRejectionXMLBuilderSpec extends PlaySpec with ScalaCheckDrivenP
     "generate schema valid XML for all inputs" in {
       val schemaValidator = new SchemaValidator
 
-      forAll { decision: Decision[Rejection] =>
+      forAll { (decision: Decision[Rejection]) =>
         val xml = xmlBuilder
           .buildXML(decision, enrichment)
 

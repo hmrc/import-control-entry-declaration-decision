@@ -19,7 +19,7 @@ package uk.gov.hmrc.entrydeclarationdecision.services
 import com.codahale.metrics.MetricRegistry
 import org.scalamock.handlers.CallHandler
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.*
 import org.scalatest.time.{Millis, Span}
 import org.scalatest.{AppendedClues, Assertion}
 import org.scalatestplus.play.PlaySpec
@@ -28,19 +28,19 @@ import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
 import uk.gov.hmrc.entrydeclarationdecision.connectors.{MockOutcomeConnector, MockStoreConnector}
 import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
-import uk.gov.hmrc.entrydeclarationdecision.models.decision._
+import uk.gov.hmrc.entrydeclarationdecision.models.decision.*
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.Enrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.{AmendmentRejectionEnrichment, DeclarationRejectionEnrichment}
 import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
 import uk.gov.hmrc.entrydeclarationdecision.reporting.{EisResponseTime, MockReportSender}
-import uk.gov.hmrc.entrydeclarationdecision.utils._
+import uk.gov.hmrc.entrydeclarationdecision.utils.*
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.{Clock, Instant, ZoneOffset}
 import java.util.concurrent.atomic.AtomicBoolean
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import scala.concurrent.{Future, Promise}
 import scala.xml.{Elem, SAXParseException}
 
@@ -60,10 +60,10 @@ class ProcessDecisionServiceSpec
     with ScalaFutures
     with AppendedClues {
 
-  implicit override val patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(500, Millis))
+  override given patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(500, Millis))
 
-  implicit val hc: HeaderCarrier  = HeaderCarrier()
-  implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
+  given hc: HeaderCarrier  = HeaderCarrier()
+  given lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 
   val time: Instant = Instant.now
   val clock: Clock  = Clock.fixed(time, ZoneOffset.UTC)

@@ -18,11 +18,12 @@ package uk.gov.hmrc.entrydeclarationdecision.connectors
 
 import play.api.http.Status.CREATED
 import play.api.libs.json.Json
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
 import uk.gov.hmrc.entrydeclarationdecision.logging.{ContextLogger, LoggingContext}
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 
@@ -31,11 +32,11 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
-class OutcomeConnector @Inject()(client: HttpClientV2, appConfig: AppConfig)(implicit ec: ExecutionContext) {
+class OutcomeConnector @Inject()(client: HttpClientV2, appConfig: AppConfig)(using ec: ExecutionContext) {
 
   lazy val url = s"${appConfig.outcomeHost}/import-control/outcome"
 
-  def send(outcome: Outcome)(implicit hc: HeaderCarrier, lc: LoggingContext): Future[Either[ErrorCode, Unit]] = {
+  def send(outcome: Outcome)(using hc: HeaderCarrier, lc: LoggingContext): Future[Either[ErrorCode, Unit]] = {
     ContextLogger.info(s"sending POST request to $url")
 
     client

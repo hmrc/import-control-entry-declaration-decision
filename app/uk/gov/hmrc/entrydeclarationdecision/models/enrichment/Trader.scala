@@ -27,5 +27,5 @@ case class Trader(
 )
 
 object Trader {
-  implicit val jsonFormat: Format[Trader] = Json.format[Trader]
+  given jsonFormat: Format[Trader] = Json.format[Trader]
 }

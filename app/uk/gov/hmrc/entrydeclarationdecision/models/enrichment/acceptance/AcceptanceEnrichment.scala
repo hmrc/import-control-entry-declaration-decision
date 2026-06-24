@@ -25,5 +25,5 @@ case class AcceptanceEnrichment(eisSubmissionDateTime: Option[Instant], payload:
     extends Enrichment
 
 object AcceptanceEnrichment {
-  implicit val jsonReads: Reads[AcceptanceEnrichment] = Json.reads[AcceptanceEnrichment]
+  given jsonReads: Reads[AcceptanceEnrichment] = Json.reads[AcceptanceEnrichment]
 }

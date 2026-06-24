@@ -27,5 +27,5 @@ case class EntrySummaryDeclaration(
 )
 
 object EntrySummaryDeclaration {
-  implicit val jsonFormat: Format[EntrySummaryDeclaration] = Json.format[EntrySummaryDeclaration]
+  given jsonFormat: Format[EntrySummaryDeclaration] = Json.format[EntrySummaryDeclaration]
 }

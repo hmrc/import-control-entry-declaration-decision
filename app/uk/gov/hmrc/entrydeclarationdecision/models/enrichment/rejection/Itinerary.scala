@@ -23,5 +23,5 @@ case class Itinerary(
 )
 
 object Itinerary {
-  implicit val jsonFormat: Format[Itinerary] = Json.format[Itinerary]
+  given jsonFormat: Format[Itinerary] = Json.format[Itinerary]
 }

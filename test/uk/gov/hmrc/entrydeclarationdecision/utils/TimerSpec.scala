@@ -18,7 +18,7 @@ package uk.gov.hmrc.entrydeclarationdecision.utils
 
 import com.codahale.metrics.MetricRegistry
 import org.apache.pekko.util.Timeout
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.*
 import org.scalatestplus.play.PlaySpec
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import java.time.{Clock, Duration, Instant, ZoneOffset}

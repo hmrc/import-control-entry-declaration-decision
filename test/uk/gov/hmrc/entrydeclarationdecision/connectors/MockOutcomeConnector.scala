@@ -31,7 +31,7 @@ trait MockOutcomeConnector extends TestSuite with MockFactory {
 
   object MockOutcomeConnector {
     def send(outcome: Outcome): CallHandler[Future[Either[ErrorCode, Unit]]] =
-      (mockOutcomeConnector.send(_: Outcome)(_: HeaderCarrier, _: LoggingContext)).expects(outcome, *, *)
+      (mockOutcomeConnector.send(_: Outcome)(using _: HeaderCarrier, _: LoggingContext)).expects(outcome, *, *)
   }
 
 }

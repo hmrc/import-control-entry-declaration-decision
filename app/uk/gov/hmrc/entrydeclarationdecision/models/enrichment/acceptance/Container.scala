@@ -23,5 +23,5 @@ case class Container(
 )
 
 object Container {
-  implicit val jsonFormat: Format[Container] = Json.format[Container]
+  given jsonFormat: Format[Container] = Json.format[Container]
 }

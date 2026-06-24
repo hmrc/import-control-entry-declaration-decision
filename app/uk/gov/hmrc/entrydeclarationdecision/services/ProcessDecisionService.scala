@@ -17,7 +17,7 @@
 package uk.gov.hmrc.entrydeclarationdecision.services
 
 import cats.data.EitherT
-import cats.implicits._
+import cats.implicits.*
 import com.codahale.metrics.MetricRegistry
 import play.api.Logging
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
@@ -29,7 +29,7 @@ import uk.gov.hmrc.entrydeclarationdecision.models.decision.{Decision, DecisionR
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.Enrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.outcome.Outcome
 import uk.gov.hmrc.entrydeclarationdecision.reporting.{EisResponseTime, ReportSender}
-import uk.gov.hmrc.entrydeclarationdecision.utils._
+import uk.gov.hmrc.entrydeclarationdecision.utils.*
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.{Clock, Duration, Instant}
@@ -54,12 +54,12 @@ class ProcessDecisionService @Inject()(
   pagerDutyLogger: PagerDutyLogger,
   reportSender: ReportSender,
   override val clock: Clock,
-  override val metrics: MetricRegistry)(implicit ex: ExecutionContext)
+  override val metrics: MetricRegistry)(using ex: ExecutionContext)
     extends Timer
     with Logging {
 
   def processDecision[R <: DecisionResponse](
-    decision: Decision[R])(implicit hc: HeaderCarrier, lc: LoggingContext): Future[Either[ErrorCode, Unit]] =
+    decision: Decision[R])(using hc: HeaderCarrier, lc: LoggingContext): Future[Either[ErrorCode, Unit]] =
     timeFuture("Service processDecision", "processDecision.total") {
 
       val amendment = isAmendment(decision.metadata.messageType)
@@ -109,7 +109,7 @@ class ProcessDecisionService @Inject()(
   private def doProcessDecision[R <: DecisionResponse, E <: Enrichment](
     decision: Decision[R],
     xmlBuilder: XMLBuilder[R, E],
-    enricher: String => Future[Either[ErrorCode, E]])(implicit hc: HeaderCarrier, lc: LoggingContext) = {
+    enricher: String => Future[Either[ErrorCode, E]])(using hc: HeaderCarrier, lc: LoggingContext) = {
 
     val (metricString, validationSchema) = decision.metadata.messageType match {
       case IE304 => ("AmendmentAcceptance", SchemaType.CC304A)
@@ -147,7 +147,7 @@ class ProcessDecisionService @Inject()(
   }
 
   private def sendOutcome[R <: DecisionResponse](decision: Decision[R], xml: Node)(
-    implicit hc: HeaderCarrier,
+   using hc: HeaderCarrier,
     lc: LoggingContext): Future[Either[ErrorCode, Unit]] =
     timeFuture("Save Outcome", "processDecision.sendOutcome") {
       val xmlString = Utility.trim(xml).toString
@@ -170,7 +170,7 @@ class ProcessDecisionService @Inject()(
       )
     }
 
-  private def validateSchema(schemaType: SchemaType, xml: Node)(implicit lc: LoggingContext): Unit =
+  private def validateSchema(schemaType: SchemaType, xml: Node)(using lc: LoggingContext): Unit =
     if (appConfig.validateJsonToXMLTransformation) {
       val result = schemaValidator.validateSchema(schemaType, xml)
       if (!result.isValid) {
@@ -182,7 +182,7 @@ class ProcessDecisionService @Inject()(
     }
 
   private def logLongJourneyTime(startTime: Instant, longJourneyTime: FiniteDuration)(
-    implicit lc: LoggingContext): Unit = {
+   using lc: LoggingContext): Unit = {
     val journeyTime =
       FiniteDuration(Duration.between(startTime, Instant.now(clock)).toNanos, TimeUnit.NANOSECONDS)
     if (journeyTime >= longJourneyTime) {

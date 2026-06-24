@@ -18,7 +18,7 @@ package uk.gov.hmrc.entrydeclarationdecision.reporting
 
 import com.codahale.metrics.MetricRegistry
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.*
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.JsObject
 import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
@@ -42,8 +42,8 @@ class ReportSenderSpec extends PlaySpec with MockAuditHandler with MockEventConn
   val event: Event           = Event(EventCode.ENS_RESP, now, "subId", "eori", "corrId", MessageType.IE316, None)
   val auditEvent: AuditEvent = AuditEvent("type", "trans", JsObject.empty)
 
-  implicit val hc: HeaderCarrier  = HeaderCarrier()
-  implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
+  given hc: HeaderCarrier  = HeaderCarrier()
+  given lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 
   val metricRegistry: MetricRegistry = new MetricRegistry()
 
@@ -52,7 +52,7 @@ class ReportSenderSpec extends PlaySpec with MockAuditHandler with MockEventConn
   "ReportSender" must {
     object Report
 
-    implicit val sources: EventSources[Report.type] = new EventSources[Report.type] {
+    given sources: EventSources[Report.type] = new EventSources[Report.type] {
       override def eventFor(clock: Clock, report: Report.type): Option[Event] = Some(event)
       override def auditEventFor(report: Report.type): Option[AuditEvent]     = Some(auditEvent)
     }
@@ -82,7 +82,7 @@ class ReportSenderSpec extends PlaySpec with MockAuditHandler with MockEventConn
 
       object Report
 
-      implicit val sources: EventSources[Report.type] = new EventSources[Report.type] {
+      given sources: EventSources[Report.type] = new EventSources[Report.type] {
         override def eventFor(clock: Clock, report: Report.type): Option[Event] = None
         override def auditEventFor(report: Report.type): Option[AuditEvent]     = Some(auditEvent)
       }
@@ -96,7 +96,7 @@ class ReportSenderSpec extends PlaySpec with MockAuditHandler with MockEventConn
 
       object Report
 
-      implicit val sources: EventSources[Report.type] = new EventSources[Report.type] {
+      given sources: EventSources[Report.type] = new EventSources[Report.type] {
         override def eventFor(clock: Clock, report: Report.type): Option[Event] = Some(event)
         override def auditEventFor(report: Report.type): Option[AuditEvent]     = None
       }

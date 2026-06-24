@@ -19,7 +19,7 @@ package uk.gov.hmrc.entrydeclarationdecision.controllers
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.TestSuite
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.*
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.http.{HeaderNames, Status}
@@ -45,7 +45,7 @@ class   DecisionReceiverControllerSpec
     with MockAppConfig
     with MockReportSender {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  given hc: HeaderCarrier = HeaderCarrier()
 
   private val bearerToken = "bearerToken"
   private val fakeRequest = FakeRequest().withHeaders(HeaderNames.AUTHORIZATION -> s"Bearer $bearerToken")
@@ -365,7 +365,7 @@ trait MockProcessDecisionService extends TestSuite with MockFactory {
   object MockProcessDecisionService {
     def processDecision[R <: DecisionResponse](decision: Decision[R]): CallHandler[Future[Either[ErrorCode, Unit]]] =
       (mockProcessDecisionService
-        .processDecision(_: Decision[R])(_: HeaderCarrier, _: LoggingContext))
+        .processDecision(_: Decision[R])(using _: HeaderCarrier, _: LoggingContext))
         .expects(decision, *, *)
   }
 

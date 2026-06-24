@@ -26,6 +26,6 @@ case class OfficeOfFirstEntry(
 )
 
 object OfficeOfFirstEntry {
-  implicit val jsonFormat: Format[OfficeOfFirstEntry] = Json.format[OfficeOfFirstEntry]
+  given jsonFormat: Format[OfficeOfFirstEntry] = Json.format[OfficeOfFirstEntry]
 
 }

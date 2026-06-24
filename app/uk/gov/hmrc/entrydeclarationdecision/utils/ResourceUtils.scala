@@ -20,11 +20,11 @@ import java.io.InputStream
 import java.net.URL
 import java.util.Collections
 
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
 object ResourceUtils {
   def resourceList(directoryName: String): Seq[String] = {
-    import java.nio.file._
+    import java.nio.file.*
 
     def list(path: Path): Seq[String] = {
       val walk = Files.walk(path, 1)

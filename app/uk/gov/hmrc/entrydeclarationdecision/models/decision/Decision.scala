@@ -30,5 +30,5 @@ case class Decision[R <: DecisionResponse](submissionId: String, metadata: Decis
 }
 
 object Decision {
-  implicit def jsonReads[R <: DecisionResponse: Reads]: Reads[Decision[R]] = Json.reads[Decision[R]]
+  given jsonReads[R <: DecisionResponse: Reads]: Reads[Decision[R]] = Json.reads[Decision[R]]
 }

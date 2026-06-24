@@ -19,14 +19,14 @@ package uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance
 import java.time.Instant
 
 import org.scalacheck.Arbitrary
-import org.scalacheck.Arbitrary._
+import org.scalacheck.Arbitrary.*
 import uk.gov.hmrc.entrydeclarationdecision.models.PropertyCheckSupport
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.MessageType
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.{Address, Trader}
 
 trait ArbitraryAcceptanceEnrichment extends PropertyCheckSupport {
 
-  implicit val arbitraryDocument: Arbitrary[Document] = Arbitrary(
+  given arbitraryDocument: Arbitrary[Document] = Arbitrary(
     for {
       documentType      <- arbitrary[String]
       documentReference <- arbitrary[String]
@@ -34,13 +34,13 @@ trait ArbitraryAcceptanceEnrichment extends PropertyCheckSupport {
     } yield Document(documentType, documentReference, language)
   )
 
-  implicit val arbitraryAmendment: Arbitrary[Amendment] = Arbitrary(
+  given arbitraryAmendment: Arbitrary[Amendment] = Arbitrary(
     for {
       dateTime <- arbitrary[Instant]
     } yield Amendment(dateTime)
   )
 
-  implicit val arbitraryAddress: Arbitrary[Address] = Arbitrary(
+  given arbitraryAddress: Arbitrary[Address] = Arbitrary(
     for {
       streetAndNumber <- arbitrary[String]
       city            <- arbitrary[String]
@@ -49,7 +49,7 @@ trait ArbitraryAcceptanceEnrichment extends PropertyCheckSupport {
     } yield Address(streetAndNumber, city, postalCode, countryCode)
   )
 
-  implicit val arbitraryIdentityOfMeansOfCrossingBorder: Arbitrary[IdentityOfMeansOfCrossingBorder] = Arbitrary(
+  given arbitraryIdentityOfMeansOfCrossingBorder: Arbitrary[IdentityOfMeansOfCrossingBorder] = Arbitrary(
     for {
       nationality <- arbitrary[Option[String]]
       identity    <- arbitrary[String]
@@ -57,13 +57,13 @@ trait ArbitraryAcceptanceEnrichment extends PropertyCheckSupport {
     } yield IdentityOfMeansOfCrossingBorder(nationality, identity, language)
   )
 
-  implicit val arbitraryContainer: Arbitrary[Container] = Arbitrary(
+  given arbitraryContainer: Arbitrary[Container] = Arbitrary(
     for {
       containerNumber <- arbitrary[String]
     } yield Container(containerNumber)
   )
 
-  implicit val arbitraryGoodItem: Arbitrary[GoodsItem] = Arbitrary(
+  given arbitraryGoodItem: Arbitrary[GoodsItem] = Arbitrary(
     for {
       itemNumber                      <- arbitrary[String]
       commercialReferenceNumber       <- arbitrary[Option[String]]
@@ -73,13 +73,13 @@ trait ArbitraryAcceptanceEnrichment extends PropertyCheckSupport {
     } yield GoodsItem(itemNumber, commercialReferenceNumber, documents, containers, identityOfMeansOfCrossingBorder)
   )
 
-  implicit val arbitraryGoods: Arbitrary[Goods] = Arbitrary(
+  given arbitraryGoods: Arbitrary[Goods] = Arbitrary(
     for {
       goodsItems <- arbitrary[Option[Seq[GoodsItem]]]
     } yield Goods(goodsItems)
   )
 
-  implicit val arbitraryTrader: Arbitrary[Trader] = Arbitrary(
+  given arbitraryTrader: Arbitrary[Trader] = Arbitrary(
     for {
       name     <- arbitrary[Option[String]]
       address  <- arbitrary[Option[Address]]
@@ -88,7 +88,7 @@ trait ArbitraryAcceptanceEnrichment extends PropertyCheckSupport {
     } yield Trader(name, address, language, Some(eori))
   )
 
-  implicit val arbitraryParties: Arbitrary[Parties] = Arbitrary(
+  given arbitraryParties: Arbitrary[Parties] = Arbitrary(
     for {
       declarant      <- arbitrary[Trader]
       representative <- arbitrary[Option[Trader]]
@@ -96,20 +96,20 @@ trait ArbitraryAcceptanceEnrichment extends PropertyCheckSupport {
     } yield Parties(declarant, representative, carrier)
   )
 
-  implicit val arbitraryDeclaration: Arbitrary[Declaration] = Arbitrary(
+  given arbitraryDeclaration: Arbitrary[Declaration] = Arbitrary(
     for {
       officeOfLodgement <- arbitrary[Option[String]]
     } yield Declaration(officeOfLodgement)
   )
 
-  implicit val arbitraryOfficeOfFirstEntry: Arbitrary[OfficeOfFirstEntry] = Arbitrary(
+  given arbitraryOfficeOfFirstEntry: Arbitrary[OfficeOfFirstEntry] = Arbitrary(
     for {
       reference                 <- arbitrary[String]
       expectedDateTimeOfArrival <- arbitrary[Instant]
     } yield OfficeOfFirstEntry(reference, expectedDateTimeOfArrival)
   )
 
-  implicit val arbitraryItinerary: Arbitrary[Itinerary] = Arbitrary(
+  given arbitraryItinerary: Arbitrary[Itinerary] = Arbitrary(
     for {
       modeOfTransportAtBorder         <- arbitrary[String]
       identityOfMeansOfCrossingBorder <- arbitrary[Option[IdentityOfMeansOfCrossingBorder]]
@@ -125,8 +125,8 @@ trait ArbitraryAcceptanceEnrichment extends PropertyCheckSupport {
         officeOfFirstEntry)
   )
 
-  implicit def arbitraryEntrySummaryDeclaration(
-    implicit messageType: MessageType): Arbitrary[EntrySummaryDeclaration] = {
+  given arbitraryEntrySummaryDeclaration(
+    using messageType: MessageType): Arbitrary[EntrySummaryDeclaration] = {
 
     val declaration =
       for {
@@ -149,7 +149,7 @@ trait ArbitraryAcceptanceEnrichment extends PropertyCheckSupport {
     })
   }
 
-  implicit def arbitraryRejectionEnrichment(implicit messageType: MessageType): Arbitrary[AcceptanceEnrichment] =
+  given arbitraryRejectionEnrichment(using messageType: MessageType): Arbitrary[AcceptanceEnrichment] =
     Arbitrary(
       for {
         eisSubmissionDateTime <- arbitrary[Option[Instant]]

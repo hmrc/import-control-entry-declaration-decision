@@ -25,7 +25,7 @@ import uk.gov.hmrc.entrydeclarationdecision.reporting.events.Event
 case class EisResponseTime(timeTaken: Duration)
 
 object EisResponseTime {
-  implicit val eventSources: EventSources[EisResponseTime] = new EventSources[EisResponseTime] {
+  given eventSources: EventSources[EisResponseTime] = new EventSources[EisResponseTime] {
     override def eventFor(clock: Clock, report: EisResponseTime): Option[Event] = None
 
     override def auditEventFor(report: EisResponseTime): Option[AuditEvent] =

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.controllers
 
-import play.api.mvc._
+import play.api.mvc.*
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
 import uk.gov.hmrc.http.Authorization
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -30,7 +30,7 @@ abstract class EisInboundAuthorisedController(cc: ControllerComponents, appConfi
 
       override def parser: BodyParser[AnyContent] = cc.parsers.defaultBodyParser
 
-      implicit override protected def executionContext: ExecutionContext = cc.executionContext
+      override given executionContext: ExecutionContext = cc.executionContext
       override def invokeBlock[A](request: Request[A], block: Request[A] => Future[Result]): Future[Result] =
         hc(request).authorization match {
           case Some(Authorization(value)) if value == s"Bearer ${appConfig.eisInboundBearerToken}" => block(request)

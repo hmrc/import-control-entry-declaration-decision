@@ -21,7 +21,7 @@ import play.api.libs.json.{Json, Writes}
 case class ErrorResponse(errorCode: String, message: String)
 
 object ErrorResponse {
-  implicit val writes: Writes[ErrorResponse] = Json.writes[ErrorResponse]
+  given writes: Writes[ErrorResponse] = Json.writes[ErrorResponse]
 
   val noSubmission: ErrorResponse = ErrorResponse("NO_SUBMISSION", "Unable to find original submission in store")
 

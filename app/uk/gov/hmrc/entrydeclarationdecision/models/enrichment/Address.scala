@@ -26,5 +26,5 @@ case class Address(
 )
 
 object Address {
-  implicit val jsonFormat: Format[Address] = Json.format[Address]
+  given jsonFormat: Format[Address] = Json.format[Address]
 }

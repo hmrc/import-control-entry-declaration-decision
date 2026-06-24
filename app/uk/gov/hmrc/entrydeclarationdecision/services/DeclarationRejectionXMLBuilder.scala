@@ -20,7 +20,7 @@ import javax.inject.Singleton
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.Decision
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.DecisionResponse.Rejection
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.DeclarationRejectionEnrichment
-import uk.gov.hmrc.entrydeclarationdecision.services.XMLBuilder._
+import uk.gov.hmrc.entrydeclarationdecision.services.XMLBuilder.*
 
 import scala.xml.Elem
 

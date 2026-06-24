@@ -21,14 +21,14 @@ import uk.gov.hmrc.entrydeclarationdecision.logging.{ContextLogger, LoggingConte
 import scala.concurrent.duration.FiniteDuration
 
 class PagerDutyLogger {
-  def logEventFailure(statusCode: Int)(implicit lc: LoggingContext): Unit =
+  def logEventFailure(statusCode: Int)(using lc: LoggingContext): Unit =
     ContextLogger.error(s"Send event failed with status $statusCode")
 
-  def logEventError(e: Throwable)(implicit lc: LoggingContext): Unit =
+  def logEventError(e: Throwable)(using lc: LoggingContext): Unit =
     ContextLogger.error(s"Send event failed with error", e)
 
   def logLongJourneyTime(journeyTime: FiniteDuration, longJourneyTime: FiniteDuration)(
-    implicit lc: LoggingContext): Unit =
+   using lc: LoggingContext): Unit =
     ContextLogger.warn("LONG_END_TO_END_JOURNEY_TIME - " +
       s"End to End journey is greater than ${longJourneyTime.toSeconds} seconds. Journey took ${journeyTime.toSeconds} seconds")
 }
