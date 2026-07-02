@@ -32,5 +32,5 @@ case class Outcome(
 )
 
 object Outcome {
-  implicit val jsonFormat: Format[Outcome] = Json.format[Outcome]
+  given jsonFormat: Format[Outcome] = Json.format[Outcome]
 }

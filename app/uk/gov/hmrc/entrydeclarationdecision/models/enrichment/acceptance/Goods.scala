@@ -22,5 +22,5 @@ case class Goods(
   goodsItems: Option[Seq[GoodsItem]]
 )
 object Goods {
-  implicit val jsonFormat: Format[Goods] = Json.format[Goods]
+  given jsonFormat: Format[Goods] = Json.format[Goods]
 }

@@ -27,5 +27,5 @@ case class GoodsItem(
 )
 
 object GoodsItem {
-  implicit val jsonFormat: Format[GoodsItem] = Json.format[GoodsItem]
+  given jsonFormat: Format[GoodsItem] = Json.format[GoodsItem]
 }

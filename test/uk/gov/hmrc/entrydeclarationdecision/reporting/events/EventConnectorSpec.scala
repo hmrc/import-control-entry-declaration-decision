@@ -18,12 +18,12 @@ package uk.gov.hmrc.entrydeclarationdecision.reporting.events
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.*
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.inject.guice.GuiceApplicationBuilder
@@ -57,9 +57,9 @@ class EventConnectorSpec
 
   val httpClient: HttpClientV2 = inject[HttpClientV2]
 
-  implicit val hc: HeaderCarrier    = HeaderCarrier()
-  implicit val ec: ExecutionContext = ExecutionContext.global
-  implicit val lc: LoggingContext   = LoggingContext("eori", "corrId", "subId", Some("mrn"))
+  given hc: HeaderCarrier    = HeaderCarrier()
+  given ec: ExecutionContext = ExecutionContext.global
+  given lc: LoggingContext   = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 
   private val wireMockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort())
 

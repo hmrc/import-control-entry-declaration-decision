@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.models.decision
 
+import cats.Show
 import play.api.libs.json.Format
 import uk.gov.hmrc.entrydeclarationdecision.utils.Enums
 
@@ -41,5 +42,6 @@ object MessageType {
     override def isAcceptance: Boolean = false
   }
 
-  implicit val formats: Format[MessageType] = Enums.format[MessageType]
+  given shows: Show[MessageType] = Show.show(_.toString)
+  given formats: Format[MessageType] = Enums.format[MessageType]
 }

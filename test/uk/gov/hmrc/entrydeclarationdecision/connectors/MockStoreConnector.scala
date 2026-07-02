@@ -35,22 +35,22 @@ trait MockStoreConnector extends TestSuite with MockFactory {
       submissionId: String,
       amendment: Boolean): CallHandler[Future[Either[ErrorCode, AcceptanceEnrichment]]] =
       (mockStoreConnector
-        .getAcceptanceEnrichment(_: String, _: Boolean)(_: HeaderCarrier, _: LoggingContext))
+        .getAcceptanceEnrichment(_: String, _: Boolean)(using _: HeaderCarrier, _: LoggingContext))
         .expects(submissionId, amendment, *, *)
 
     def getAmendmentRejectionEnrichment(
       submissionId: String): CallHandler[Future[Either[ErrorCode, AmendmentRejectionEnrichment]]] =
       (mockStoreConnector
-        .getAmendmentRejectionEnrichment(_: String)(_: HeaderCarrier, _: LoggingContext))
+        .getAmendmentRejectionEnrichment(_: String)(using _: HeaderCarrier, _: LoggingContext))
         .expects(submissionId, *, *)
 
     def getDeclarationRejectionEnrichment(
       submissionId: String): CallHandler[Future[Either[ErrorCode, DeclarationRejectionEnrichment]]] =
       (mockStoreConnector
-        .getDeclarationRejectionEnrichment(_: String)(_: HeaderCarrier, _: LoggingContext))
+        .getDeclarationRejectionEnrichment(_: String)(using _: HeaderCarrier, _: LoggingContext))
         .expects(submissionId, *, *)
 
     def setShortTtl(submissionId: String): CallHandler[Future[Boolean]] =
-      (mockStoreConnector.setShortTtl(_: String)(_: HeaderCarrier, _: LoggingContext)).expects(submissionId, *, *)
+      (mockStoreConnector.setShortTtl(_: String)(using _: HeaderCarrier, _: LoggingContext)).expects(submissionId, *, *)
   }
 }

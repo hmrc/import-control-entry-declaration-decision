@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.reporting
 
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.*
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 
@@ -33,13 +33,13 @@ class EisResponseTimeSpec extends PlaySpec {
 
   "EisResponseTime" must {
     "have the correct associated JSON event" in {
-      val event = implicitly[EventSources[EisResponseTime]].eventFor(clock, eisResponseTime)
+      val event = summon[EventSources[EisResponseTime]].eventFor(clock, eisResponseTime)
 
       event shouldBe None
     }
 
     "have the correct associated audit event" in {
-      val event = implicitly[EventSources[EisResponseTime]].auditEventFor(eisResponseTime).get
+      val event = summon[EventSources[EisResponseTime]].auditEventFor(eisResponseTime).get
 
       event.auditType       shouldBe "EisResponseTime"
       event.transactionName shouldBe "EIS Response Time"

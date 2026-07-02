@@ -19,7 +19,7 @@ package uk.gov.hmrc.entrydeclarationdecision.services
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.Decision
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.DecisionResponse.Acceptance
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
-import uk.gov.hmrc.entrydeclarationdecision.services.XMLBuilder._
+import uk.gov.hmrc.entrydeclarationdecision.services.XMLBuilder.*
 
 import scala.xml.Elem
 

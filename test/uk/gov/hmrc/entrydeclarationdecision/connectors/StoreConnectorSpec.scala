@@ -17,15 +17,15 @@
 package uk.gov.hmrc.entrydeclarationdecision.connectors
 
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.http.Fault
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.*
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json, Reads}
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits, Injecting}
@@ -49,7 +49,7 @@ class StoreConnectorSpec
     with Injecting
     with MockAppConfig {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  given hc: HeaderCarrier = HeaderCarrier()
 
   override lazy val app: Application = new GuiceApplicationBuilder()
     .in(Environment.simple(mode = Mode.Dev))
@@ -58,7 +58,7 @@ class StoreConnectorSpec
 
   val httpClient: HttpClientV2 = inject[HttpClientV2]
 
-  implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
+  given lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 
   private val wireMockServer = new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort())
 

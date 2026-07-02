@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.services
 
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.*
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import play.api.libs.json.Json
@@ -78,7 +78,7 @@ class AmendmentAcceptanceXMLBuilderSpec
     "generate schema valid XML for all inputs" in {
       val schemaValidator = new SchemaValidator
 
-      implicit val messageType: MessageType = MessageType.IE304
+      given messageType: MessageType = MessageType.IE304
 
       forAll { (decision: Decision[Acceptance], enrichment: AcceptanceEnrichment) =>
         val xml = xmlBuilder

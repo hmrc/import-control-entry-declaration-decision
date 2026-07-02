@@ -19,20 +19,20 @@ package uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection
 import java.time.Instant
 
 import org.scalacheck.Arbitrary
-import org.scalacheck.Arbitrary._
+import org.scalacheck.Arbitrary.*
 import uk.gov.hmrc.entrydeclarationdecision.models.PropertyCheckSupport
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.{Address, Trader}
 
 trait ArbitraryAmendmentRejectionEnrichment extends PropertyCheckSupport {
 
-  implicit val arbitraryAmendment: Arbitrary[Amendment] = Arbitrary(
+  given arbitraryAmendment: Arbitrary[Amendment] = Arbitrary(
     for {
       movementReferenceNumber <- arbitrary[String]
       dateTime                <- arbitrary[Instant]
     } yield Amendment(movementReferenceNumber, dateTime)
   )
 
-  implicit val arbitraryAddress: Arbitrary[Address] = Arbitrary(
+  given arbitraryAddress: Arbitrary[Address] = Arbitrary(
     for {
       streetAndNumber <- arbitrary[String]
       city            <- arbitrary[String]
@@ -41,7 +41,7 @@ trait ArbitraryAmendmentRejectionEnrichment extends PropertyCheckSupport {
     } yield Address(streetAndNumber, city, postalCode, countryCode)
   )
 
-  implicit val arbitraryTrader: Arbitrary[Trader] = Arbitrary(
+  given arbitraryTrader: Arbitrary[Trader] = Arbitrary(
     for {
       name     <- arbitrary[Option[String]]
       address  <- arbitrary[Option[Address]]
@@ -50,33 +50,33 @@ trait ArbitraryAmendmentRejectionEnrichment extends PropertyCheckSupport {
     } yield Trader(name, address, language, Some(eori))
   )
 
-  implicit val arbitraryParties: Arbitrary[Parties] = Arbitrary(
+  given arbitraryParties: Arbitrary[Parties] = Arbitrary(
     for {
       declarant      <- arbitrary[Trader]
       representative <- arbitrary[Option[Trader]]
     } yield Parties(declarant, representative)
   )
 
-  implicit val arbitraryOfficeOfFirstEntry: Arbitrary[OfficeOfFirstEntry] = Arbitrary(
+  given arbitraryOfficeOfFirstEntry: Arbitrary[OfficeOfFirstEntry] = Arbitrary(
     for {
       reference <- arbitrary[String]
     } yield OfficeOfFirstEntry(reference)
   )
 
-  implicit val arbitraryItinerary: Arbitrary[Itinerary] = Arbitrary(
+  given arbitraryItinerary: Arbitrary[Itinerary] = Arbitrary(
     for {
       officeOfFirstEntry <- arbitrary[OfficeOfFirstEntry]
     } yield Itinerary(officeOfFirstEntry)
   )
 
-  implicit def arbitraryEntrySummaryDeclaration: Arbitrary[EntrySummaryDeclaration] =
+  given arbitraryEntrySummaryDeclaration: Arbitrary[EntrySummaryDeclaration] =
     Arbitrary(for {
       parties   <- arbitrary[Parties]
       itinerary <- arbitrary[Itinerary]
       amendment <- arbitrary[Amendment]
     } yield EntrySummaryDeclaration(parties, itinerary, amendment))
 
-  implicit def arbitraryRejectionEnrichment: Arbitrary[AmendmentRejectionEnrichment] = Arbitrary(
+  given arbitraryRejectionEnrichment: Arbitrary[AmendmentRejectionEnrichment] = Arbitrary(
     for {
       eisSubmissionDateTime <- arbitrary[Option[Instant]]
       payload               <- arbitrary[EntrySummaryDeclaration]

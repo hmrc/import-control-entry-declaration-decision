@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.reporting
 
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.*
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.entrydeclarationdecision.reporting.ResultSummary.{Accepted, Rejected}

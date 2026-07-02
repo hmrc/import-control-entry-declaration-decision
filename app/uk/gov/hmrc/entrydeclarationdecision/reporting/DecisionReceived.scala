@@ -18,7 +18,7 @@ package uk.gov.hmrc.entrydeclarationdecision.reporting
 
 import java.time.{Clock, Instant}
 
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.decision.MessageType
 import uk.gov.hmrc.entrydeclarationdecision.reporting.audit.AuditEvent
@@ -36,9 +36,9 @@ case class DecisionReceived(
 ) extends Report
 
 object DecisionReceived {
-  implicit val eventSources: EventSources[DecisionReceived] = new EventSources[DecisionReceived] {
+  given eventSources: EventSources[DecisionReceived] = new EventSources[DecisionReceived] {
     override def eventFor(clock: Clock, report: DecisionReceived): Option[Event] = {
-      import report._
+      import report.*
 
       val detailJson = JsObject(
         Seq(
@@ -62,7 +62,7 @@ object DecisionReceived {
     }
 
     override def auditEventFor(report: DecisionReceived): Option[AuditEvent] = {
-      import report._
+      import report.*
       val auditEvent = AuditEvent(
         auditType       = "DecisionReceived",
         transactionName = "ENS decision received from EIS",

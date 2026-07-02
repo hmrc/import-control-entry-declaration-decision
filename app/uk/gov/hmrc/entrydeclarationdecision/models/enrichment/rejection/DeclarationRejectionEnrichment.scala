@@ -23,5 +23,5 @@ import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.Enrichment
 case class DeclarationRejectionEnrichment(eisSubmissionDateTime: Option[Instant]) extends Enrichment
 
 object DeclarationRejectionEnrichment {
-  implicit val jsonReads: Reads[DeclarationRejectionEnrichment] = Json.reads[DeclarationRejectionEnrichment]
+  given jsonReads: Reads[DeclarationRejectionEnrichment] = Json.reads[DeclarationRejectionEnrichment]
 }

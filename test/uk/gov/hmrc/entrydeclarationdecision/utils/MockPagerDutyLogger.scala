@@ -28,14 +28,14 @@ trait MockPagerDutyLogger extends TestSuite with MockFactory {
 
   object MockPagerDutyLogger {
     def logEventFailure: CallHandler[Unit] =
-      (mockPagerDutyLogger.logEventFailure(_: Int)(_: LoggingContext)).verify(*, *)
+      (mockPagerDutyLogger.logEventFailure(_: Int)(using _: LoggingContext)).verify(*, *)
 
     def logEventError: CallHandler[Unit] =
-      (mockPagerDutyLogger.logEventError(_: Throwable)(_: LoggingContext)).verify(*, *)
+      (mockPagerDutyLogger.logEventError(_: Throwable)(using _: LoggingContext)).verify(*, *)
 
     def logLongJourneyTime(journeyTime: FiniteDuration, longJourneyTime: FiniteDuration): CallHandler[Unit] =
       (mockPagerDutyLogger
-        .logLongJourneyTime(_: FiniteDuration, _: FiniteDuration)(_: LoggingContext))
+        .logLongJourneyTime(_: FiniteDuration, _: FiniteDuration)(using _: LoggingContext))
         .verify(journeyTime, longJourneyTime, *)
   }
 

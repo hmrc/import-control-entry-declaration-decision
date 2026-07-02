@@ -31,5 +31,5 @@ case class DecisionMetadata(
   localReferenceNumber: Option[String]
 )
 object DecisionMetadata {
-  implicit val jsonReads: Reads[DecisionMetadata] = Json.reads[DecisionMetadata]
+  given jsonReads: Reads[DecisionMetadata] = Json.reads[DecisionMetadata]
 }

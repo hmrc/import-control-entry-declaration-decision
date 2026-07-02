@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.reporting
 
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.*
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsObject, JsString, Json}
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
@@ -43,7 +43,7 @@ class DecisionReceivedSpec extends PlaySpec {
   "DecisionReceived" must {
     "have the correct associated JSON event" when {
       "accepted" in {
-        val event = implicitly[EventSources[DecisionReceived]].eventFor(clock, report(ResultSummary.Accepted, None, mrn = Some("00GB12345678912340"))).get
+        val event = summon[EventSources[DecisionReceived]].eventFor(clock, report(ResultSummary.Accepted, None, mrn = Some("00GB12345678912340"))).get
 
         Json.toJson(event) shouldBe
           Json.parse(s"""
@@ -66,7 +66,7 @@ class DecisionReceivedSpec extends PlaySpec {
 
       "rejected" in {
         val event =
-          implicitly[EventSources[DecisionReceived]].eventFor(clock, report(ResultSummary.Rejected(123), None, None)).get
+          summon[EventSources[DecisionReceived]].eventFor(clock, report(ResultSummary.Rejected(123), None, None)).get
 
         Json.toJson(event) shouldBe
           Json.parse(s"""
@@ -88,7 +88,7 @@ class DecisionReceivedSpec extends PlaySpec {
       }
 
       "processing errors occur" in {
-        val event = implicitly[EventSources[DecisionReceived]]
+        val event = summon[EventSources[DecisionReceived]]
           .eventFor(clock, report(ResultSummary.Accepted, Some(ErrorCode.NoSubmission), Some("00GB12345678912340")))
           .get
 
@@ -116,7 +116,7 @@ class DecisionReceivedSpec extends PlaySpec {
     }
 
     "have the correct associated audit event" in {
-      val event = implicitly[EventSources[DecisionReceived]].auditEventFor(report(ResultSummary.Accepted, None, None)).get
+      val event = summon[EventSources[DecisionReceived]].auditEventFor(report(ResultSummary.Accepted, None, None)).get
 
       event.auditType       shouldBe "DecisionReceived"
       event.transactionName shouldBe "ENS decision received from EIS"

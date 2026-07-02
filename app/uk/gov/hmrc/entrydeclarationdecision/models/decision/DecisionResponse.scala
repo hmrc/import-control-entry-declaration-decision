@@ -33,7 +33,7 @@ object DecisionResponse {
   }
 
   object Acceptance {
-    implicit val jsonReads: Reads[Acceptance] = Json.reads[Acceptance]
+    given jsonReads: Reads[Acceptance] = Json.reads[Acceptance]
   }
 
   case class Rejection(
@@ -44,12 +44,12 @@ object DecisionResponse {
   }
 
   object Rejection {
-    implicit val jsonReads: Reads[Rejection] = Json.reads[Rejection]
+    given jsonReads: Reads[Rejection] = Json.reads[Rejection]
   }
 
-  implicit val jsonReads: Reads[DecisionResponse] =
+  given jsonReads: Reads[DecisionResponse] =
     (JsPath \ "movementReferenceNumber").readNullable[String].flatMap {
-      case Some(_) => implicitly[Reads[Acceptance]].map(x => x: DecisionResponse)
-      case None    => implicitly[Reads[Rejection]].map(x => x: DecisionResponse)
+      case Some(_) => summon[Reads[Acceptance]].map(x => x: DecisionResponse)
+      case None    => summon[Reads[Rejection]].map(x => x: DecisionResponse)
     }
 }

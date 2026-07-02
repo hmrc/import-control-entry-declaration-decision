@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.services
 
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.*
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.entrydeclarationdecision.services.XMLBuilder._
+import uk.gov.hmrc.entrydeclarationdecision.services.XMLBuilder.*
 
 import java.time.Instant
 

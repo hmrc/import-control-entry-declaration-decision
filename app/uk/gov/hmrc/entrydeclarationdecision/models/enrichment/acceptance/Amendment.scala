@@ -23,5 +23,5 @@ import play.api.libs.json.{Format, Json}
 case class Amendment(dateTime: Instant)
 
 object Amendment {
-  implicit val jsonFormat: Format[Amendment] = Json.format[Amendment]
+  given jsonFormat: Format[Amendment] = Json.format[Amendment]
 }

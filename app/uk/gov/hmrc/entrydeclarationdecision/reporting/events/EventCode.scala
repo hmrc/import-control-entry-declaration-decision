@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.reporting.events
 
+import cats.Show
 import play.api.libs.json.Writes
 import uk.gov.hmrc.entrydeclarationdecision.utils.Enums
 
@@ -24,5 +25,6 @@ sealed trait EventCode
 object EventCode {
   case object ENS_RESP extends EventCode
 
-  implicit val writes: Writes[EventCode] = Enums.writes
+  given shows: Show[EventCode] = Show.show[EventCode](_.toString)
+  given writes: Writes[EventCode] = Enums.writes
 }

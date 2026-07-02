@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.connectors
 
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.Reads
 import uk.gov.hmrc.entrydeclarationdecision.config.AppConfig
 import uk.gov.hmrc.entrydeclarationdecision.logging.{ContextLogger, LoggingContext}
 import uk.gov.hmrc.entrydeclarationdecision.models.ErrorCode
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.acceptance.AcceptanceEnrichment
 import uk.gov.hmrc.entrydeclarationdecision.models.enrichment.rejection.{AmendmentRejectionEnrichment, DeclarationRejectionEnrichment}
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 
@@ -32,10 +32,10 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
-class StoreConnector @Inject()(client: HttpClientV2, appConfig: AppConfig)(implicit ec: ExecutionContext) {
+class StoreConnector @Inject()(client: HttpClientV2, appConfig: AppConfig)(using ec: ExecutionContext) {
 
   def getAcceptanceEnrichment(submissionId: String, amendment: Boolean)(
-    implicit hc: HeaderCarrier,
+   using hc: HeaderCarrier,
     lc: LoggingContext): Future[Either[ErrorCode, AcceptanceEnrichment]] = {
     val amendmentParam = if (amendment) "amendment" else "declaration"
     val url            = s"${appConfig.storeHost}/import-control/$amendmentParam/acceptance-enrichment/$submissionId"
@@ -44,7 +44,7 @@ class StoreConnector @Inject()(client: HttpClientV2, appConfig: AppConfig)(impli
   }
 
   def getAmendmentRejectionEnrichment(submissionId: String)(
-    implicit hc: HeaderCarrier,
+   using hc: HeaderCarrier,
     lc: LoggingContext): Future[Either[ErrorCode, AmendmentRejectionEnrichment]] = {
     val url = s"${appConfig.storeHost}/import-control/amendment/rejection-enrichment/$submissionId"
 
@@ -52,7 +52,7 @@ class StoreConnector @Inject()(client: HttpClientV2, appConfig: AppConfig)(impli
   }
 
   def getDeclarationRejectionEnrichment(submissionId: String)(
-    implicit hc: HeaderCarrier,
+   using hc: HeaderCarrier,
     lc: LoggingContext): Future[Either[ErrorCode, DeclarationRejectionEnrichment]] = {
     val url = s"${appConfig.storeHost}/import-control/declaration/rejection-enrichment/$submissionId"
 
@@ -60,7 +60,7 @@ class StoreConnector @Inject()(client: HttpClientV2, appConfig: AppConfig)(impli
   }
 
   private def getEnrichment[E: Reads](
-    url: String)(implicit hc: HeaderCarrier, lc: LoggingContext): Future[Either[ErrorCode, E]] = {
+    url: String)(using hc: HeaderCarrier, lc: LoggingContext): Future[Either[ErrorCode, E]] = {
     ContextLogger.info(s"sending GET request to $url")
 
     client
@@ -84,7 +84,7 @@ class StoreConnector @Inject()(client: HttpClientV2, appConfig: AppConfig)(impli
       }
   }
 
-  def setShortTtl(submissionId: String)(implicit hc: HeaderCarrier, lc: LoggingContext): Future[Boolean] = {
+  def setShortTtl(submissionId: String)(using hc: HeaderCarrier, lc: LoggingContext): Future[Boolean] = {
     val url = s"${appConfig.storeHost}/import-control/housekeeping/submissionid/$submissionId"
     ContextLogger.info(s"sending PUT request to $url")
 

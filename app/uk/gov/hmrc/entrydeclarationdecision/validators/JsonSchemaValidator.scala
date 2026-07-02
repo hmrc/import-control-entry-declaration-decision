@@ -32,7 +32,7 @@ object JsonSchemaValidator {
 
   def validateJSONAgainstSchema(
     inputDoc: JsValue,
-    schemaDoc: String = "conf/jsonSchemas/EntrySummaryDeclarationResponse.json")(implicit lc: LoggingContext): Boolean =
+    schemaDoc: String = "conf/jsonSchemas/EntrySummaryDeclarationResponse.json")(using lc: LoggingContext): Boolean =
     try {
       val mapper: ObjectMapper     = new ObjectMapper()
       val inputJson: JsonNode      = mapper.readTree(inputDoc.toString())

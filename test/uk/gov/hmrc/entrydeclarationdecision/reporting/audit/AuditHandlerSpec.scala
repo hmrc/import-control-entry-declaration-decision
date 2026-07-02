@@ -19,7 +19,7 @@ package uk.gov.hmrc.entrydeclarationdecision.reporting.audit
 import org.scalamock.matchers.ArgCapture.CaptureOne
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.Inside
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.*
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsObject, JsString}
 import uk.gov.hmrc.entrydeclarationdecision.config.MockAppConfig
@@ -42,7 +42,7 @@ class AuditHandlerSpec extends PlaySpec with MockFactory with MockAppConfig with
 
   val auditHandler = new AuditHandler(mockAuditConnector, mockAppConfig)
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  given hc: HeaderCarrier = HeaderCarrier()
 
   val detail: JsObject = JsObject(Seq("detail1" -> JsString("detailValue1")))
 
@@ -56,7 +56,7 @@ class AuditHandlerSpec extends PlaySpec with MockFactory with MockAppConfig with
     "audit with the correct audit event" in {
 
       val eventCapture: CaptureOne[ExtendedDataEvent] = CaptureOne[ExtendedDataEvent]()
-      (mockAuditConnector.sendExtendedEvent(_: ExtendedDataEvent)(_: HeaderCarrier, _: ExecutionContext)).expects(capture(
+      (mockAuditConnector.sendExtendedEvent(_: ExtendedDataEvent)(using _: HeaderCarrier, _: ExecutionContext)).expects(capture(
         eventCapture), hc, *) returns Future.successful(AuditResult.Success)
 
       auditHandler.audit(event)

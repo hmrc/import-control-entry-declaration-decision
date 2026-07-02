@@ -25,5 +25,5 @@ case class IdentityOfMeansOfCrossingBorder(
 )
 
 object IdentityOfMeansOfCrossingBorder {
-  implicit val jsonFormat: Format[IdentityOfMeansOfCrossingBorder] = Json.format[IdentityOfMeansOfCrossingBorder]
+  given jsonFormat: Format[IdentityOfMeansOfCrossingBorder] = Json.format[IdentityOfMeansOfCrossingBorder]
 }

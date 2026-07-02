@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.entrydeclarationdecision.validators
 
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers.*
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.entrydeclarationdecision.logging.LoggingContext
 
 class JsonSchemaValidatorSpec extends PlaySpec {
 
-  implicit val lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
+  given lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 
   "JsonSchemaValidator" must {
     "return true " when {

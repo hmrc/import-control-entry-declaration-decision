@@ -25,5 +25,5 @@ case class Parties(
 )
 
 object Parties {
-  implicit val jsonFormat: Format[Parties] = Json.format[Parties]
+  given jsonFormat: Format[Parties] = Json.format[Parties]
 }

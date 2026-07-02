@@ -25,5 +25,5 @@ case class AmendmentRejectionEnrichment(eisSubmissionDateTime: Option[Instant], 
     extends Enrichment
 
 object AmendmentRejectionEnrichment {
-  implicit val jsonReads: Reads[AmendmentRejectionEnrichment] = Json.reads[AmendmentRejectionEnrichment]
+  given jsonReads: Reads[AmendmentRejectionEnrichment] = Json.reads[AmendmentRejectionEnrichment]
 }

@@ -22,7 +22,7 @@ object ResultSummary {
   case object Accepted extends ResultSummary
   case class Rejected(rejectionErrorCount: Int) extends ResultSummary
 
-  implicit val writes: Writes[ResultSummary] = Writes {
+  given writes: Writes[ResultSummary] = Writes {
     case Accepted      => JsObject(Seq("type" -> JsString("ACCEPTED")))
     case Rejected(num) => JsObject(Seq("type" -> JsString("REJECTED"), "errorCount" -> JsNumber(num)))
   }
