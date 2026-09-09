@@ -18,38 +18,40 @@ package uk.gov.hmrc.entrydeclarationdecision.validators
 
 import java.net.URL
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
-import com.github.fge.jsonschema.core.report.ProcessingReport
-import com.github.fge.jsonschema.main.{JsonSchemaFactory, JsonValidator}
+import com.networknt.schema.{Schema, SchemaRegistry, SpecificationVersion}
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.entrydeclarationdecision.logging.{ContextLogger, LoggingContext}
 
 import java.io.FileInputStream
+import scala.jdk.CollectionConverters.*
 
 object JsonSchemaValidator {
 
-  private val factory = JsonSchemaFactory.byDefault()
   val basePath: String = System.getProperty("user.dir")
+  private val registry = SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_4)
+
 
   def validateJSONAgainstSchema(
-    inputDoc: JsValue,
-    schemaDoc: String = "conf/jsonSchemas/EntrySummaryDeclarationResponse.json")(using lc: LoggingContext): Boolean =
+                                 inputDoc: JsValue,
+                                 schemaDoc: String = "conf/jsonSchemas/EntrySummaryDeclarationResponse.json")
+                               (using lc: LoggingContext): Either[List[String], Unit] =
     try {
-      val mapper: ObjectMapper     = new ObjectMapper()
-      val inputJson: JsonNode      = mapper.readTree(inputDoc.toString())
-      val jsonSchema: JsonNode     = mapper.readTree(new FileInputStream(s"$basePath/$schemaDoc"))
-      val validator: JsonValidator = factory.getValidator
-      val report: ProcessingReport = validator.validate(jsonSchema, inputJson)
-      if (!report.isSuccess) {
-        ContextLogger.error(s"Failed to validate $report")
-        ContextLogger.debug(s"Failed to validate $inputDoc and $report")
+      val mapper: ObjectMapper = new ObjectMapper()
+      val inputJson: JsonNode = mapper.readTree(inputDoc.toString())
+      val schema: Schema = registry.getSchema(new FileInputStream(s"$basePath/$schemaDoc"))
+      val errors: List[String] = schema.validate(inputJson).asScala.toList.map(_.getMessage)
+      if (errors.nonEmpty) {
+        ContextLogger.error(s"Failed to validate $errors")
+        ContextLogger.debug(s"Failed to validate $inputDoc and $errors")
+        Left(errors)
+      } else {
+        Right(())
       }
-
-      report.isSuccess
     } catch {
       case e: Exception =>
         ContextLogger.error(s"Failed to validate", e)
         ContextLogger.debug(s"Failed to validate $inputDoc", e)
-        false
+        Left(List(e.getMessage))
     }
 
   def url(resourceName: String): URL = Thread.currentThread().getContextClassLoader.getResource(resourceName)

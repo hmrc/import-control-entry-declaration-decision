@@ -26,7 +26,7 @@ class JsonSchemaValidatorSpec extends PlaySpec {
   given lc: LoggingContext = LoggingContext("eori", "corrId", "subId", Some("mrn"))
 
   "JsonSchemaValidator" must {
-    "return true " when {
+    "return Right" when {
       "a valid message is supplied" in {
         val validRejection: JsValue = Json.parse("""{
                                                    |  "submissionId": "conversationid-1234567890-1234567890",
@@ -53,12 +53,12 @@ class JsonSchemaValidatorSpec extends PlaySpec {
                                                    |  }
                                                    |}""".stripMargin)
 
-        JsonSchemaValidator.validateJSONAgainstSchema(validRejection) shouldBe true
+        JsonSchemaValidator.validateJSONAgainstSchema(validRejection) shouldBe Right(())
 
       }
     }
 
-    "return false" when {
+    "return Left with the validation errors" when {
       "an invalid message is supplied" in {
         val validRejection: JsValue = Json.parse("""{
                                                    |  "submissionId": "submissionId",
@@ -85,7 +85,10 @@ class JsonSchemaValidatorSpec extends PlaySpec {
                                                    |  }
                                                    |}""".stripMargin)
 
-        JsonSchemaValidator.validateJSONAgainstSchema(validRejection) shouldBe false
+        JsonSchemaValidator.validateJSONAgainstSchema(validRejection) match {
+          case Left(errors) => errors must not be empty
+          case Right(_)     => fail("expected validation to fail")
+        }
       }
     }
   }

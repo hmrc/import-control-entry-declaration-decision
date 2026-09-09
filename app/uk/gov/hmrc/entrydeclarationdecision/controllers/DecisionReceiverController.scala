@@ -96,10 +96,9 @@ class DecisionReceiverController @Inject()(
   private def getValidationErrors[R <: DecisionResponse](decision: Decision[R], json: JsValue)(
    using lc: LoggingContext): Option[JsValue] =
     if (appConfig.validateIncomingJson) {
-      if (!JsonSchemaValidator.validateJSONAgainstSchema(json)) {
-        Some(Json.toJson(ErrorResponse.errorSchema))
-      } else {
-        None
+      JsonSchemaValidator.validateJSONAgainstSchema(json) match {
+        case Left(_)  => Some(Json.toJson(ErrorResponse.errorSchema))
+        case Right(_) => None
       }
     } else {
       if (decision.metadata.messageType.isAcceptance != decision.response.isAcceptance) {
